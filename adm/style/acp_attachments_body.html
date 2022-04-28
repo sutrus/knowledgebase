@@ -1,0 +1,126 @@
+{% INCLUDE 'overall_header.html' %}
+{% INCLUDECSS 'css/acp_knowledgebase.css' %}
+
+{% if S_UPLOADING_FILES %}
+	<h2>{{ lang('UPLOADING_FILES') }}</h2>
+	{% for upload in loops.upload %}
+		:: {{ upload.FILE_INFO }}<br>
+		{% if upload.S_DENIED %}<span class="error">{{ upload.DENIED }}</span>{% else %}<span class="success">{{ lang('SUCCESSFULLY_UPLOADED') }}</span>{% endif %}
+		<br><br>
+	{% endfor %}
+{% endif %}
+<h1>{{ lang('TITLE') }}</h1>
+<p>{{ lang('TITLE_EXPLAIN') }}</p>
+{% if S_PRUNE_ATTACHMENTS %}
+<form method="post" action="{{ U_ACTION }}">
+	<fieldset style="text-align: center;">
+		<input class="button2" type="submit" value="{{ lang('YES') }}" name="submit" />
+	</fieldset>
+</form>
+{% elseif S_ATTACHMENTS %}
+<form id="attachments" method="post" action="{{ U_ACTION }}">
+	<fieldset class="tabulated">
+	<legend>{{ lang('TITLE') }}</legend>
+	<div class="pagination top-pagination">
+	{% if loops.pagination|length or TOTAL_FILES %}
+		{{ lang('NUMBER_FILES') }}{{ lang('COLON') }} {{ TOTAL_FILES }} &bull; {{ lang('TOTAL_SIZE') }}{{ lang('COLON') }} {{ TOTAL_SIZE }} &bull;
+		{% if loops.pagination|length %} {% INCLUDE 'pagination.html' %}{% else %} {{ PAGE_NUMBER }}{% endif %}
+	{% endif %}
+	</div>
+
+	{% if loops.attachments|length %}
+	<table class="table1 zebra-table fixed-width-table">
+	<thead>
+	<tr>
+		<th>{{ lang('FILENAME') }}</th>
+		<th style="width: 15%;">{{ lang('POSTED') }}</th>
+		<th style="width: 15%;" class="centered-text">{{ lang('FILESIZE') }}</th>
+		<th style="width: 10%;" class="centered-text">{{ lang('MARK') }}</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for attachments in loops.attachments %}
+		<tr>
+			<td>
+				{{ attachments.IMG_SRC }}<a href="{{ attachments.U_FILE }}" style="font-weight: bold;">{{ attachments.REAL_FILENAME }}</a><br>{% if attachments.COMMENT %}{{ attachments.COMMENT }}<br>{% endif %}{{ attachments.L_DOWNLOAD_COUNT }}<br>{{ lang('ARTICLE') }}{{ lang('COLON') }} <a href="{{ attachments.U_ARTICLE }}" onclick="find_username(this.href); return false;">{{ attachments.ARTICLE_TITLE }}</a>
+			</td>
+			<td>{{ attachments.FILETIME }}<br>{{ attachments.ATTACHMENT_POSTER }}</td>
+			<td class="centered-text">{{ attachments.FILESIZE }}</td>
+			<td class="centered-text"><input type="checkbox" class="radio" name="delete[{{ attachments.ATTACH_ID }}]" /></td>
+		</tr>
+	{% endfor %}
+	</tbody>
+	</table>
+{% else %}
+	<div class="errorbox"><p>{{ lang('NO_ATTACHMENTS') }}</p></div>
+{% endif %}
+
+	{% if TOTAL_FILES %}
+	<div class="pagination">
+		{{ lang('NUMBER_FILES') }}{{ lang('COLON') }} {{ TOTAL_FILES }} &bull; {{ lang('TOTAL_SIZE') }}{{ lang('COLON') }} {{ TOTAL_SIZE }} &bull;
+		{% if loops.pagination|length %} {% INCLUDE 'pagination.html' %}{% else %} {{ PAGE_NUMBER }}{% endif %}
+	</div>
+	{% endif %}
+
+	<fieldset class="display-options">
+		{{ lang('DISPLAY_LOG') }}{{ lang('COLON') }} &nbsp;{{ S_LIMIT_DAYS }}&nbsp;{{ lang('SORT_BY') }}{{ lang('COLON') }} {{ S_SORT_KEY }} {{ S_SORT_DIR }}
+		<input class="button2" type="submit" value="{{ lang('GO') }}" name="sort" />
+	</fieldset>
+
+	<hr />
+
+{% if loops.attachments|length %}
+	<fieldset class="quick">
+		<input class="button2" type="submit" name="submit" value="{{ lang('DELETE_MARKED') }}" /><br>
+		<p class="small">
+			<a href="#" onclick="marklist('attachments', 'delete', true); return false;">{{ lang('MARK_ALL') }}</a> &bull;
+			<a href="#" onclick="marklist('attachments', 'delete', false); return false;">{{ lang('UNMARK_ALL') }}</a>
+		</p>
+	</fieldset>
+{% endif %}
+	{{ S_FORM_TOKEN }}
+	</fieldset>
+</form>
+{% elseif S_ORPHAN %}
+<form id="orphan" method="post" action="{{ U_ACTION }}">
+	<fieldset class="tabulated">
+		<legend>{{ lang('TITLE') }}</legend>
+		<table class="table1 zebra-table fixed-width-table">
+		<thead>
+		<tr>
+			<th>{{ lang('FILENAME') }}</th>
+			<th style="width: 15%;">{{ lang('FILEDATE') }}</th>
+			<th style="width: 15%;">{{ lang('FILESIZE') }}</th>
+			<th style="width: 15%;">{{ lang('ATTACH_POST_ID') }}</th>
+			<th style="width: 16%;">{{ lang('ATTACH_TO_POST') }}</th>
+			<th style="width: 16%;">{{ lang('DELETE') }}</th>
+		</tr>
+		</thead>
+		<tbody>
+		{% for orphan in loops.orphan %}
+			<tr>
+				<td>{{ orphan.IMG_SRC }}<a href="{{ orphan.U_FILE }}">{{ orphan.REAL_FILENAME }}</a></td>
+				<td>{{ orphan.FILETIME }}</td>
+				<td>{{ orphan.FILESIZE }}</td>
+				<td><strong>{{ lang('ATTACH_ID') }}{{ lang('COLON') }} </strong><input type="number" min="0" max="9999999999" name="post_id[{{ orphan.ATTACH_ID }}]" value="{{ orphan.POST_ID }}" style="width: 75%;" /></td>
+				<td><input type="checkbox" class="radio" name="add[{{ orphan.ATTACH_ID }}]" /></td>
+				<td><input type="checkbox" class="radio" name="delete[{{ orphan.ATTACH_ID }}]" /></td>
+			</tr>
+		{% endfor %}
+			<tr class="row4">
+				<td colspan="4">&nbsp;</td>
+				<td class="small"><a href="#" onclick="marklist('orphan', 'add', true); return false;">{{ lang('MARK_ALL') }}</a> :: <a href="#" onclick="marklist('orphan', 'add', false); return false;">{{ lang('UNMARK_ALL') }}</a></td>
+				<td class="small"><a href="#" onclick="marklist('orphan', 'delete', true); return false;">{{ lang('MARK_ALL') }}</a> :: <a href="#" onclick="marklist('orphan', 'delete', false); return false;">{{ lang('UNMARK_ALL') }}</a></td>
+			</tr>
+		</tbody>
+		</table>
+		<br>
+		<p class="submit-buttons">
+			<input class="button1" type="submit" id="submit" name="submit" value="{{ lang('SUBMIT') }}" />&nbsp;
+			<input class="button2" type="reset" id="reset" name="reset" value="{{ lang('RESET') }}" />
+		</p>
+		{{ S_FORM_TOKEN }}
+	</fieldset>
+</form>
+{% endif %}
+{% INCLUDE 'overall_footer.html' %}

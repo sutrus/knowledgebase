@@ -1,0 +1,40 @@
+<div class="forabg">
+	<div class="inner">
+		<ul class="topiclist">
+			<li class="header">
+				<dl class="row-item">
+					<dt><div class="list-inner">{{ lang('CATEGORY') }}</div></dt>
+					<dd class="posts">{{ lang('ARTICLES') }}</dd>
+					<dd class="lastpost"><span>{{ lang('LAST_ARTICLE') }}</span></dd>
+				</dl>
+			</li>
+		</ul>
+		<ul class="topiclist forums">
+			{% for cat_row in loops.cat_row %}
+			<li class="row">
+				<dl>
+					<dt>
+						<div class="list-inner">
+							<a href="{{ cat_row.U_CAT }}" class="forumtitle">{{ cat_row.CAT_NAME }}</a>
+							{% if cat_row.CAT_DESCRIPTION %}<br>{{ cat_row.CAT_DESCRIPTION }}{% endif %}
+							{% if cat_row.SUBCATS %}<br><span>{{ cat_row.SUBCATS }}</span>{% endif %}
+						</div>
+					</dt>
+					<dd class="posts">{{ cat_row.ARTICLES }}</dd>
+					<dd class="lastpost">
+						<span>
+						{% if cat_row.U_ARTICLE %}
+							<a href="{{ cat_row.U_ARTICLE }}" class="lastsubject">
+								{% if cat_row.NEED_APPROVE %}<i class="icon fa fa-exclamation-triangle fa-fw orange" aria-hidden="true"></i>{% endif %} {{ cat_row.ARTICLE_TITLE }}
+							</a>
+							<br>
+							{{ cat_row.ARTICLE_AUTHOR }}, {{ cat_row.ARTICLE_TIME }}
+						{% endif %}
+						</span>
+					</dd>
+				</dl>
+			</li>
+			{% endfor %}
+		</ul>
+	</div>
+</div>

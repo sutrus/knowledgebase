@@ -1,0 +1,25 @@
+{% INCLUDE 'overall_header.html' %}
+<h2><a class="nav" href="{{ U_LIBRARY }}">{{ lang('LIBRARY') }}</a></h2>
+
+<div class="panel bg2">
+	<div class="inner">
+		<br>
+		<p style="display: flex; justify-content: center; align-items: center;">
+			<i class="icon icon-green fa-check-square-o fa-2x"></i>&nbsp;<b>{{ lang('APPROVE') }}?</b>
+		</p>
+		<p class="author" style="font-size: 105%; line-height: 1.5; margin-left: 20px;">
+			<strong>{{ lang('ARTICLE_AUTHOR') }}{{ lang('COLON') }}</strong> {{ ARTICLE_AUTHOR }}<br>
+			<strong>{{ lang('ARTICLE_TITLE') }}{{ lang('COLON') }}</strong> {{ ARTICLE_TITLE }}<br>
+			<strong>{{ lang('ARTICLE_DESCRIPTION') }}{{ lang('COLON') }}</strong> {{ ARTICLE_DESCRIPTION }}<br>
+			<strong>{{ lang('CATEGORY') }}{{ lang('COLON') }}</strong> {{ ARTICLE_CATEGORY }}
+		</p>
+		<form action="{{ S_ACTION }}" method="post">
+			<fieldset class="submit-buttons" style="border: none;">
+				<input class="button1" id="continue" name="approve" type="submit" value="{{ lang('APPROVE') }}"/>&nbsp;&nbsp;
+				<input class="button2" id="cancel" name="disapprove" type="submit" value="{{ lang('DISAPPROVE') }}"/>
+			</fieldset>
+		</form>
+		<br>
+	</div>
+</div>
+{% INCLUDE 'overall_footer.html' %}

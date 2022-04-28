@@ -1,0 +1,10 @@
+Subject: Un modérateur a approuvé votre article « {ARTICLE_TITLE} »
+
+Bonjour {USERNAME} !
+
+Vous recevez cette notification car le modérateur {MODERATOR} a approuvé votre article « {ARTICLE_TITLE} ».
+
+Vous pouvez y accéder à partir du lien suivant :
+{U_VIEW_ARTICLE}
+
+{EMAIL_SIG}

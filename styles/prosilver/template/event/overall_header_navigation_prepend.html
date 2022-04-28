@@ -1,0 +1,7 @@
+{% if U_LIBRARY %}
+<li data-last-responsive="true">
+	<a href="{{ U_LIBRARY }}" title="{{ lang('LIBRARY') }}" role="menuitem">
+    {% if KB_FONT_ICON %}<i class="icon fa-{{ KB_FONT_ICON }} fa-fw" aria-hidden="true"></i>{% endif %}<span>{{ lang('LIBRARY') }}</span>
+	</a>
+</li>
+{% endif %}

@@ -1,0 +1,7 @@
+Předmět: Moderátor zamítl váš článek "{ARTICLE_TITLE}"
+
+Dobrý den, {USERNAME}!
+
+Dostáváte toto oznámení, protože moderátor {MODERATOR} zamítl Váš článek "{ARTICLE_TITLE}".
+
+{EMAIL_SIG}

@@ -1,0 +1,112 @@
+{% INCLUDE 'overall_header.html' %}
+
+<!--suppress ALL -->
+<h1>{{ lang('ACP_LIBRARY_SEARCH') }}</h1>
+<p>{{ lang('ACP_SEARCH_SETTINGS_EXPLAIN') }}</p>
+
+<form id="acp_search" method="post" action="{{ U_ACTION }}">
+	<fieldset>
+		<legend>{{ lang('GENERAL_SEARCH_SETTINGS') }}</legend>
+		<dl>
+			<dt><label for="kb_search">{{ lang('YES_SEARCH') }}{{ lang('COLON') }}</label><br><span>{{ lang('YES_SEARCH_EXPLAIN') }}</span></dt>
+			<dd><label><input type="radio" class="radio" id="kb_search" name="config[kb_search]" value="1" {% if S_YES_SEARCH %}checked="checked"{% endif %} /> {{ lang('YES') }}</label>
+			<label><input type="radio" class="radio" name="config[kb_search]" value="0" {% if not S_YES_SEARCH %}checked="checked"{% endif %} /> {{ lang('NO') }}</label></dd>
+		</dl>
+		<dl>
+			<dt><label for="kb_per_page_search">{{ lang('PER_PAGE_SEARCH') }}{{ lang('COLON') }}</label><br><span>{{ lang('PER_PAGE_SEARCH_EXPLAIN') }}</span></dt>
+			<dd><label><input id="kb_per_page_search" maxlength="4" min="1" max="9999" name="config[kb_per_page_search]" value="{{ PER_PAGE_KB_SEARCH }}" type="number"></label></dd>
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>{{ lang('SEARCH_TYPE') }}</legend>
+		<dl>
+			<dt><label for="search_type">{{ lang('SEARCH_TYPE') }}{{ lang('COLON') }}</label><br><span>{{ lang('SEARCH_TYPE_EXPLAIN') }}</span></dt>
+			<dd><select id="search_type" name="config[kb_search_type]">{{ S_SEARCH_TYPES }}</select></dd>
+		</dl>
+	</fieldset>
+	{% if not L_CONTINUE %}
+	<fieldset class="submit-buttons">
+		<legend>{{ lang('SUBMIT') }}</legend>
+		<input class="button1" type="submit" id="submit" name="submit" value="{{ lang('SUBMIT') }}" />&nbsp;
+		<input class="button2" type="reset" id="reset" name="reset" value="{{ lang('RESET') }}" />
+	</fieldset>
+	{{ S_FORM_TOKEN }}
+	{% endif %}
+</form>
+
+<h1>{{ lang('ACP_SEARCH_INDEX') }}</h1>
+{% if L_CONTINUE %}
+	<p>{{ lang('CONTINUE_EXPLAIN') }}</p>
+	<form id="acp_search_continue" method="post" action="{{ U_CONTINUE_INDEXING }}">
+		<fieldset class="submit-buttons">
+			<legend>{{ lang('SUBMIT') }}</legend>
+			<input class="button1" type="submit" id="continue" name="continue" value="{{ lang('CONTINUE') }}" />&nbsp;
+			<input class="button2" type="submit" id="cancel" name="cancel" value="{{ lang('CANCEL') }}" />
+		</fieldset>
+	{{ S_FORM_TOKEN }}
+	</form>
+{% else %}
+	<script type="text/javascript">
+	// <![CDATA[
+		/**
+		* Popup search progress bar
+		*/
+		function popup_progress_bar(progress_type)
+		{
+			close_waitscreen = 0;
+			// no scrollbars
+			popup('{{ UA_PROGRESS_BAR }}&amp;type=' + progress_type, 400, 240, '_index');
+		}
+	// ]]>
+	</script>
+
+	<p>{{ lang('ACP_SEARCH_INDEX_EXPLAIN') }}</p>
+	{% for backend in loops.backend %}
+		{% if backend.S_STATS is not empty %}
+		<form id="acp_search_index_{{ backend.TYPE }}" method="post" action="{{ U_ACTION }}">
+			<fieldset class="tabulated">
+			{{ backend.S_HIDDEN_FIELDS }}
+				<legend>{{ lang('INDEX_STATS') }}{{ lang('COLON') }} {{ backend.NAME }} {% if backend.S_ACTIVE %}({{ lang('ACTIVE') }}) {% endif %}</legend>
+				<table class="table1 zebra-table responsive">
+					<caption>{{ backend.NAME }} {% if backend.S_ACTIVE %}({{ lang('ACTIVE') }}) {% endif %}</caption>
+					<col class="col1" /><col class="col2" /><col class="col1" /><col class="col2" />
+				<thead>
+				<tr>
+					<th>{{ lang('STATISTIC') }}</th>
+					<th>{{ lang('VALUE') }}</th>
+					<th>{{ lang('STATISTIC') }}</th>
+					<th>{{ lang('VALUE') }}</th>
+				</tr>
+				</thead>
+				<tbody>
+				{% for stat in backend.S_STATS | batch(2, '') %}
+					<tr>
+					{% for key, value in stat %}
+						{% if value is not empty %}
+						<td>{{ key ~ lang('COLON') }}</td>
+						<td>{{ value }}</td>
+						{% else %}
+						<td></td>
+						<td></td>
+						{% endif %}
+					{% endfor %}
+					</tr>
+				{% endfor %}
+				</tbody>
+				</table>
+			{% endif %}
+			<p class="quick">
+			{% if backend.S_INDEXED %}
+				<input type="hidden" name="action" value="delete" />
+				<input class="button2" type="submit" value="{{ lang('DELETE_INDEX') }}" onclick="popup_progress_bar('delete');" />
+			{% else %}
+				<input type="hidden" name="action" value="create" />
+				<input class="button2" type="submit" value="{{ lang('CREATE_INDEX') }}" onclick="popup_progress_bar('create');" />
+			{% endif %}
+			</p>
+			{{ S_FORM_TOKEN }}
+			</fieldset>
+		</form>
+	{% endfor %}
+{% endif %}
+{% INCLUDE 'overall_footer.html' %}

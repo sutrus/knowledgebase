@@ -1,0 +1,10 @@
+Subject: Article en attente de modération - « {ARTICLE_TITLE} »
+
+Bonjour !
+
+Vous recevez cette notification car l’article « {ARTICLE_TITLE} » du forum « {SITENAME} » requiert votre approbation.
+
+Vous pouvez y accéder à partir du lien suivant :
+{U_VIEW_ARTICLE}
+
+{EMAIL_SIG}

@@ -1,0 +1,7 @@
+Subject: Un modérateur a refusé votre article « {ARTICLE_TITLE} »
+
+Bonjour {USERNAME} !
+
+Vous recevez cette notification car le modérateur {MODERATOR} a refusé votre article « {ARTICLE_TITLE} ».
+
+{EMAIL_SIG}

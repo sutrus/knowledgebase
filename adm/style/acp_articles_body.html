@@ -1,0 +1,59 @@
+{% INCLUDE 'overall_header.html' %}
+{% INCLUDECSS 'css/acp_knowledgebase.css' %}
+
+<form action="{{ S_ACTION }}" method="post">
+{% if S_MOVE_ART %}
+	<h1>{{ lang('MOVE') }}</h1>
+	<p>{{ lang('ARTICLE_MOVE_EXPLAIN') }}</p>
+	<form id="select" method="post" action="{{ U_MOVE_ACTION }}">
+		<fieldset>
+			{{ lang('SELECT_CATEGORY') }}{{ lang('COLON') }} <select name="to_id">{{ S_MOVE_CATEGORY_OPTIONS }}</select>&nbsp;<input class="button1" type="submit" id="submit" name="submit" value="{{ lang('GO') }}">
+			{{ S_FORM_TOKEN }}
+		</fieldset>
+	</form>
+{% elseif S_ARTICLES %}
+	<h1>{{ lang('ACP_LIBRARY_ARTICLES') }}</h1>
+	<p>{{ lang('ARTICLE_MANAGE_EXPLAIN') }}</p>
+	{% if ERROR_MSG %}
+		<div class="errorbox">
+			<h3>{{ lang('WARNING') }}</h3>
+			<p>{{ ERROR_MSG }}</p>
+		</div>
+	{% endif %}
+	{% if loops.articles|length %}
+	<form id="list" method="post" action="{{ U_SORT_ACTION }}">
+		<table class="table1 zebra-table responsive">
+		<col class="row1" /><col class="row1" /><col class="row1" /><col class="row1" /><col class="row1" /><col class="row1" /><col class="row2" />
+		<tbody>
+			<tr>
+				<th>ID</th><th>{{ lang('ARTICLE') }}</th><th>{{ lang('CATEGORY') }}</th><th>{{ lang('ARTICLE_AUTHOR') }}</th><th>{{ lang('ARTICLE_DATE') }}</th><th>{{ lang('EDIT_DATE') }}</th><th>&nbsp;</th>
+			</tr>
+		{% for articles in loops.articles %}
+			<tr>
+				<td>{{ articles.ID }}</td>
+				<td><a href="{{ articles.U_ARTICLE }}" onclick="find_username(this.href); return false;"><strong>{{ articles.ARTICLE_APPROVED }}&nbsp;{{ articles.ARTICLE_TITLE }}</strong></a></td>
+				<td><a href="{{ articles.U_CATEGORY }}"><strong>{{ articles.CATEGORY }}</strong></a></td>
+				<td>{{ articles.AUTHOR }}</td>
+				<td>{{ articles.TIME }}</td>
+				<td>{% if articles.EDIT_TIME %}{{ articles.EDIT_TIME }}{% endif %}</td>
+				<td style="text-align: center; vertical-align: top; white-space: nowrap; width: 70px;">
+					<a href="{{ articles.U_MOVE }}" title="{{ lang('MOVE') }}"><i class="icon acp-icon fa-sort fa-fw"></i></a> <a href="{{ articles.U_DELETE }}" title="{{ lang('DELETE') }}"><i class="icon acp-icon fa-trash fa-fw"></i></a> <a href="{{ articles.U_ARTICLE_EDIT }}" title="{{ lang('EDIT') }}" onclick="find_username(this.href); return false;"><i class="icon acp-icon fa-pencil fa-fw"></i></a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+		</table>
+		<div class="pagination">
+			{{ TOTAL_ITEMS }} &bull;
+			{% if loops.pagination|length %} {% INCLUDE 'pagination.html' %}{% else %} {{ PAGE_NUMBER }}{% endif %}
+		</div>
+		<fieldset class="display-options">{{ lang('SORT_BY') }}{{ lang('COLON') }} {{ S_SORT_KEY }} {{ S_SORT_DIR }}
+			<input class="button2" type="submit" value="{{ lang('GO') }}" name="sort">
+		</fieldset>
+	</form>
+	{% else %}
+	<div class="errorbox"><p>{{ lang('NO_ARTICLES_IN_KB') }}</p></div>
+	{% endif %}
+{% endif %}
+</form>
+{% INCLUDE 'overall_footer.html' %}

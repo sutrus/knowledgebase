@@ -1,0 +1,89 @@
+{% INCLUDE 'overall_header.html' %}
+<h2 class="solo">{{ lang('SEARCH') }}</h2>
+{% if ERROR %}<div class="error">{{ ERROR }}</div><br>{% endif %}
+
+<form method="get" action="{{ S_SEARCH_ACTION }}">
+	<div class="panel">
+		<div class="inner">
+			<h3>{{ lang('SEARCH_QUERY') }}</h3>
+			<fieldset>
+				<dl>
+					<dt><label for="keywords">{{ lang('SEARCH_KEYWORDS') }}{{ lang('COLON') }}</label><br><span>{{ lang('SEARCH_KEYWORDS_EXPLAIN') }}</span></dt>
+					<dd><input type="text" class="inputbox" name="keywords" id="keywords" size="40" title="{{ lang('SEARCH_KEYWORDS') }}" /></dd>
+					<dd><label for="terms1"><input type="radio" name="terms" id="terms1" value="all" checked="checked" /> {{ lang('SEARCH_ALL_TERMS') }}</label></dd>
+					<dd><label for="terms2"><input type="radio" name="terms" id="terms2" value="any" /> {{ lang('SEARCH_ANY_TERMS') }}</label></dd>
+				</dl>
+				<dl>
+					<dt><label for="author">{{ lang('SEARCH_AUTHOR') }}{{ lang('COLON') }}</label><br><span>{{ lang('SEARCH_AUTHOR_EXPLAIN') }}</span></dt>
+					<dd><input type="text" class="inputbox" name="author" id="author" size="40" title="{{ lang('SEARCH_AUTHOR') }}" /></dd>
+				</dl>
+			</fieldset>
+		</div>
+	</div>
+	<div class="panel bg2">
+		<div class="inner">
+			<h3>{{ lang('SEARCH_OPTIONS') }}</h3>
+			<fieldset>
+				<dl>
+					<dt><label for="show_results1">{{ lang('DISPLAY_RESULTS') }}{{ lang('COLON') }}</label></dt>
+					<dd>
+						<label for="show_results1"><input type="radio" name="sr" id="show_results1" value="posts" checked="checked" /> {{ lang('ARTICLES') }}</label>
+						<label for="show_results2"><input type="radio" name="sr" id="show_results2" value="topics" /> {{ lang('ARTICLE_TITLE') }}</label>
+					</dd>
+				</dl>
+				<dl>
+					<dt><label for="sf1">{{ lang('SEARCH_WITHIN') }}{{ lang('COLON') }}</label></dt>
+					<dd><label for="sf1"><input type="radio" name="sf" id="sf1" value="all" checked="checked" /> {{ lang('SEARCH_ALL') }}</label></dd>
+					<dd><label for="sf2"><input type="radio" name="sf" id="sf2" value="msgonly" /> {{ lang('SEARCH_ARTICLES_ONLY') }}</label></dd>
+					<dd><label for="sf3"><input type="radio" name="sf" id="sf3" value="titleonly" /> {{ lang('SEARCH_ARTICLES_TITLE_ONLY') }}</label></dd>
+					<dd><label for="sf4"><input type="radio" name="sf" id="sf4" value="descronly" /> {{ lang('SEARCH_DESCRIPTIONS_ONLY') }}</label></dd>
+				</dl>
+				<dl>
+					<dt><label for="search_cat">{{ lang('SEARCH_CAT') }}{{ lang('COLON') }}</label><br><span>{{ lang('SEARCH_CAT_EXPLAIN') }}</span></dt>
+					<dd>
+						<select name="cat_ids[]" id="search_cat" multiple="multiple" size="8" title="{{ lang('SEARCH_CAT') }}">
+							{{ CATS_BOX }}
+						</select>
+					</dd>
+				</dl>
+				<dl>
+					<dt><label for="sd">{{ lang('RESULT_SORT') }}{{ lang('COLON') }}</label></dt>
+					<dd>
+						{{ S_SELECT_SORT_KEY }}&nbsp;
+						<label for="sa"><input type="radio" name="sd" id="sa" value="a"> {{ lang('SORT_ASCENDING') }}</label>
+						<label for="sd"><input type="radio" name="sd" id="sd" value="d" checked="checked"> {{ lang('SORT_DESCENDING') }}</label>
+					</dd>
+				</dl>
+				<dl>
+					<dt><label>{{ lang('RETURN_FIRST') }}{{ lang('COLON') }}</label></dt>
+					<dd>
+						<select name="ch" title="{{ lang('RETURN_FIRST') }}">
+							<option value="0">0</option>
+							<option value="25">25</option>
+							<option value="50">50</option>
+							<option value="100">100</option>
+							<option value="200">200</option>
+							<option value="300" selected="selected">300</option>
+							<option value="400">400</option>
+							<option value="500">500</option>
+							<option value="600">600</option>
+							<option value="700">700</option>
+							<option value="800">800</option>
+							<option value="900">900</option>
+							<option value="1000">1000</option>
+						</select> {{ lang('POST_CHARACTERS') }}
+					</dd>
+				</dl>
+			</fieldset>
+		</div>
+	</div>
+	<div class="panel bg3">
+		<div class="inner">
+			<fieldset class="submit-buttons">
+				{{ S_HIDDEN_FIELDS }}<input type="reset" value="{{ lang('RESET') }}" name="reset" class="button2" />&nbsp;
+				<input type="submit" name="submit" value="{{ lang('SEARCH') }}" class="button1" />
+			</fieldset>
+		</div>
+	</div>
+</form>
+{% INCLUDE 'overall_footer.html' %}

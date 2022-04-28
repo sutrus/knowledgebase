@@ -1,0 +1,128 @@
+{% include 'overall_header.html' %}
+<h2><a href="{{ U_LIBRARY }}" class="nav">{{ lang('LIBRARY') }}</a></h2>
+<h2>{{ CATEGORY }}</h2>
+{% if loops.cat_row|length %}{% INCLUDE '@sheer_knowledgebase/kb_cat_list.html' %}{% endif %}
+<div class="action-bar bar-top">
+	{% if S_CAN_ADD %}
+	<div class="buttons">
+		<a href="{{ U_ADD_ARTICLE }}" class="button" title="{{ lang('ADD_ARTICLE') }}"><span>{{ lang('ADD_ARTICLE') }}</span>
+			<i class="icon fa-file-text-o fa-fw" aria-hidden="true"></i>
+		</a>
+	</div>
+	{% endif %}
+	{% if S_IS_SEARCH %}
+	<div class="search-box">
+		<form method="get" id="forum-search" action="{{ S_KB_SEARCH_ACTION }}">
+			<fieldset>
+				<input class="inputbox search tiny" name="keywords" id="search_keywords" size="20" placeholder="{{ lang('SEARCH_IN_CAT') }}" type="search">
+				<button class="button button-search" type="submit" title="{{ lang('SEARCH') }}"><i class="icon fa-search fa-fw" aria-hidden="true"></i></button>
+				<a href="{{ U_KB_SEARCH }}" class="button button-search-end" title="{{ lang('SEARCH_ADV') }}"><i class="icon fa-cog fa-fw" aria-hidden="true"></i></a>
+				<input type="hidden" name="sf" value="articles">
+				<input type="hidden" name="cid" value="{{ CATEGORY_ID }}">
+			</fieldset>
+		</form>
+	</div>
+	{% endif %}
+	<div class="pagination">
+		{{ TOTAL_ITEMS }}
+		{% if loops.pagination|length %}
+		{% INCLUDE 'pagination.html' %}
+		{% else %}
+		&bull; {{ PAGE_NUMBER }}
+		{% endif %}
+	</div>
+</div>
+
+{% if S_ALPHABET %}
+<div class="panel">
+	<div id="alphabet" class="inner">
+		<strong>{{ ALPHA_URLS }}</strong><a href="{{ U_RESET_FILTER }}"><strong class="red">[{{ lang('RESET_FILTER') }}]</strong></a>
+	</div>
+</div>
+{% endif %}
+<div class="forumbg" id="forumbg">
+	<div class="inner">
+		<ul class="topiclist">
+			<li class="header">
+				<dl class="row-item">
+					<dt><div class="list-inner">{{ lang('ARTICLES') }}</div></dt>
+					<dd class="views">{{ lang('VIEWS') }}</dd>
+					<dd class="lastpost">{{ lang('LAST_POST') }}</dd>
+					<dd class="action"></dd>
+				</dl>
+			</li>
+		</ul>
+		<ul class="topiclist topics"{% if S_CAN_MOVE %} id="sortable"{% endif %}>
+			{% for art_row in loops.art_row %}
+			<li class="row{% if art_row.S_ROW_COUNT is even %} bg1{% else %} bg2{% endif %}" id="{{ art_row.ID }}">
+				<dl class="row-item">
+					<dt>
+						<div>
+							<a class="topictitle" href="{{ art_row.U_ARTICLE }}">{{ art_row.ARTICLE_TITLE }}</a>
+							{% if art_row.ARTICLE_DESCRIPTION %}<br>{{ art_row.ARTICLE_DESCRIPTION }}{% endif %}
+						</div>
+					</dt>
+					<dd class="views">{{ art_row.ART_VIEWS }}</dd>
+					<dd class="lastpost"><span>{{ art_row.ARTICLE_AUTHOR }}<br>{{ art_row.ARTICLE_DATE }}</span></dd>
+					<dd class="action">
+						<ul class="post-buttons">
+							{% if S_CAN_MOVE %}<li id="move"><a href="#" title="{{ lang('MOVE_DRAGNDROP') }}" class="button button-icon-only"><i class="icon fa-arrows fa-fw green" aria-hidden="true"></i></a></li>{% endif %}
+							{% if art_row.S_CAN_DELETE %}<li><a href="{{ art_row.U_DELETE }}" title="{{ lang('DELETE') }}" class="button button-icon-only"><i class="icon fa-times fa-fw red" aria-hidden="true"></i></a></li>{% endif %}
+							{% if art_row.S_CAN_EDIT %}<li><a href="{{ art_row.U_EDIT_ART }}" title="{{ lang('EDIT') }}" class="button button-icon-only"><i class="icon fa-pencil fa-fw blue" aria-hidden="true"></i></a></li>{% endif %}
+							{% if not art_row.S_APPROVED %}<li><a href="{{ art_row.U_ARTICLE }}" title="{{ lang('NEED_APPROVE') }}" class="button button-icon-only"><i class="icon fa-check fa-fw orange" aria-hidden="true"></i></a></li>{% endif %}
+						</ul>
+					</dd>
+				</dl>
+			</li>
+			{% endfor %}
+			{% if not loops.art_row|length %}
+			<li class="row bg2">
+				<dl class="row-item">
+					<dt style="text-align: center;"><div class="error" style="padding-top: 10px;">{{ lang('NO_ARTICLES') }}</div></dt>
+				</dl>
+			</li>
+			{% endif %}
+		</ul>
+	</div>
+</div>
+<div class="action-bar bar-bottom">
+	{% if S_CAN_ADD %}
+	<div class="buttons">
+		<a href="{{ U_ADD_ARTICLE }}" class="button" title="{{ lang('ADD_ARTICLE') }}">
+			<span>{{ lang('ADD_ARTICLE') }}</span> <i class="icon fa-file-text-o fa-fw" aria-hidden="true"></i>
+		</a>
+	</div>
+	{% endif %}
+	{% if S_SORT_OPTIONS and not S_IS_BOT %}
+	<form method="post" action="{{ S_ACTION }}">
+		{% INCLUDE 'display_options.html' %}
+	</form>
+	{% endif %}
+	<div class="pagination">
+		{{ TOTAL_ITEMS }}
+		{% if loops.pagination|length %}
+		{% INCLUDE 'pagination.html' %}
+		{% else %}
+		&bull; {{ PAGE_NUMBER }}
+		{% endif %}
+	</div>
+	<div id="page" style="display: none;">{{ CURRENT_PAGE_NUMBER }}</div>
+	<br>
+	{% if CATS_DROPBOX %}
+	<div class="jumpbox dropdown-container dropdown-container-right dropdown-up dropdown-left dropdown-button-control" id="jumpbox">
+		<span title="{{ lang('JUMP_TO') }}" class="button button-secondary dropdown-trigger dropdown-select dropdown-toggle">
+			<span>{{ lang('JUMP_TO') }}</span>
+			<span class="caret"><i class="icon fa-sort-down fa-fw" aria-hidden="true"></i></span>
+		</span>
+		<div class="dropdown">
+			<div class="pointer"><div class="pointer-inner"></div></div>
+			<ul class="dropdown-contents">{{ CATS_DROPBOX }}</ul>
+		</div>
+	</div>
+	{% endif %}
+</div>
+<div class="stat-block permissions">
+	<h3>{{ lang('KB_PERMISSIONS') }}</h3>
+	<p>{% for rules in loops.rules %}{{ rules.RULE }}<br>{% endfor %}</p>
+</div>
+{% include 'overall_footer.html' %}

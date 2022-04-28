@@ -1,0 +1,10 @@
+Předmět: Moderátor schválil váš článek "{ARTICLE_TITLE}"
+
+Dobrý den, {USERNAME}!
+
+Dostáváte toto oznámení, protože moderátor {MODERATOR} schválil Váš článek "{ARTICLE_TITLE}".
+
+Pokud si chcete článek prohlédnout, klikněte na následující odkaz:
+{U_VIEW_ARTICLE}
+
+{EMAIL_SIG}

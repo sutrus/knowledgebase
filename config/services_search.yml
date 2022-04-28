@@ -1,0 +1,61 @@
+services:
+
+# Search backends
+    sheer.knowledgebase.search.fulltext.mysql:
+        class: sheer\knowledgebase\search\backend\kb_fulltext_mysql
+        arguments:
+            - '@config'
+            - '@dbal.conn'
+            - '@language'
+            - '@user'
+            - '%tables.articles_table%'
+            - '%tables.search_result_table%'
+            - '%core.root_path%'
+            - '%core.php_ext%'
+        tags:
+            - { name: sheer.knowledgebase.search.backend }
+
+    sheer.knowledgebase.search.fulltext.native:
+        class: sheer\knowledgebase\search\backend\kb_fulltext_native
+        arguments:
+            - '@config'
+            - '@dbal.conn'
+            - '@language'
+            - '@user'
+            - '%tables.articles_table%'
+            - '%tables.search_result_table%'
+            - '%tables.wordmatch_table%'
+            - '%tables.wordlist_table%'
+            - '%core.root_path%'
+            - '%core.php_ext%'
+        tags:
+            - { name: sheer.knowledgebase.search.backend }
+
+    sheer.knowledgebase.search.fulltext.postgres:
+        class: sheer\knowledgebase\search\backend\kb_fulltext_postgres
+        arguments:
+            - '@config'
+            - '@dbal.conn'
+            - '@language'
+            - '@user'
+            - '%tables.articles_table%'
+            - '%tables.search_result_table%'
+            - '%core.root_path%'
+            - '%core.php_ext%'
+        tags:
+            - { name: sheer.knowledgebase.search.backend }
+
+# Factory
+    sheer.knowledgebase.search.backend_factory:
+        class: sheer\knowledgebase\search\kb_search_backend_factory
+        arguments:
+            - '@config'
+            - '@sheer.knowledgebase.search.backend_collection'
+
+# Collections
+    sheer.knowledgebase.search.backend_collection:
+        class: phpbb\di\service_collection
+        arguments:
+            - '@service_container'
+        tags:
+            - { name: service_collection, tag: sheer.knowledgebase.search.backend, class_name_aware: true }

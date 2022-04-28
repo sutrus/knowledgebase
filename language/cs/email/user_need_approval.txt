@@ -1,0 +1,10 @@
+Předmět: Článek je ve frontě a čeká na akci moderátora - "{ARTICLE_TITLE}"
+
+Dobrý den!
+
+Dostáváte toto oznámení, protože článek "{ARTICLE_TITLE}" na "{SITENAME}" vyžaduje schválení.
+
+Pokud si chcete článek prohlédnout, klikněte na následující odkaz:
+{U_VIEW_ARTICLE}
+
+{EMAIL_SIG}

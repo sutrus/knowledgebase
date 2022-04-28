@@ -1,0 +1,55 @@
+{% INCLUDE 'overall_header.html' %}
+
+<h1>{{ lang('ACP_LIBRARY_LOGS') }}</h1>
+<p>{{ lang('ACP_LIBRARY_LOGS_EXPLAIN') }}</p>
+
+<form id="list" method="post" action="{{ U_ACTION }}">
+{% if loops.pagination|length %}
+<div class="pagination top-pagination">{% INCLUDE 'pagination.html' %}</div>
+{% endif %}
+
+{% if loops.log|length %}
+	<table class="table1 zebra-table fixed-width-table">
+	<thead>
+	<tr>
+		<th style="width: 15%;">{{ lang('USERNAME') }}</th>
+		<th style="width: 15%;">{{ lang('IP') }}</th>
+		<th style="width: 20%;">{{ lang('TIME') }}</th>
+		<th>{{ lang('ACTION') }}</th>
+		<th style="width: 60px;">{{ lang('MARK') }}</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for log in loops.log %}
+		<tr>
+			<td>{{ log.USERNAME }}</td>
+			<td style="text-align: center;">{{ log.IP }}</td>
+			<td style="text-align: center;">{{ log.DATE }}</td>
+			<td>{{ log.ACTION }}{% if log.DATA %}<br><span>{{ log.DATA }}</span>{% endif %}</td>
+			<td style="text-align: center;"><input type="checkbox" class="radio" name="mark[]" value="{{ log.ID }}" /></td>
+		</tr>
+	{% endfor %}
+	</tbody>
+	</table>
+
+	{% if loops.pagination|length %}
+	<div class="pagination">{% INCLUDE 'pagination.html' %}</div>
+	{% endif %}
+{% else %}
+	<div class="errorbox"><p>{{ lang('NO_ENTRIES') }}</p></div>
+{% endif %}
+<fieldset class="display-options">
+	{{ lang('DISPLAY_LOG') }}{{ lang('COLON') }} &nbsp;{{ S_LIMIT_DAYS }}&nbsp;{{ lang('SORT_BY') }}{{ lang('COLON') }} {{ S_SORT_KEY }} {{ S_SORT_DIR }}
+	<input class="button2" type="submit" value="{{ lang('GO') }}" name="sort" />
+	{{ S_FORM_TOKEN }}
+</fieldset>
+<hr />
+{% if loops.log|length %}
+	<fieldset class="quick">
+		<input class="button2" type="submit" name="delall" value="{{ lang('DELETE_ALL') }}" />&nbsp;
+		<input class="button2" type="submit" name="delmarked" value="{{ lang('DELETE_MARKED') }}" /><br>
+		<p class="small"><a href="#" onclick="marklist('list', 'mark', true); return false;">{{ lang('MARK_ALL') }}</a> &bull; <a href="#" onclick="marklist('list', 'mark', false); return false;">{{ lang('UNMARK_ALL') }}</a></p>
+	</fieldset>
+{% endif %}
+</form>
+{% INCLUDE 'overall_footer.html' %}
