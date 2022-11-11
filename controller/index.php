@@ -14,37 +14,37 @@ namespace sheer\knowledgebase\controller;
 class index
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected \phpbb\user $user;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected $kb;
+	protected \sheer\knowledgebase\inc\functions_kb $kb;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/** @var string */
-	protected $categories_table;
+	protected string $categories_table;
 
 	/**
- 	 * Constructor
+	 * Constructor
 	 *
 	 * @param \phpbb\db\driver\driver_interface     $db
 	 * @param \phpbb\config\config                  $config
@@ -66,8 +66,8 @@ class index
 		\phpbb\template\template $template,
 		\phpbb\user $user,
 		\sheer\knowledgebase\inc\functions_kb $kb,
-		$articles_table,
-		$categories_table
+		string $articles_table,
+		string $categories_table
 	)
 	{
 		$this->db = $db;
@@ -86,7 +86,7 @@ class index
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 * @throws \Exception
 	 */
-	public function main()
+	public function main(): \Symfony\Component\HttpFoundation\Response
 	{
 		if (!$this->auth->acl_get('u_kb_view') && !$this->auth->acl_get('a_manage_kb'))
 		{
@@ -122,16 +122,16 @@ class index
 			$this->db->sql_freeresult($res);
 
 			$this->template->assign_block_vars('cat_row', array(
-					'U_CAT' => $this->helper->route('sheer_knowledgebase_category', array('id' => $cat_row['category_id'])),
-					'CAT_NAME' => $cat_row['category_name'],
-					'ARTICLES' => $art_count,
+					'U_CAT'           => $this->helper->route('sheer_knowledgebase_category', array('id' => $cat_row['category_id'])),
+					'CAT_NAME'        => $cat_row['category_name'],
+					'ARTICLES'        => $art_count,
 					'CAT_DESCRIPTION' => $cat_row['category_details'],
-					'SUBCATS' => $this->kb->get_cat_list($exclude_cats),
-					'ARTICLE_TITLE' => $art_row['article_title'] ?? '',
-					'U_ARTICLE' => (isset($art_row['article_id'])) ? $this->helper->route('sheer_knowledgebase_article', array('k' => $art_row['article_id'])) : '',
-					'ARTICLE_TIME' => ($art_count) ? $this->user->format_date($art_row['article_date']) : '',
-					'ARTICLE_AUTHOR' => (isset($art_row['author_id'])) ? get_username_string('full', $art_row['author_id'], $art_row['author'], $art_row['user_colour']) : '',
-					'NEED_APPROVE' => !($art_row['approved'] ?? false),
+					'SUBCATS'         => $this->kb->get_cat_list($exclude_cats),
+					'ARTICLE_TITLE'   => $art_row['article_title'] ?? '',
+					'U_ARTICLE'       => (isset($art_row['article_id'])) ? $this->helper->route('sheer_knowledgebase_article', array('k' => $art_row['article_id'])) : '',
+					'ARTICLE_TIME'    => ($art_count) ? $this->user->format_date($art_row['article_date']) : '',
+					'ARTICLE_AUTHOR'  => (isset($art_row['author_id'])) ? get_username_string('full', $art_row['author_id'], $art_row['author'], $art_row['user_colour']) : '',
+					'NEED_APPROVE'    => !($art_row['approved'] ?? false),
 				)
 			);
 		}

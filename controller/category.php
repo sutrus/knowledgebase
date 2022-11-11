@@ -14,40 +14,40 @@ namespace sheer\knowledgebase\controller;
 class category
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
 	/** @var \phpbb\request\request_interface */
-	protected $request;
+	protected \phpbb\request\request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected \phpbb\user $user;
 
 	/** @var \phpbb\pagination */
-	protected $pagination;
+	protected \phpbb\pagination $pagination;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected $kb;
+	protected \sheer\knowledgebase\inc\functions_kb $kb;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/** @var string */
-	protected $categories_table;
+	protected string $categories_table;
 
 	/**
 	 * Constructor
@@ -76,8 +76,8 @@ class category
 		\phpbb\user $user,
 		\phpbb\pagination $pagination,
 		\sheer\knowledgebase\inc\functions_kb $kb,
-		$articles_table,
-		$categories_table
+		string $articles_table,
+		string $categories_table
 	)
 	{
 		$this->db = $db;
@@ -98,7 +98,7 @@ class category
 	/**
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function cat()
+	public function cat(): \Symfony\Component\HttpFoundation\Response
 	{
 		if (!$this->auth->acl_get('u_kb_view') && !$this->auth->acl_get('a_manage_kb'))
 		{
@@ -173,13 +173,13 @@ class category
 			$url = [];
 			foreach ($alphabet as $letter)
 			{
-				$b_letter =  ($first_letter === $letter) ? '<span class="alphabet">' . $letter . '</span>' : $letter;
+				$b_letter = ($first_letter === $letter) ? '<span class="alphabet">' . $letter . '</span>' : $letter;
 				$url[] = '<a href="' . $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id, 'l' => $letter]) . '">' . $b_letter . '</a>';
 			}
 			$sql_where .= ' AND a.article_title LIKE "' . $this->db->sql_escape($first_letter) . '%"';
 
 			$this->template->assign_vars([
-					'ALPHA_URLS'      => $this->language->lang('ALPHABET_NAV') . '&nbsp;&nbsp;' . implode(' - ', $url) . '&nbsp;&nbsp;&nbsp;&nbsp;',
+					'ALPHA_URLS'     => $this->language->lang('ALPHABET_NAV') . '&nbsp;&nbsp;' . implode(' - ', $url) . '&nbsp;&nbsp;&nbsp;&nbsp;',
 					'U_RESET_FILTER' => $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id]),
 				]
 			);

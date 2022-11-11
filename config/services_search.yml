@@ -1,6 +1,6 @@
 services:
 
-# Search backends
+    # Search backends
     sheer.knowledgebase.search.fulltext.mysql:
         class: sheer\knowledgebase\search\backend\kb_fulltext_mysql
         arguments:
@@ -45,14 +45,14 @@ services:
         tags:
             - { name: sheer.knowledgebase.search.backend }
 
-# Factory
+    # Factory
     sheer.knowledgebase.search.backend_factory:
         class: sheer\knowledgebase\search\kb_search_backend_factory
         arguments:
             - '@config'
             - '@sheer.knowledgebase.search.backend_collection'
 
-# Collections
+    # Collections
     sheer.knowledgebase.search.backend_collection:
         class: phpbb\di\service_collection
         arguments:

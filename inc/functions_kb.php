@@ -12,7 +12,6 @@
 namespace sheer\knowledgebase\inc;
 
 use phpbb\auth\auth;
-use phpbb\cache\service;
 use phpbb\config\config;
 use phpbb\config\db_text;
 use phpbb\controller\helper;
@@ -26,91 +25,91 @@ use phpbb\user;
 class functions_kb
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\config\config $config */
-	protected $config;
+	protected config $config;
 
 	/** @var \phpbb\config\db_text */
-	protected $config_text;
+	protected db_text $config_text;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected helper $helper;
 
 	/** @var \phpbb\extension\manager */
-	protected $ext_manager;
+	protected manager $ext_manager;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected auth $auth;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected user $user;
 
-	/** @var \phpbb\cache\service */
-	protected $cache;
+	/** @var \phpbb\cache\driver\driver_interface */
+	protected \phpbb\cache\driver\driver_interface $cache;
 
 	/** @var \phpbb\log\log_interface */
-	protected $log;
+	protected log_interface $log;
 
 	/** @var string phpbb_root_path */
-	protected $phpbb_root_path;
+	protected string $phpbb_root_path;
 
 	/** @var string php_ext */
-	protected $php_ext;
+	protected string $php_ext;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/** @var string */
-	protected $categories_table;
+	protected string $categories_table;
 
 	/** @var string */
-	protected $kb_logs_table;
+	protected string $kb_logs_table;
 
 	/** @var string */
-	protected $attachments_table;
+	protected string $attachments_table;
 
 	/** @var string */
-	protected $options_table;
+	protected string $options_table;
 
 	/** @var string */
-	protected $kb_users_table;
+	protected string $kb_users_table;
 
 	/** @var string */
-	protected $kb_groups_table;
+	protected string $kb_groups_table;
 
 	/** @var string */
-	protected $upload_dir;
+	protected string $upload_dir;
 
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface $db
-	 * @param \phpbb\config\config     $config
-	 * @param \phpbb\config\db_text    $config_text
-	 * @param \phpbb\controller\helper $helper
-	 * @param \phpbb\extension\manager $ext_manager
-	 * @param \phpbb\language\language $language
-	 * @param \phpbb\auth\auth         $auth
-	 * @param \phpbb\template\template $template
-	 * @param \phpbb\user              $user
-	 * @param \phpbb\cache\service     $cache
-	 * @param \phpbb\log\log_interface $log
-	 * @param string                   $phpbb_root_path
-	 * @param string                   $php_ext
-	 * @param string                   $articles_table
-	 * @param string                   $categories_table
-	 * @param string                   $kb_logs_table
-	 * @param string                   $attachments_table
-	 * @param string                   $options_table
-	 * @param string                   $kb_users_table
-	 * @param string                   $kb_groups_table
+	 * @param \phpbb\db\driver\driver_interface    $db
+	 * @param \phpbb\config\config                 $config
+	 * @param \phpbb\config\db_text                $config_text
+	 * @param \phpbb\controller\helper             $helper
+	 * @param \phpbb\extension\manager             $ext_manager
+	 * @param \phpbb\language\language             $language
+	 * @param \phpbb\auth\auth                     $auth
+	 * @param \phpbb\template\template             $template
+	 * @param \phpbb\user                          $user
+	 * @param \phpbb\cache\driver\driver_interface $cache
+	 * @param \phpbb\log\log_interface             $log
+	 * @param string                               $phpbb_root_path
+	 * @param string                               $php_ext
+	 * @param string                               $articles_table
+	 * @param string                               $categories_table
+	 * @param string                               $kb_logs_table
+	 * @param string                               $attachments_table
+	 * @param string                               $options_table
+	 * @param string                               $kb_users_table
+	 * @param string                               $kb_groups_table
 	 */
 	public function __construct(
 		driver_interface $db,
@@ -122,7 +121,7 @@ class functions_kb
 		auth $auth,
 		template $template,
 		user $user,
-		service $cache,
+		\phpbb\cache\driver\driver_interface $cache,
 		log_interface $log,
 		string $phpbb_root_path,
 		string $php_ext,
@@ -139,7 +138,7 @@ class functions_kb
 		$this->config = $config;
 		$this->config_text = $config_text;
 		$this->helper = $helper;
-		$this->ext_manager	= $ext_manager;
+		$this->ext_manager = $ext_manager;
 		$this->language = $language;
 		$this->auth = $auth;
 		$this->template = $template;
@@ -167,7 +166,6 @@ class functions_kb
 	 * @param string $type
 	 * @param string $order
 	 * @param bool   $include_category
-	 *
 	 * @return array
 	 */
 	public function get_category_branch(int $category_id, string $type = 'all', string $order = 'descending', bool $include_category = true): array
@@ -208,7 +206,11 @@ class functions_kb
 		return $rows;
 	}
 
-	public function get_cat_list($ignore_id = false): string
+	/**
+	 * @param array $ignore_id
+	 * @return string
+	 */
+	public function get_cat_list(array $ignore_id): string
 	{
 		$right = 0;
 		$padding_store = array('0' => '');
@@ -233,7 +235,7 @@ class functions_kb
 
 			$right = $row['right_id'];
 
-			if ((is_array($ignore_id) && in_array($row['category_id'], $ignore_id)) || $row['category_id'] == $ignore_id)
+			if ((in_array($row['category_id'], $ignore_id)) || $row['category_id'] == $ignore_id)
 			{
 				$sql_where = ($this->auth->acl_get('a_manage_kb') || $this->acl_kb_get($row['category_id'], 'kb_m_approve')) ? '' : 'AND approved = 1';
 				$sql = 'SELECT COUNT(article_id) AS articles
@@ -251,6 +253,10 @@ class functions_kb
 		return $cat_list;
 	}
 
+	/**
+	 * @param $category_id
+	 * @return void
+	 */
 	public function gen_kb_auth_level($category_id)
 	{
 		$rules = array(
@@ -296,6 +302,11 @@ class functions_kb
 		}
 	}
 
+	/**
+	 * @param $category_id
+	 * @param $permission
+	 * @return bool
+	 */
 	public function acl_kb_get($category_id, $permission): bool
 	{
 		$sql = 'SELECT DISTINCT g.group_name, g.group_id, g.group_type
@@ -391,6 +402,9 @@ class functions_kb
 		return $total && $total > 0;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function make_category_dropbox(): string
 	{
 		$sql = 'SELECT *
@@ -405,11 +419,14 @@ class functions_kb
 
 		while ($row = $this->db->sql_fetchrow($result))
 		{
-			if ($row['left_id'] < $right) {
+			if ($row['left_id'] < $right)
+			{
 				$padding .= '&nbsp;&nbsp;';
 				$padding_store[$row['parent_id']] = $padding;
-			} else if ($row['left_id'] > $right + 1) {
-				$padding = isset($padding_store[$row['parent_id']]) ? $padding_store[$row['parent_id']] : '';
+			}
+			else if ($row['left_id'] > $right + 1)
+			{
+				$padding = !isset($padding_store[$row['parent_id']]) ? '' : $padding_store[$row['parent_id']];
 			}
 			$right = $row['right_id'];
 			$category_parent = $row['parent_id'] == 0;
@@ -424,7 +441,13 @@ class functions_kb
 		return $cats_list;
 	}
 
-	public function make_category_select($select_id = false, $ignore_id = false, $ignore_acl = false): string
+	/**
+	 * @param      $select_id
+	 * @param      $ignore_id
+	 * @param bool $ignore_acl
+	 * @return string
+	 */
+	public function make_category_select($select_id = false, $ignore_id = false, bool $ignore_acl = false): string
 	{
 		$sql = 'SELECT *
 			FROM ' . $this->categories_table . '
@@ -438,11 +461,14 @@ class functions_kb
 
 		while ($row = $this->db->sql_fetchrow($result))
 		{
-			if ($row['left_id'] < $right) {
+			if ($row['left_id'] < $right)
+			{
 				$padding .= '&nbsp;&nbsp;';
 				$padding_store[$row['parent_id']] = $padding;
-			} else if ($row['left_id'] > $right + 1) {
-				$padding = isset($padding_store[$row['parent_id']]) ? $padding_store[$row['parent_id']] : '';
+			}
+			else if ($row['left_id'] > $right + 1)
+			{
+				$padding = !isset($padding_store[$row['parent_id']]) ? '' : $padding_store[$row['parent_id']];
 			}
 			$right = $row['right_id'];
 			$disabled = false;
@@ -461,6 +487,9 @@ class functions_kb
 		return $cats_list;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function allowed_extension(): array
 	{
 		$enabled_extensions = [];
@@ -473,6 +502,9 @@ class functions_kb
 		return $enabled_extensions;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function generate_filter_string(): string
 	{
 		$filters = [];
@@ -492,7 +524,12 @@ class functions_kb
 		return implode(',', $filters);
 	}
 
-	public function kb_delete_article($id, $article_title)
+	/**
+	 * @param $id
+	 * @param $article_title
+	 * @return void
+	 */
+	public function kb_delete_article($id, $article_title): void
 	{
 		$attachment_data = [];
 		include_once($this->phpbb_root_path . 'includes/functions_admin.' . $this->php_ext);
@@ -553,6 +590,10 @@ class functions_kb
 		$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_DEL_ARTICLE', time(), array($article_title, $cat_info['category_name']));
 	}
 
+	/**
+	 * @param $art_id
+	 * @return mixed
+	 */
 	public function get_kb_article_info($art_id)
 	{
 		$sql = 'SELECT *
@@ -624,7 +665,17 @@ class functions_kb
 		$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_MOVED_ARTICLE', time(), array($article_title, $cat_info['category_name'], $to_cat_info['category_name']));
 	}
 
-	public function submit_article($cat_id, $fid, $article_title, $article_description, $article_author, $category_name, $new)
+	/**
+	 * @param $cat_id
+	 * @param $fid
+	 * @param $article_title
+	 * @param $article_description
+	 * @param $article_author
+	 * @param $category_name
+	 * @param $new
+	 * @return void
+	 */
+	public function submit_article($cat_id, $fid, $article_title, $article_description, $article_author, $category_name, $new): void
 	{
 		$options = '';
 		$topic_title = '';
@@ -691,10 +742,16 @@ class functions_kb
 		$this->db->sql_query($sql);
 	}
 
-	public function parse_att(&$text, $attachments)
+	/**
+	 * @param $text
+	 * @param $attachments
+	 * @return void
+	 */
+	public function parse_att(&$text, $attachments): void
 	{
 		krsort($attachments);
-		preg_match_all('#<!\-\- ia([0-9]+) \-\->(.*?)<!\-\- ia\1 \-\->#', $text, $matches, PREG_PATTERN_ORDER);
+//		preg_match_all('#<!\-\- ia([0-9]+) \-\->(.*?)<!\-\- ia\1 \-\->#', $text, $matches, PREG_PATTERN_ORDER);
+		preg_match_all('#<!-- ia([0-9]+) -->(.*?)<!-- ia\1 -->#', $text, $matches, PREG_PATTERN_ORDER);
 		$replace = array();
 		foreach ($matches[0] as $num => $capture)
 		{
@@ -784,7 +841,12 @@ class functions_kb
 		}
 	}
 
-	public function check_is_img($ext, &$extensions = array()): bool
+	/**
+	 * @param string $ext
+	 * @param ?array $extensions
+	 * @return bool
+	 */
+	public function check_is_img(string $ext, ?array &$extensions = array()): bool
 	{
 		if (($extensions = $this->cache->get('_kb_extension')) === false)
 		{
@@ -811,10 +873,12 @@ class functions_kb
 			$this->cache->put('_kb_extension', $extensions);
 		}
 
-		if ( phpbb_version_compare($this->config['version'], '4.0.0', '<'))
+		if (phpbb_version_compare($this->config['version'], '4.0.0', '<'))
 		{
 			return isset($extensions[$ext]['display_cat']) && $extensions[$ext]['display_cat'] == ATTACHMENT_CATEGORY_IMAGE;
-		} else {
+		}
+		else
+		{
 			return isset($extensions[$ext]['display_cat']) && $extensions[$ext]['display_cat'] == \phpbb\attachment\attachment_category::IMAGE;
 		}
 	}

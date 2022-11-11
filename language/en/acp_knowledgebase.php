@@ -55,7 +55,7 @@ $lang = array_merge($lang, array(
 
 //Manage category
 'ACP_LIBRARY_MANAGE_EXPLAIN'   => 'Each category can have an unlimited number of subcategories. Here you can add, edit, move, search places and move from one category to another. If the number of entries in the category does not coincide with the real, you can synchronize the category.',
-'CATEGOTY_LIST'                => 'Categories list',
+'CATEGORY_LIST'                => 'Categories list',
 'SELECT_CATEGORY'              => 'Select a category',
 'SELECTION_CATEGORY'           => 'Select a category',
 'ADD_CATEGORY'                 => 'Create a new category',

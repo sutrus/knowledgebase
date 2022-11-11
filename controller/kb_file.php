@@ -17,19 +17,19 @@ use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 class kb_file
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
-	/** @var \phpbb\request\request */
-	protected $request;
+	/** @var \phpbb\request\request_interface */
+	protected \phpbb\request\request_interface $request;
 
 	/** @var \phpbb\extension\manager */
-	protected $ext_manager;
+	protected \phpbb\extension\manager $ext_manager;
 
 	/** @var string */
-	protected $attachments_table;
+	protected string $attachments_table;
 
 	/**
 	 * Constructor
@@ -45,13 +45,13 @@ class kb_file
 		\phpbb\language\language $language,
 		\phpbb\request\request_interface $request,
 		\phpbb\extension\manager $ext_manager,
-		$attachments_table
+		string $attachments_table
 	)
 	{
 		$this->db = $db;
 		$this->language = $language;
 		$this->request = $request;
-		$this->ext_manager	= $ext_manager;
+		$this->ext_manager = $ext_manager;
 		$this->attachments_table = $attachments_table;
 	}
 
@@ -124,7 +124,8 @@ class kb_file
 	}
 
 	/**
-	 * Remove non valid characters https://github.com/symfony/http-foundation/commit/c7df9082ee7205548a97031683bc6550b5dc9551
+	 * Remove non valid characters
+	 * https://github.com/symfony/http-foundation/commit/c7df9082ee7205548a97031683bc6550b5dc9551
 	 */
 	protected function filenameFallback($filename)
 	{

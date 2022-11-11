@@ -23,7 +23,7 @@ class permissions_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	function main($id, $mode)
+	public function main($id, $mode)
 	{
 		global $phpbb_container;
 
@@ -35,22 +35,22 @@ class permissions_module
 		/** @var \phpbb\request\request $request */
 		$request = $phpbb_container->get('request');
 
-		/** @var \phpbb\db\driver\driver_interface */
+		/** @var \phpbb\db\driver\driver_interface $db */
 		$db = $phpbb_container->get('dbal.conn');
 
-		/** @var \phpbb\user */
+		/** @var \phpbb\user $user */
 		$user = $phpbb_container->get('user');
 
-		/** @var \phpbb\auth\auth */
+		/** @var \phpbb\auth\auth $auth */
 		$auth = $phpbb_container->get('auth');
 
-		/** @var \phpbb\template\template */
+		/** @var \phpbb\template\template $template */
 		$template = $phpbb_container->get('template');
 
-		/** @var \phpbb\log\log */
+		/** @var \phpbb\log\log $phpbb_log */
 		$phpbb_log = $phpbb_container->get('log');
 
-		/** @var @sheer\knowledgebase\inc\functions_kb */
+		/** @var \sheer\knowledgebase\inc\functions_kb $phpbb_ext_kb */
 		$phpbb_ext_kb = $phpbb_container->get('sheer.knowledgebase.inc');
 
 		// Get an instance of the admin controller

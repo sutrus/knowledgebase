@@ -14,16 +14,16 @@ namespace sheer\knowledgebase\controller;
 class set_order
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
-	/** @var \phpbb\request\request */
-	protected $request;
+	/** @var \phpbb\request\request_interface */
+	protected \phpbb\request\request_interface $request;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/**
 	 * Constructor
@@ -37,7 +37,7 @@ class set_order
 		\phpbb\db\driver\driver_interface $db,
 		\phpbb\config\config $config,
 		\phpbb\request\request_interface $request,
-		$articles_table
+		string $articles_table
 	)
 	{
 		$this->db = $db;

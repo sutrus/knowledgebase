@@ -55,7 +55,7 @@ $lang = array_merge($lang, array(
 
 //Manage category
 'ACP_LIBRARY_MANAGE_EXPLAIN'   => 'Depuis cette page il est possible de configurer un nombre illimité de catégories et sous-catégories. Il est possible de créer, modifier des catégories, rechercher leurs emplacements et de déplacer une catégorie dans une autre ou à la racine. Si le nombre d’articles d’une catégories ne correspond pas à la réalisé il est possible de resynchroniser le compte des articles pour chaque catégorie.',
-'CATEGOTY_LIST'                => 'Liste des catégories',
+'CATEGORY_LIST'                => 'Liste des catégories',
 'SELECT_CATEGORY'              => 'Sélectionner une catégorie',
 'SELECTION_CATEGORY'           => 'Sélectionner une catégorie',
 'ADD_CATEGORY'                 => 'Créer une catégorie',

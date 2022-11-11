@@ -16,52 +16,52 @@ use RuntimeException;
 class approve
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
-	/** @var \phpbb\request\request */
-	protected $request;
+	/** @var \phpbb\request\request_interface */
+	protected \phpbb\request\request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected \phpbb\user $user;
 
-	/** @var phpbb\cache\service */
-	protected $cache;
+	/** @var \phpbb\cache\driver\driver_interface */
+	protected \phpbb\cache\driver\driver_interface $cache;
 
 	/** @var \phpbb\log\log */
 	protected $log;
 
 	/** @var \phpbb\notification\manager */
-	protected $notification_manager;
+	protected \phpbb\notification\manager $notification_manager;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected $kb;
+	protected \sheer\knowledgebase\inc\functions_kb $kb;
 
 	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected $search_factory;
+	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
 
 	/** @var string */
-	protected $phpbb_root_path;
+	protected string $phpbb_root_path;
 
 	/** @var string */
-	protected $php_ext;
+	protected string $php_ext;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/**
 	 * Constructor
@@ -74,7 +74,7 @@ class approve
 	 * @param \phpbb\request\request_interface                      $request
 	 * @param \phpbb\template\template                              $template
 	 * @param \phpbb\user                                           $user
-	 * @param \phpbb\cache\service                                  $cache
+	 * @param \phpbb\cache\driver\driver_interface                  $cache
 	 * @param \phpbb\log\log_interface                              $log
 	 * @param \phpbb\notification\manager                           $notification_manager
 	 * @param \sheer\knowledgebase\inc\functions_kb                 $kb
@@ -92,14 +92,14 @@ class approve
 		\phpbb\request\request_interface $request,
 		\phpbb\template\template $template,
 		\phpbb\user $user,
-		\phpbb\cache\service $cache,
+		\phpbb\cache\driver\driver_interface $cache,
 		\phpbb\log\log_interface $log,
 		\phpbb\notification\manager $notification_manager,
 		\sheer\knowledgebase\inc\functions_kb $kb,
 		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
-		$phpbb_root_path,
-		$php_ext,
-		$articles_table
+		string $phpbb_root_path,
+		string $php_ext,
+		string $articles_table
 	)
 	{
 		$this->db = $db;
@@ -123,7 +123,7 @@ class approve
 	/**
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function approve_article()
+	public function approve_article(): \Symfony\Component\HttpFoundation\Response
 	{
 		// If not logged in
 		$dd = $this->user->data;

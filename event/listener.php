@@ -14,30 +14,31 @@ namespace sheer\knowledgebase\event;
 /**
  * @ignore
  */
+
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class listener implements EventSubscriberInterface
 {
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\config\db_text */
-	protected $config_text;
+	protected \phpbb\config\db_text $config_text;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/* @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/* @var string */
-	protected $php_ext;
+	protected string $php_ext;
 
 	/**
 	 * Constructor
@@ -57,7 +58,7 @@ class listener implements EventSubscriberInterface
 		\phpbb\language\language $language,
 		\phpbb\auth\auth $auth,
 		\phpbb\template\template $template,
-		$php_ext
+		string $php_ext
 	)
 	{
 		$this->config = $config;
@@ -69,24 +70,27 @@ class listener implements EventSubscriberInterface
 		$this->php_ext = $php_ext;
 	}
 
+	/**
+	 * @return string[]
+	 */
 	public static function getSubscribedEvents()
 	{
 		return [
-			'core.user_setup'                    => 'load_language_on_setup',
-			'core.page_header'                   => 'add_page_header_link',
-			'core.viewonline_overwrite_location' => 'viewonline_page',
-			'core.permissions'                   => 'add_permission',
+			'core.user_setup'                          => 'load_language_on_setup',
+			'core.page_header'                         => 'add_page_header_link',
+			'core.viewonline_overwrite_location'       => 'viewonline_page',
+			'core.permissions'                         => 'add_permission',
 			'core.display_forums_modify_template_vars' => 'display_forums_modify_template_vars',
-			'core.viewforum_modify_topicrow' => 'viewforum_modify_topicrow',
+			'core.viewforum_modify_topicrow'           => 'viewforum_modify_topicrow',
 		];
 	}
 
 	/**
 	 * Load common language files during user setup
 	 *
-	 * @param \phpbb\event\data	$event	Event object
+	 * @param \phpbb\event\data $event Event object
 	 */
-	public function load_language_on_setup($event)
+	public function load_language_on_setup(\phpbb\event\data $event)
 	{
 		$lang_set_ext = $event['lang_set_ext'];
 		$lang_set_ext[] = array(
@@ -112,9 +116,9 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Show users viewing Knowledge Base page on the Who Is Online page
 	 *
-	 * @param \phpbb\event\data	$event	Event object
+	 * @param \phpbb\event\data $event Event object
 	 */
-	public function viewonline_page($event)
+	public function viewonline_page(\phpbb\event\data $event)
 	{
 		if ($event['on_page'][1] === 'app' && strrpos($event['row']['session_page'], 'app.' . $this->php_ext . '/knowledgebase') === 0)
 		{
@@ -126,9 +130,9 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Modifies the names of the forums on index
 	 *
-	 * @param \phpbb\event\data	$event	Event object
+	 * @param \phpbb\event\data $event Event object
 	 */
-	public function display_forums_modify_template_vars($event)
+	public function display_forums_modify_template_vars(\phpbb\event\data $event)
 	{
 		$forum_row = $event['forum_row'];
 		if (($this->config['kb_anounce']) &&
@@ -143,9 +147,9 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Modifies the names of the topics
 	 *
-	 * @param \phpbb\event\data	$event	Event object
+	 * @param \phpbb\event\data $event Event object
 	 */
-	public function viewforum_modify_topicrow($event)
+	public function viewforum_modify_topicrow(\phpbb\event\data $event)
 	{
 		$topic_row = $event['topic_row'];
 		if (($this->config['kb_anounce']) &&
@@ -166,13 +170,13 @@ class listener implements EventSubscriberInterface
 	 *
 	 * Developers note: To control access to ACP, MCP and UCP modules, you
 	 * must assign your permissions in your module_info.php file. For example,
-	 * to allow only users with the a_new_sutrus_clubmanagement permission
+	 * to allow only users with the a_mange_kb permission
 	 * access to your ACP module, you would set this in your acp/main_info.php:
 	 *    'auth' => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb'
 	 *
-	 * @param \phpbb\event\data	$event	Event object
+	 * @param \phpbb\event\data $event Event object
 	 */
-	public function add_permission($event)
+	public function add_permission(\phpbb\event\data $event)
 	{
 		$permissions = $event['permissions'];
 		$categories = $event['categories'];

@@ -62,7 +62,7 @@ services:
             - '@request'
             - '@template'
             - '@user'
-            - '@cache'
+            - '@cache.driver'
             - '@log'
             - '@files.factory'
             - '@plupload'
@@ -87,7 +87,7 @@ services:
             - '@request'
             - '@template'
             - '@user'
-            - '@cache'
+            - '@cache.driver'
             - '@log'
             - '@notification_manager'
             - '@sheer.knowledgebase.inc'
@@ -140,7 +140,7 @@ services:
             - '@auth'
             - '@template'
             - '@user'
-            - '@cache'
+            - '@cache.driver'
             - '@log'
             - '%core.root_path%'
             - '%core.php_ext%'
@@ -174,7 +174,7 @@ services:
             - '@request'
             - '@template'
             - '@user'
-            - '@cache'
+            - '@cache.driver'
             - '@group_helper'
             - '@pagination'
             - '@log'
@@ -204,8 +204,8 @@ services:
         shared: false # service MUST not be shared for this to work!
         parent: notification.type.base
         calls:
-            - ['set_controller_helper', ['@controller.helper']]
-            - ['set_user_loader', ['@user_loader']]
+            - [ 'set_controller_helper', [ '@controller.helper' ] ]
+            - [ 'set_user_loader', [ '@user_loader' ] ]
         tags:
             - { name: notification.type }
 
@@ -214,8 +214,8 @@ services:
         shared: false # service MUST not be shared for this to work!
         parent: notification.type.base
         calls:
-            - ['set_controller_helper', ['@controller.helper']]
-            - ['set_user_loader', ['@user_loader']]
+            - [ 'set_controller_helper', [ '@controller.helper' ] ]
+            - [ 'set_user_loader', [ '@user_loader' ] ]
         tags:
             - { name: notification.type }
 
@@ -224,7 +224,7 @@ services:
         shared: false # service MUST not be shared for this to work!
         parent: notification.type.base
         calls:
-            - ['set_controller_helper', ['@controller.helper']]
-            - ['set_user_loader', ['@user_loader']]
+            - [ 'set_controller_helper', [ '@controller.helper' ] ]
+            - [ 'set_user_loader', [ '@user_loader' ] ]
         tags:
             - { name: notification.type }

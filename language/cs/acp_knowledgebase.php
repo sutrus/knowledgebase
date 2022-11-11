@@ -55,7 +55,7 @@ $lang = array_merge($lang, array(
 
 //Manage category
 'ACP_LIBRARY_MANAGE_EXPLAIN'   => 'Každá kategorie může mít neomezený počet podkategorií. Zde můžete přidávat, upravovat, přesouvat, vyhledávat místa a přecházet z jedné kategorie do druhé. Pokud se počet záznamů v kategorii neshoduje se skutečným počtem, můžete kategorii synchronizovat.',
-'CATEGOTY_LIST'                => 'Seznam kategorií',
+'CATEGORY_LIST'                => 'Seznam kategorií',
 'SELECT_CATEGORY'              => 'Vyberte kategorii',
 'SELECTION_CATEGORY'           => 'Vyběr kategorie',
 'ADD_CATEGORY'                 => 'Vytvořit novou kategorii',

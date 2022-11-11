@@ -22,7 +22,7 @@ class search_info
 				'settings' => [
 					'title' => 'ACP_LIBRARY_SEARCH',
 					'auth'  => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-					'cat'   => ['CP_KNOWLEDGE_BASE']
+					'cat'   => ['CP_KNOWLEDGE_BASE'],
 				],
 			],
 		];

@@ -19,14 +19,10 @@ use sheer\knowledgebase\search\backend\kb_search_backend_interface;
 
 class kb_search_backend_factory
 {
-	/**
-	 * @var config
-	 */
+	/** @var config */
 	protected $config;
 
-	/**
-	 * @var service_collection
-	 */
+	/** @var service_collection */
 	protected $search_backends;
 
 	/**

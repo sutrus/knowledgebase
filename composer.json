@@ -3,9 +3,9 @@
 	"type": "phpbb-extension",
 	"description": "Knowledge Base",
 	"homepage": "https://spssoftware.cz",
-	"version": "2.0.1-RC1",
+	"version": "2.0.1-RC3",
 	"keywords": ["phpbb", "extension", "knowledge base"],
-	"time": "2022-04-03",
+	"time": "2022-12-01",
 	"license": "GPL-2.0-only",
 	"authors": [
 		{

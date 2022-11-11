@@ -34,25 +34,25 @@ class manage_module
 		/** @var \phpbb\request\request $request */
 		$request = $phpbb_container->get('request');
 
-		/** @var \phpbb\db\driver\driver_interface */
+		/** @var \phpbb\db\driver\driver_interface $db */
 		$db = $phpbb_container->get('dbal.conn');
 
-		/** @var phpbb\cache\service */
+		/** @var \phpbb\cache\driver\driver_interface $cache */
 		$cache = $phpbb_container->get('cache');
 
-		/** @var \phpbb\user */
+		/** @var \phpbb\user $user */
 		$user = $phpbb_container->get('user');
 
-		/** @var \phpbb\auth\auth */
+		/** @var \phpbb\auth\auth $auth */
 		$auth = $phpbb_container->get('auth');
 
-		/** @var \phpbb\template\template */
+		/** @var \phpbb\template\template $template */
 		$template = $phpbb_container->get('template');
 
-		/** @var \phpbb\log\log */
+		/** @var \phpbb\log\log $phpbb_log */
 		$phpbb_log = $phpbb_container->get('log');
 
-		/** @var @sheer\knowledgebase\inc\functions_kb */
+		/** @var \sheer\knowledgebase\inc\functions_kb $kb */
 		$kb = $phpbb_container->get('sheer.knowledgebase.inc');
 
 		// Get an instance of the admin controller
@@ -283,7 +283,7 @@ class manage_module
 		// Default management page
 		if (!$parent_id)
 		{
-			$navigation = $language->lang('CATEGOTY_LIST');
+			$navigation = $language->lang('CATEGORY_LIST');
 			if (!empty($this->config['kb_forum_id']) && !empty($this->config['kb_anounce']))
 			{
 				$errors[] = $language->lang('WARNING_DEFAULT_CONFIG');
@@ -291,7 +291,7 @@ class manage_module
 		}
 		else
 		{
-			$navigation = '<a href="' . $this->u_action . '">' . $language->lang('CATEGOTY_LIST') . '</a>';
+			$navigation = '<a href="' . $this->u_action . '">' . $language->lang('CATEGORY_LIST') . '</a>';
 			$cats_nav = $kb->get_category_branch($parent_id, 'parents', 'descending');
 			foreach ($cats_nav as $row)
 			{

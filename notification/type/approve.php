@@ -16,34 +16,34 @@ class approve extends \phpbb\notification\type\base
 	/**
 	 * Notification option data (for outputting to the user)
 	 *
-	 * @var bool|array False if the service should use it's default data
-	 *                    Array of data (including keys 'id', 'lang', and 'group')
+	 * @var bool|array False if the service should use its default data
+	 *                 Array of data (including keys 'id', 'lang', and 'group')
 	 */
 	public static $notification_option = array(
 		'lang'  => 'NOTIFICATION_TYPE_ARTICLE_APPROVE',
 		'group' => 'NOTIFICATION_GROUP_MISCELLANEOUS',
 	);
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 	/** @var \phpbb\user_loader */
-	protected $user_loader;
+	protected \phpbb\user_loader $user_loader;
 
 	/**
 	 * Get the id of the item
 	 *
-	 * @param array $data
+	 * @param array $type_data
 	 */
-	public static function get_item_id($data)
+	public static function get_item_id($type_data): int
 	{
-		return (int) $data['item_id'];
+		return (int) $type_data['item_id'];
 	}
 
 	/**
 	 * Get the id of the parent
 	 *
-	 * @param array $data
+	 * @param array $type_data
 	 */
-	public static function get_item_parent_id($data)
+	public static function get_item_parent_id($type_data): int
 	{
 		return 0;
 	}
@@ -69,7 +69,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return string
 	 */
-	public function get_type()
+	public function get_type(): string
 	{
 		return 'sheer.knowledgebase.notification.type.approve';
 	}
@@ -80,7 +80,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return bool True/False whether or not this is available to the user
 	 */
-	public function is_available()
+	public function is_available(): bool
 	{
 		return false;
 	}
@@ -88,18 +88,18 @@ class approve extends \phpbb\notification\type\base
 	/**
 	 * Find the users who want to receive notifications
 	 *
-	 * @param array $data
+	 * @param array $type_data
 	 * @param array $options Options for finding users for notification
 	 *
 	 * @return array
 	 */
-	public function find_users_for_notification($data, $options = array())
+	public function find_users_for_notification($type_data, $options = array()): array
 	{
 		$options = array_merge(array(
 			'ignore_users' => array(),
 		), $options);
 
-		$users = array((int) $data['author_id']);
+		$users = array((int) $type_data['author_id']);
 		return $this->check_user_notification_options($users, $options);
 	}
 
@@ -108,7 +108,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return array Array of user_ids
 	 */
-	public function users_to_query()
+	public function users_to_query(): array
 	{
 		return array($this->get_data('moderator'));
 	}
@@ -116,7 +116,7 @@ class approve extends \phpbb\notification\type\base
 	/**
 	 * Get the user's avatar
 	 */
-	public function get_avatar()
+	public function get_avatar(): string
 	{
 		return $this->user_loader->get_avatar($this->get_data('moderator'), false, true);
 	}
@@ -126,7 +126,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return string
 	 */
-	public function get_title()
+	public function get_title(): string
 	{
 		$username = $this->user_loader->get_username($this->get_data('moderator'), 'no_profile');
 		return $this->language->lang('NOTIFICATION_ARTICLE_APPROVE', $username);
@@ -137,7 +137,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return string URL
 	 */
-	public function get_url()
+	public function get_url(): string
 	{
 		return $this->helper->route('sheer_knowledgebase_article', array(
 			'k' => $this->get_data('item_id'),
@@ -149,7 +149,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return string
 	 */
-	public function get_email_template()
+	public function get_email_template(): string
 	{
 		return '@sheer_knowledgebase/article_approve';
 	}
@@ -159,7 +159,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return array
 	 */
-	public function get_email_template_variables()
+	public function get_email_template_variables(): array
 	{
 		$username = $this->user_loader->get_username($this->get_data('author_id'), 'username');
 		return array(
@@ -175,7 +175,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return string
 	 */
-	public function get_reference()
+	public function get_reference(): string
 	{
 		return $this->language->lang('NOTIFICATION_REFERENCE', censor_text($this->get_data('title')));
 	}
@@ -187,7 +187,7 @@ class approve extends \phpbb\notification\type\base
 	 * @param array $users Array of users
 	 * @return array Trimmed array of user_ids
 	 */
-	public function trim_user_ary($users)
+	public function trim_user_ary(array $users): array
 	{
 		if (count($users) > 4)
 		{
@@ -198,24 +198,29 @@ class approve extends \phpbb\notification\type\base
 
 	/**
 	 * Function for preparing the data for insertion in an SQL query
-	 * (The service handles insertion)
+	 * (The service handles' insertion)
 	 *
-	 * @param array $data            Data from insert_need_approval
+	 * @param array $type_data       Data from insert_need_approval
 	 * @param array $pre_create_data Data from pre_create_insert_array()
 	 *
 	 * @return void Array of data ready to be inserted into the database
 	 */
-	public function create_insert_array($data, $pre_create_data = array())
+	public function create_insert_array($type_data, $pre_create_data = array()): void
 	{
-		$this->set_data('author_id', $data['author_id']);
-		$this->set_data('title', $data['title']);
-		$this->set_data('moderator', $data['moderator']);
-		$this->set_data('item_id', $data['item_id']);
+		$this->set_data('author_id', $type_data['author_id']);
+		$this->set_data('title', $type_data['title']);
+		$this->set_data('moderator', $type_data['moderator']);
+		$this->set_data('item_id', $type_data['item_id']);
 
-		parent::create_insert_array($data, $pre_create_data);
+		parent::create_insert_array($type_data, $pre_create_data);
 	}
 
-	public function check_permisson($auth, $category_id = 0)
+	/**
+	 * @param     $auth
+	 * @param int $category_id
+	 * @return array
+	 */
+	public function check_permission($auth, int $category_id = 0): array
 	{
 		global $table_prefix;
 

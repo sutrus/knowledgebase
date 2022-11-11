@@ -13,44 +13,44 @@ namespace sheer\knowledgebase\controller;
 
 class article
 {
-	protected $db;
 	/** @var \phpbb\db\driver\driver_interface */
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
-	/** @var \phpbb\request\request */
-	protected $request;
+	/** @var \phpbb\request\request_interface */
+	protected \phpbb\request\request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected \phpbb\user $user;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected $kb;
+	protected \sheer\knowledgebase\inc\functions_kb $kb;
 
 	/** @var string */
-	protected $phpbb_root_path;
+	protected string $phpbb_root_path;
 
 	/** @var string */
-	protected $php_ext;
+	protected string $php_ext;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/** @var string */
-	protected $attachments_table;
+	protected string $attachments_table;
 
 	/**
 	 * Constructor
@@ -79,10 +79,10 @@ class article
 		\phpbb\template\template $template,
 		\phpbb\user $user,
 		\sheer\knowledgebase\inc\functions_kb $kb,
-		$phpbb_root_path,
-		$php_ext,
-		$articles_table,
-		$attachments_table
+		string $phpbb_root_path,
+		string $php_ext,
+		string $articles_table,
+		string $attachments_table
 	)
 	{
 		$this->db = $db;
@@ -103,7 +103,7 @@ class article
 	/**
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function show()
+	public function show(): \Symfony\Component\HttpFoundation\Response
 	{
 		if (!$this->auth->acl_get('u_kb_view') && !$this->auth->acl_get('a_manage_kb'))
 		{
@@ -198,7 +198,7 @@ class article
 		}
 		$this->db->sql_freeresult($result);
 
-		// Parse attacments
+		// Parse attachments
 		if (isset($attachments) && count($attachments))
 		{
 			$this->kb->parse_att($text, $attachments);
@@ -226,12 +226,12 @@ class article
 				'U_COMMENTS'          => ($comment_topic_id) ? $temp_url : '',
 				'S_CAN_EDIT'          => $this->kb->acl_kb_get($cat_id, 'kb_m_edit') || ($this->user->data['user_id'] == $row['author_id'] && $this->kb->acl_kb_get($cat_id, 'kb_u_edit') || $this->auth->acl_get('a_manage_kb')),
 				'S_CAN_DELETE'        => $this->kb->acl_kb_get($cat_id, 'kb_m_delete') || ($this->user->data['user_id'] == $row['author_id'] && $this->kb->acl_kb_get($cat_id, 'kb_u_delete') || $this->auth->acl_get('a_manage_kb')),
-				'S_CAN_APPROOVE'      => $this->auth->acl_get('a_manage_kb') || $this->kb->acl_kb_get($cat_id, 'kb_m_approve'),
+				'S_CAN_APPROVE'       => $this->auth->acl_get('a_manage_kb') || $this->kb->acl_kb_get($cat_id, 'kb_m_approve'),
 				'COUNT_COMMENTS'      => ($comment_topic_id) ? '[' . $this->language->lang('LEAVE_COMMENTS') . ']' : '',
 				'U_FORUM'             => generate_board_url() . '/',
 				'S_APPROVED'          => $row['approved'],
 				'S_KNOWLEDGEBASE'     => true,
-				'LIBRARY'   		  => $this->language->lang('LIBRARY'),
+				'LIBRARY'             => $this->language->lang('LIBRARY'),
 			)
 		);
 

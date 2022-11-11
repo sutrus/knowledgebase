@@ -16,34 +16,36 @@ class need_approval extends \phpbb\notification\type\base
 	/**
 	 * Notification option data (for outputting to the user)
 	 *
-	 * @var bool|array False if the service should use it's default data
-	 *                    Array of data (including keys 'id', 'lang', and 'group')
+	 * @var bool|array False if the service should use its default data
+	 *                 Array of data (including keys 'id', 'lang', and 'group')
 	 */
 	public static $notification_option = array(
 		'lang'  => 'NOTIFICATION_TYPE_NEED_APPROVAL',
 		'group' => 'NOTIFICATION_GROUP_MODERATION',
 	);
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 	/** @var \phpbb\user_loader */
-	protected $user_loader;
+	protected \phpbb\user_loader $user_loader;
 
 	/**
 	 * Get the id of the item
 	 *
-	 * @param array $data
+	 * @param array $type_data
+	 * @return int
 	 */
-	public static function get_item_id($data)
+	public static function get_item_id($type_data): int
 	{
-		return (int) $data['item_id'];
+		return (int) $type_data['item_id'];
 	}
 
 	/**
 	 * Get the id of the parent
 	 *
-	 * @param array $data
+	 * @param array $type_data
+	 * @return int
 	 */
-	public static function get_item_parent_id($data)
+	public static function get_item_parent_id($type_data): int
 	{
 		return 0;//(int) $data['author_id'];
 	}
@@ -54,12 +56,16 @@ class need_approval extends \phpbb\notification\type\base
 	 * @param \phpbb\controller\helper $helper
 	 * @return void
 	 */
-	public function set_controller_helper(\phpbb\controller\helper $helper)
+	public function set_controller_helper(\phpbb\controller\helper $helper): void
 	{
 		$this->helper = $helper;
 	}
 
-	public function set_user_loader(\phpbb\user_loader $user_loader)
+	/**
+	 * @param \phpbb\user_loader $user_loader
+	 * @return void
+	 */
+	public function set_user_loader(\phpbb\user_loader $user_loader): void
 	{
 		$this->user_loader = $user_loader;
 	}
@@ -69,15 +75,17 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return string
 	 */
-	public function get_type()
+	public function get_type(): string
 	{
 		return 'sheer.knowledgebase.notification.type.need_approval';
 	}
 
 	/**
 	 * Is available
+	 *
+	 * @return bool
 	 */
-	public function is_available()
+	public function is_available(): bool
 	{
 		$available = ($this->config['allow_privmsg'] ?? false) && ($this->auth->acl_get('u_readpm') ?? false);
 
@@ -89,7 +97,7 @@ class need_approval extends \phpbb\notification\type\base
 				$auth_approve[0]['a_manage_kb'] = array();
 			}
 
-			$has_permission = $this->check_permisson('kb_m_approve', 0);
+			$has_permission = $this->check_permission('kb_m_approve', 0);
 			if (!empty($auth_approve) || !empty($has_permission))
 			{
 				$users = array_merge($has_permission, $auth_approve[0]['a_manage_kb']);
@@ -104,7 +112,12 @@ class need_approval extends \phpbb\notification\type\base
 		return $available;
 	}
 
-	public function check_permisson($auth, $category_id = 0)
+	/**
+	 * @param string $auth
+	 * @param int    $category_id
+	 * @return array
+	 */
+	public function check_permission(string $auth, int $category_id = 0): array
 	{
 		global $table_prefix;
 
@@ -178,16 +191,16 @@ class need_approval extends \phpbb\notification\type\base
 	/**
 	 * Find the users who want to receive notifications
 	 *
-	 * @param array $data
+	 * @param array $type_data
 	 * @param array $options Options for finding users for notification
 	 *
 	 * @return array
 	 */
-	public function find_users_for_notification($data, $options = array())
+	public function find_users_for_notification($type_data, $options = array()): array
 	{
-		$options = array_merge(array(
-			'ignore_users' => array(),
-		), $options);
+		$options = array_merge([
+			'ignore_users' => [],
+		], $options);
 
 		$auth_approve = $this->auth->acl_get_list(false, 'a_manage_kb');
 		if (empty($auth_approve))
@@ -196,7 +209,7 @@ class need_approval extends \phpbb\notification\type\base
 		}
 		$auth = 'kb_m_approve';
 
-		$has_permission = $this->check_permisson($auth, $data['article_category_id']);
+		$has_permission = $this->check_permission($auth, $type_data['article_category_id']);
 		$users = array_merge($auth_approve[0]['a_manage_kb'], $has_permission);
 		$users = array_unique($users);
 
@@ -208,15 +221,17 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return array Array of user_ids
 	 */
-	public function users_to_query()
+	public function users_to_query(): array
 	{
 		return array($this->get_data('author_id'));
 	}
 
 	/**
 	 * Get the user's avatar
+	 *
+	 * @return string
 	 */
-	public function get_avatar()
+	public function get_avatar(): string
 	{
 		return $this->user_loader->get_avatar($this->get_data('author_id'), false, true);
 	}
@@ -234,7 +249,7 @@ class need_approval extends \phpbb\notification\type\base
 	/**
 	 * Get the HTML formatted title of this notification
 	 *
-	 * @return string
+	 * @return array|string
 	 */
 	public function get_title()
 	{
@@ -247,7 +262,7 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return string URL
 	 */
-	public function get_url()
+	public function get_url(): string
 	{
 		return $this->helper->route('sheer_knowledgebase_article', array(
 			'k' => $this->get_data('item_id'),
@@ -259,7 +274,7 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return string
 	 */
-	public function get_email_template()
+	public function get_email_template(): string
 	{
 		return '@sheer_knowledgebase/need_approve';
 	}
@@ -269,7 +284,7 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return array
 	 */
-	public function get_email_template_variables()
+	public function get_email_template_variables(): array
 	{
 		$username = $this->user_loader->get_username($this->get_data('author_id'), 'username');
 		return array(
@@ -285,7 +300,7 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return string
 	 */
-	public function get_reference()
+	public function get_reference(): string
 	{
 		return $this->language->lang('NOTIFICATION_REFERENCE', censor_text($this->get_data('title')));
 	}
@@ -297,7 +312,7 @@ class need_approval extends \phpbb\notification\type\base
 	 * @param array $users Array of users
 	 * @return array Trimmed array of user_ids
 	 */
-	public function trim_user_ary($users)
+	public function trim_user_ary(array $users): array
 	{
 		if (count($users) > 4)
 		{
@@ -308,20 +323,20 @@ class need_approval extends \phpbb\notification\type\base
 
 	/**
 	 * Function for preparing the data for insertion in an SQL query
-	 * (The service handles insertion)
+	 * (The service handles' insertion)
 	 *
-	 * @param array $data            Data from insert_need_approval
+	 * @param array $type_data       Data from insert_need_approval
 	 * @param array $pre_create_data Data from pre_create_insert_array()
 	 *
 	 * @return void Array of data ready to be inserted into the database
 	 */
-	public function create_insert_array($data, $pre_create_data = array())
+	public function create_insert_array($type_data, $pre_create_data = array())
 	{
-		$this->set_data('author_id', $data['author_id']);
-		$this->set_data('title', $data['title']);
-		$this->set_data('item_id', $data['item_id']);
-		$this->set_data('article_category_id', $data['article_category_id']);
+		$this->set_data('author_id', $type_data['author_id']);
+		$this->set_data('title', $type_data['title']);
+		$this->set_data('item_id', $type_data['item_id']);
+		$this->set_data('article_category_id', $type_data['article_category_id']);
 
-		parent::create_insert_array($data, $pre_create_data);
+		parent::create_insert_array($type_data, $pre_create_data);
 	}
 }

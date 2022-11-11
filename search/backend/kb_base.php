@@ -4,7 +4,7 @@
  * This file is part of the phpBB Forum Software package.
  *
  * @copyright (c) phpBB Limited <https://www.phpbb.com>
- * @license GNU General Public License, version 2 (GPL-2.0)
+ * @license       GNU General Public License, version 2 (GPL-2.0)
  *
  * For full copyright and license information, please see
  * the docs/CREDITS.txt file.
@@ -31,40 +31,32 @@ abstract class kb_base
 	// Batch size for create_index and delete_index
 	private const BATCH_SIZE = 100;
 
-	/**
-	 * @var service
-	 */
-	protected $cache;
+	/** @var \phpbb\cache\service */
+	protected service $cache;
 
-	/**
-	 * @var config
-	 */
-	protected $config;
+	/** @var config */
+	protected config $config;
 
-	/**
-	 * @var driver_interface
-	 */
-	protected $db;
+	/** @var driver_interface */
+	protected driver_interface $db;
 
-	/**
-	 * @var user
-	 */
-	protected $user;
+	/** @var user */
+	protected user $user;
 
 	/** @var string */
-	protected $table_prefix;
+	protected string $table_prefix;
 
 	/** @var string */
-	protected $search_results_table;
+	protected string $search_results_table;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param service $cache
-	 * @param config $config
-	 * @param driver_interface $db
-	 * @param user $user
-	 * @param string $table_prefix;
+	 * @param \phpbb\cache\service              $cache
+	 * @param \phpbb\config\config              $config
+	 * @param \phpbb\db\driver\driver_interface $db
+	 * @param \phpbb\user                       $user
+	 * @param string                            $search_results_table
 	 */
 	public function __construct(service $cache, config $config, driver_interface $db, user $user, string $search_results_table)
 	{
@@ -76,17 +68,20 @@ abstract class kb_base
 	}
 
 	/**
-	* Retrieves cached search results
-	*
-	* @param string $search_key		an md5 string generated from all the passed search options to identify the results
-	* @param int	&$result_count	will contain the number of all results for the search (not only for the current page)
-	* @param array 	&$id_ary 		is filled with the ids belonging to the requested page that are stored in the cache
-	* @param int 	&$start			indicates the first index of the page
-	* @param int 	$per_page		number of ids each page is supposed to contain
-	* @param string $sort_dir		is either a or d representing ASC and DESC
-	*
-	* @return int self::SEARCH_RESULT_NOT_IN_CACHE or self::SEARCH_RESULT_IN_CACHE or self::SEARCH_RESULT_INCOMPLETE
-	*/
+	 * Retrieves cached search results
+	 *
+	 * @param string    $search_key   an md5 string generated from all the passed search options to identify the
+	 *                                results
+	 * @param int    &  $result_count will contain the number of all results for the search (not only for the current
+	 *                                page)
+	 * @param array    &$id_ary       is filled with the ids belonging to the requested page that are stored in the
+	 *                                cache
+	 * @param int    &  $start        indicates the first index of the page
+	 * @param int       $per_page     number of ids each page is supposed to contain
+	 * @param string    $sort_dir     is either a or d representing ASC and DESC
+	 *
+	 * @return int self::SEARCH_RESULT_NOT_IN_CACHE or self::SEARCH_RESULT_IN_CACHE or self::SEARCH_RESULT_INCOMPLETE
+	 */
 	protected function obtain_ids(string $search_key, int &$result_count, array &$id_ary, int &$start, int $per_page, string $sort_dir): int
 	{
 		if (!($stored_ids = $this->cache->get('_kb_search_results_' . $search_key)))
@@ -114,7 +109,7 @@ abstract class kb_base
 			}
 
 			// change the start to the actual end of the current request if the sort direction differs
-			// from the dirction in the cache and reverse the ids later
+			// from the direction in the cache and reverse the ids later
 			if ($reverse_ids)
 			{
 				$start = $result_count - $start - $per_page;
@@ -153,19 +148,21 @@ abstract class kb_base
 	}
 
 	/**
-	* Caches post/topic ids
-	*
-	* @param string $search_key		an md5 string generated from all the passed search options to identify the results
-	* @param string $keywords 		contains the keywords as entered by the user
-	* @param array	$author_ary		an array of author ids, if the author should be ignored during the search the array is empty
-	* @param int 	$result_count	contains the number of all results for the search (not only for the current page)
-	* @param array	&$id_ary 		contains a list of post or topic ids that shall be cached, the first element
-	* 	must have the absolute index $start in the result set.
-	* @param int	$start			indicates the first index of the page
-	* @param string $sort_dir		is either a or d representing ASC and DESC
-	*
+	 * Caches post/topic ids
+	 *
+	 * @param string    $search_key   an md5 string generated from all the passed search options to identify the
+	 *                                results
+	 * @param string    $keywords     contains the keywords as entered by the user
+	 * @param array     $author_ary   an array of author ids, if the author should be ignored during the search the
+	 *                                array is empty
+	 * @param int       $result_count contains the number of all results for the search (not only for the current page)
+	 * @param array    &$id_ary       contains a list of post or topic ids that shall be cached, the first element
+	 *                                must have the absolute index $start in the result set.
+	 * @param int       $start        indicates the first index of the page
+	 * @param string    $sort_dir     is either a or d representing ASC and DESC
+	 *
 	 * @return void
-	*/
+	 */
 	protected function save_ids(string $search_key, string $keywords, array $author_ary, int $result_count, array &$id_ary, int $start, string $sort_dir): void
 	{
 		$length = min(count($id_ary), $this->config['search_block_size']);
@@ -178,8 +175,8 @@ abstract class kb_base
 
 		$store_ids = array_slice($id_ary, 0, $length);
 
-		// create a new resultset if there is none for this search_key yet
-		// or add the ids to the existing resultset
+		// create a new result set if there is none for this search_key yet
+		// or add the ids to the existing result set
 		if (!($store = $this->cache->get('_kb_search_results_' . $search_key)))
 		{
 			// add the current keywords to the recent searches in the cache which are listed on the search page
@@ -196,7 +193,7 @@ abstract class kb_base
 						'search_key'      => $search_key,
 						'search_time'     => time(),
 						'search_keywords' => $keywords,
-						'search_authors'	=> ' ' . implode(' ', $author_ary) . ' '
+						'search_authors'  => ' ' . implode(' ', $author_ary) . ' ',
 					);
 
 					$sql = 'INSERT INTO ' . $this->search_results_table . ' ' . $this->db->sql_build_array('INSERT', $sql_ary);
@@ -215,7 +212,7 @@ abstract class kb_base
 		}
 		else
 		{
-			// we use one set of results for both sort directions so we have to calculate the indizes
+			// we use one set of results for both sort directions so we have to calculate the sizes
 			// for the reversed array and we also have to reverse the ids themselves
 			if ($store[-2] != $sort_dir)
 			{
@@ -269,8 +266,9 @@ abstract class kb_base
 	}
 
 	/**
-	* Removes old entries from the search results table and removes searches with keywords that contain a word in $words.
-	*/
+	 * Removes old entries from the search results table and removes searches with keywords that contain a word in
+	 * $words.
+	 */
 	protected function destroy_cache(array $words, $authors = false): void
 	{
 		// clear all searches that searched for the specified words
@@ -279,7 +277,7 @@ abstract class kb_base
 			$sql_where = '';
 			foreach ($words as $word)
 			{
-				$sql_where .= " OR search_keywords " . $this->db->sql_like_expression($this->db->get_any_char() . $word . $this->db->get_any_char());
+				$sql_where .= ' OR search_keywords ' . $this->db->sql_like_expression($this->db->get_any_char() . $word . $this->db->get_any_char());
 			}
 
 			$sql = 'SELECT search_key
@@ -322,7 +320,8 @@ abstract class kb_base
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * @param int $article_counter
+	 * @return array|null
 	 */
 	public function create_index(int &$article_counter = 0): ?array
 	{
@@ -361,9 +360,9 @@ abstract class kb_base
 			$rows_per_second = $row_count / $totaltime;
 
 			return [
-				'row_count' => $row_count,
-				'post_counter' => $article_counter,
-				'max_post_id' => $max_article_id,
+				'row_count'       => $row_count,
+				'post_counter'    => $article_counter,
+				'max_post_id'     => $max_article_id,
 				'rows_per_second' => $rows_per_second,
 			];
 		}
@@ -372,7 +371,8 @@ abstract class kb_base
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * @param int|null $article_counter
+	 * @return array|null
 	 */
 	public function delete_index(int &$article_counter = null): ?array
 	{
@@ -405,9 +405,9 @@ abstract class kb_base
 			$rows_per_second = $row_count / $totaltime;
 
 			return [
-				'row_count' => $row_count,
-				'post_counter' => $article_counter,
-				'max_post_id' => $max_article_id,
+				'row_count'       => $row_count,
+				'post_counter'    => $article_counter,
+				'max_post_id'     => $max_article_id,
 				'rows_per_second' => $rows_per_second,
 			];
 		}
@@ -425,7 +425,7 @@ abstract class kb_base
 	{
 		$sql = 'SELECT article_id, author_id, article_category_id, article_body, article_title, article_description
 			FROM ' . $this->articles_table . '
-			WHERE article_id > ' . (int) $article_id . '
+			WHERE article_id > ' . $article_id . '
 			ORDER BY article_id ASC';
 		$result = $this->db->sql_query_limit($sql, self::BATCH_SIZE);
 
@@ -440,7 +440,7 @@ abstract class kb_base
 	/**
 	 * Get post with higher id
 	 */
-	protected function get_max_article_id()
+	protected function get_max_article_id(): int
 	{
 		$sql = 'SELECT MAX(article_id) as max_article_id
 			FROM ' . $this->articles_table;
@@ -452,7 +452,7 @@ abstract class kb_base
 	}
 
 	/**
-	 * {@inheritdoc}
+	 * @return string
 	 */
 	public function get_type(): string
 	{

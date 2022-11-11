@@ -16,49 +16,49 @@ use RuntimeException;
 class search
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
-	/** @var \phpbb\request\request */
-	protected $request;
+	/** @var \phpbb\request\request_interface */
+	protected \phpbb\request\request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected \phpbb\user $user;
 
 	/** @var \phpbb\pagination */
-	protected $pagination;
+	protected \phpbb\pagination $pagination;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected $kb;
+	protected \sheer\knowledgebase\inc\functions_kb $kb;
 
 	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected $search_factory;
+	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
 
 	/** @var string */
-	protected $phpbb_root_path;
+	protected string $phpbb_root_path;
 
 	/** @var string */
-	protected $php_ext;
+	protected string $php_ext;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/** @var string */
-	protected $categories_table;
+	protected string $categories_table;
 
 	/**
 	 * Constructor
@@ -91,10 +91,10 @@ class search
 		\phpbb\pagination $pagination,
 		\sheer\knowledgebase\inc\functions_kb $kb,
 		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
-		$phpbb_root_path,
-		$php_ext,
-		$articles_table,
-		$categories_table
+		string $phpbb_root_path,
+		string $php_ext,
+		string $articles_table,
+		string $categories_table
 	)
 	{
 		$this->db = $db;
@@ -117,7 +117,7 @@ class search
 	/**
 	 * @return \Symfony\Component\HttpFoundation\Response
 	 */
-	public function main()
+	public function main(): \Symfony\Component\HttpFoundation\Response
 	{
 		$this->language->add_lang(array('search'));
 
@@ -164,11 +164,11 @@ class search
 			0   => $this->language->lang('ALL_RESULTS'), 1 => $this->language->lang('1_DAY'),
 			7   => $this->language->lang('7_DAYS'), 14 => $this->language->lang('2_WEEKS'),
 			30  => $this->language->lang('1_MONTH'), 90 => $this->language->lang('3_MONTHS'),
-			180 => $this->language->lang('6_MONTHS'), 365 => $this->language->lang('1_YEAR')
+			180 => $this->language->lang('6_MONTHS'), 365 => $this->language->lang('1_YEAR'),
 		];
 		$sort_by_text = [
 			't' => $this->language->lang('SORT_TIME'), 'a' => $this->language->lang('SORT_AUTHOR'),
-			'c' => $this->language->lang('CATEGORY'), 's' => $this->language->lang('SORT_ARTICLE_TITLE')
+			'c' => $this->language->lang('CATEGORY'), 's' => $this->language->lang('SORT_ARTICLE_TITLE'),
 		];
 
 		$s_limit_days = $s_sort_key = $s_sort_dir = $u_sort_param = '';
@@ -204,7 +204,7 @@ class search
 		{
 			$author_ary[] = $author;
 			include_once($this->phpbb_root_path . 'includes/functions_user.' . $this->php_ext);
-			user_get_id_name( $author_id_ary, $author_ary, false, true);
+			user_get_id_name($author_id_ary, $author_ary, false, true);
 		}
 
 		// Select which method we'll use to obtain the post_id or topic_id information

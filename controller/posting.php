@@ -16,73 +16,73 @@ use RuntimeException;
 class posting
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/** @var \phpbb\extension\manager */
-	protected $ext_manager;
+	protected \phpbb\extension\manager $ext_manager;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
-	/** @var \phpbb\request\request */
-	protected $request;
+	/** @var \phpbb\request\request_interface */
+	protected \phpbb\request\request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected \phpbb\user $user;
 
-	/** @var phpbb\cache\service */
-	protected $cache;
+	/** @var \phpbb\cache\driver\driver_interface */
+	protected \phpbb\cache\driver\driver_interface $cache;
 
 	/** @var \phpbb\log\log */
 	protected $log;
 
 	/** @var \phpbb\files\factory */
-	protected $files_factory;
+	protected \phpbb\files\factory $files_factory;
 
 	/* @var \phpbb\plupload\plupload */
-	protected $plupload;
+	protected \phpbb\plupload\plupload $plupload;
 
 	/** @var \phpbb\notification\manager */
-	protected $notification_manager;
+	protected \phpbb\notification\manager $notification_manager;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected $kb;
+	protected \sheer\knowledgebase\inc\functions_kb $kb;
 
 	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected $search_factory;
+	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
 
 	/** @var string */
-	protected $phpbb_root_path;
+	protected string $phpbb_root_path;
 
 	/** @var string */
-	protected $php_ext;
+	protected string $php_ext;
 
 	/** @var string */
-	protected $logs_table;
+	protected string $logs_table;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/** @var string */
-	protected $categories_table;
+	protected string $categories_table;
 
 	/** @var string */
-	protected $attachments_table;
+	protected string $attachments_table;
 
 	/** @var string */
-	protected $upload_dir;
+	protected string $upload_dir;
 
 	/**
 	 * Constructor
@@ -96,7 +96,7 @@ class posting
 	 * @param \phpbb\request\request_interface                      $request
 	 * @param \phpbb\template\template                              $template
 	 * @param \phpbb\user                                           $user
-	 * @param \phpbb\cache\service                                  $cache
+	 * @param \phpbb\cache\driver\driver_interface                  $cache
 	 * @param \phpbb\log\log_interface                              $log
 	 * @param \phpbb\files\factory                                  $files_factory
 	 * @param \phpbb\plupload\plupload                              $plupload
@@ -120,25 +120,25 @@ class posting
 		\phpbb\request\request_interface $request,
 		\phpbb\template\template $template,
 		\phpbb\user $user,
-		\phpbb\cache\service $cache,
+		\phpbb\cache\driver\driver_interface $cache,
 		\phpbb\log\log_interface $log,
 		\phpbb\files\factory $files_factory,
 		\phpbb\plupload\plupload $plupload,
 		\phpbb\notification\manager $notification_manager,
 		\sheer\knowledgebase\inc\functions_kb $kb,
 		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
-		$phpbb_root_path,
-		$php_ext,
-		$logs_table,
-		$articles_table,
-		$categories_table,
-		$attachments_table
+		string $phpbb_root_path,
+		string $php_ext,
+		string $logs_table,
+		string $articles_table,
+		string $categories_table,
+		string $attachments_table
 	)
 	{
 		$this->db = $db;
 		$this->config = $config;
 		$this->helper = $helper;
-		$this->ext_manager	= $ext_manager;
+		$this->ext_manager = $ext_manager;
 		$this->language = $language;
 		$this->auth = $auth;
 		$this->request = $request;
@@ -161,10 +161,7 @@ class posting
 		$this->upload_dir = $this->ext_manager->get_extension_path('sheer/knowledgebase', true) . 'files/';
 	}
 
-	/**
-	 * @return \Symfony\Component\HttpFoundation\Response
-	 */
-	public function post_article()
+	public function post_article(): \Symfony\Component\HttpFoundation\Response
 	{
 		if (!$this->auth->acl_get('u_kb_view') && !$this->auth->acl_get('a_manage_kb'))
 		{
@@ -190,6 +187,8 @@ class posting
 			trigger_error('RULES_KB_ADD_CANNOT');
 		}
 
+		$row = '';
+		$delete_allowed = $edit_allowed = $article_author_id = false;
 		if ($mode)
 		{
 			$sql = 'SELECT DISTINCT a.*, c.category_name, c.category_id
@@ -322,6 +321,8 @@ class posting
 		$article_text = (isset($article_text)) ? $this->request->variable('message', $article_text, true) : $this->request->variable('message', '', true);
 		$article_description = (isset($article_description)) ? $this->request->variable('descr', $article_description, true) : $this->request->variable('descr', '', true);
 
+		$articles_count = 0;
+		$category_name = '';
 		if ($row = $this->kb->get_cat_info($cat_id))
 		{
 			$articles_count = $row['number_articles'];
@@ -341,8 +342,8 @@ class posting
 		{
 			if ($article_title && $article_text)
 			{
-				/* to enable bbcode, urls and smilies parsing, be enable it when using
-				generate_text_for_stoarge function */
+				// to enable bbcode, urls and smilies parsing, be enabled it when using
+				// generate_text_for_storage function
 				generate_text_for_storage($article_text, $bbcode_uid, $bbcode_bitfield, $options, true, true, true);
 
 				$sql_data = array(
@@ -414,8 +415,6 @@ class posting
 					$msg .= '<br><br>' . sprintf($this->language->lang('RETURN_ARTICLE'), '<a href="' . $redirect . '">', '</a>');
 					$msg .= '<br><br>' . sprintf($this->language->lang('RETURN_CAT'), '<a href="' . $root . '">', '</a>');
 					$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_EDIT_ARTICLE', time(), array($article_title, $category_name));
-					meta_refresh(2, $redirect);
-					trigger_error($msg);
 				}
 				else
 				{
@@ -475,10 +474,9 @@ class posting
 
 					$msg .= '<br><br>' . sprintf($this->language->lang('RETURN_CAT'), '<a href="' . $root . '">', '</a>');
 					$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_ADD_ARTICLE', time(), array($article_title, $category_name));
-
-					meta_refresh(2, $redirect);
-					trigger_error($msg);
 				}
+				meta_refresh(2, $redirect);
+				trigger_error($msg);
 			}
 			else
 			{
@@ -517,7 +515,7 @@ class posting
 
 			$preview_text = generate_text_for_display($preview_text, $uid, $bitfield, $options);
 
-			// Parse attacments
+			// Parse attachments
 			if (count($attachment_data))
 			{
 				$this->kb->parse_att($preview_text, $attachment_data);
@@ -554,19 +552,19 @@ class posting
 				'S_EDIT_POST'       => $mode == 'edit',
 				'S_CAN_DELETE'      => isset($delete_allowed) && $delete_allowed,
 
-				'S_FORM_ENCTYPE'         => ($this->config['kb_allow_attachments']) ? ' enctype="multipart/form-data"' : '',
+				'S_FORM_ENCTYPE' => ($this->config['kb_allow_attachments']) ? ' enctype="multipart/form-data"' : '',
 
-				'S_PLUPLOAD'             => (bool) $this->config['kb_allow_attachments'],
-				'S_RESIZE'               => $this->plupload->generate_resize_string(),
-				'FILESIZE'               => $this->config['kb_max_filesize'],
-				'FILTERS'                => $this->kb->generate_filter_string(),
-				'CHUNK_SIZE'             => $this->plupload->get_chunk_size(),
-				'S_PLUPLOAD_URL'         => generate_board_url() . '/knowledgebase/posting?id=' . $cat_id,
-				'MAX_ATTACHMENTS'        => (!$this->auth->acl_get('a_manage_kb')) ? $this->config['kb_max_attachments'] : 0,
-				'ATTACH_ORDER'           => 'desc',
-				'L_TOO_MANY_ATTACHMENTS' => $this->language->lang('TOO_MANY_ATTACHMENTS', $this->config['kb_max_attachments']),
-				'S_ATTACH_DATA'          => (count($attachment_data)) ? json_encode($attachment_data) : '[]',
-				'MAX_ATTACHMENT_FILESIZE'=> $this->config['kb_max_filesize'] > 0 ? $this->language->lang('MAX_ATTACHMENT_FILESIZE', get_formatted_filesize($this->config['kb_max_filesize'])) : '',
+				'S_PLUPLOAD'              => (bool) $this->config['kb_allow_attachments'],
+				'S_RESIZE'                => $this->plupload->generate_resize_string(),
+				'FILESIZE'                => $this->config['kb_max_filesize'],
+				'FILTERS'                 => $this->kb->generate_filter_string(),
+				'CHUNK_SIZE'              => $this->plupload->get_chunk_size(),
+				'S_PLUPLOAD_URL'          => generate_board_url() . '/knowledgebase/posting?id=' . $cat_id,
+				'MAX_ATTACHMENTS'         => (!$this->auth->acl_get('a_manage_kb')) ? $this->config['kb_max_attachments'] : 0,
+				'ATTACH_ORDER'            => 'desc',
+				'L_TOO_MANY_ATTACHMENTS'  => $this->language->lang('TOO_MANY_ATTACHMENTS', $this->config['kb_max_attachments']),
+				'S_ATTACH_DATA'           => (count($attachment_data)) ? json_encode($attachment_data) : '[]',
+				'MAX_ATTACHMENT_FILESIZE' => $this->config['kb_max_filesize'] > 0 ? $this->language->lang('MAX_ATTACHMENT_FILESIZE', get_formatted_filesize($this->config['kb_max_filesize'])) : '',
 
 				'CATS_BOX' => '<option value="0" disabled="disabled">' . $this->language->lang('CATEGORIES_LIST') . '</option>' . $this->kb->make_category_select($cat_id, false, false),
 
@@ -591,9 +589,9 @@ class posting
 			);
 		}
 
-		$tille = ($mode == 'edit') ? $this->language->lang('EDIT_ARTICLE') : $this->language->lang('ADD_ARTICLE');
+		$title = ($mode == 'edit') ? $this->language->lang('EDIT_ARTICLE') : $this->language->lang('ADD_ARTICLE');
 
-		return $this->helper->render('@sheer_knowledgebase/kb_post_body.html', ($this->language->lang('LIBRARY') . ' &raquo; ' . $tille));
+		return $this->helper->render('@sheer_knowledgebase/kb_post_body.html', ($this->language->lang('LIBRARY') . ' &raquo; ' . $title));
 	}
 
 	public function decode_message($message, $bbcode_uid = '')
@@ -690,7 +688,8 @@ class posting
 				$fileupload = $this->files_factory->get('files.upload')
 					->set_disallowed_content([])
 					->set_allowed_extensions($allowed_extensions)
-					->set_max_filesize($this->config['kb_max_filesize']);
+					->set_max_filesize($this->config['kb_max_filesize'])
+				;
 
 				$upload_file = (isset($this->files_factory)) ? $fileupload->handle_upload('files.types.form', 'fileupload') : $fileupload->form_upload('fileupload');
 

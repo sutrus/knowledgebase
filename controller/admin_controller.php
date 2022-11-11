@@ -21,88 +21,88 @@ class admin_controller
 	protected const STATE_POST_COUNTER = 2;
 
 	/** @var \phpbb\db\driver\driver_interface */
-	protected $db;
+	protected \phpbb\db\driver\driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected $config;
+	protected \phpbb\config\config $config;
 
 	/** @var \phpbb\config\db_text */
-	protected $config_text;
+	protected \phpbb\config\db_text $config_text;
 
 	/** @var \phpbb\controller\helper */
-	protected $helper;
+	protected \phpbb\controller\helper $helper;
 
 	/** @var \phpbb\extension\manager */
-	protected $ext_manager;
+	protected \phpbb\extension\manager $ext_manager;
 
 	/** @var \phpbb\language\language */
-	protected $language;
+	protected \phpbb\language\language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected $auth;
+	protected \phpbb\auth\auth $auth;
 
-	/** @var \phpbb\request\request */
-	protected $request;
+	/** @var \phpbb\request\request_interface */
+	protected \phpbb\request\request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected $template;
+	protected \phpbb\template\template $template;
 
 	/** @var \phpbb\user */
-	protected $user;
+	protected \phpbb\user $user;
 
-	/** @var \phpbb\cache\service */
-	protected $cache;
+	/** @var \phpbb\cache\driver\driver_interface */
+	protected \phpbb\cache\driver\driver_interface $cache;
 
 	/** @var \phpbb\group\helper */
-	protected $group_helper;
+	protected \phpbb\group\helper $group_helper;
 
 	/** @var \phpbb\pagination */
-	protected $pagination;
+	protected \phpbb\pagination $pagination;
 
 	/** @var \phpbb\log\log */
-	protected $log;
+	protected \phpbb\log\log $log;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected $kb;
+	protected \sheer\knowledgebase\inc\functions_kb $kb;
 
 	/** @var \phpbb\di\service_collection */
-	protected $search_collection;
+	protected \phpbb\di\service_collection $search_collection;
 
 	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected $search_factory;
+	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
 
 	/** @var string */
-	protected $phpbb_root_path;
+	protected string $phpbb_root_path;
 
 	/** @var string */
-	protected $php_ext;
+	protected string $php_ext;
 
 	/** @var string */
-	protected $articles_table;
+	protected string $articles_table;
 
 	/** @var string */
-	protected $categories_table;
+	protected string $categories_table;
 
 	/** @var string */
-	protected $logs_table;
+	protected string $logs_table;
 
 	/** @var string */
-	protected $attachments_table;
+	protected string $attachments_table;
 
 	/** @var string */
-	protected $options_table;
+	protected string $options_table;
 
 	/** @var string */
-	protected $kb_users_table;
+	protected string $kb_users_table;
 
 	/** @var string */
-	protected $kb_groups_table;
+	protected string $kb_groups_table;
 
 	/** @var string */
-	protected $upload_dir;
+	protected string $upload_dir;
 
 	/** @var string */
-	protected $u_action;
+	protected string $u_action;
 
 	/**
 	 * Constructor
@@ -117,7 +117,7 @@ class admin_controller
 	 * @param \phpbb\request\request_interface                      $request
 	 * @param \phpbb\template\template                              $template
 	 * @param \phpbb\user                                           $user
-	 * @param \phpbb\cache\service                                  $cache
+	 * @param \phpbb\cache\driver\driver_interface                  $cache
 	 * @param \phpbb\group\helper                                   $group_helper
 	 * @param \phpbb\pagination                                     $pagination
 	 * @param \phpbb\log\log                                        $log
@@ -145,29 +145,29 @@ class admin_controller
 		\phpbb\request\request_interface $request,
 		\phpbb\template\template $template,
 		\phpbb\user $user,
-		\phpbb\cache\service $cache,
+		\phpbb\cache\driver\driver_interface $cache,
 		\phpbb\group\helper $group_helper,
 		\phpbb\pagination $pagination,
 		\phpbb\log\log $log,
 		\sheer\knowledgebase\inc\functions_kb $kb,
 		\phpbb\di\service_collection $search_collection,
 		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
-		$phpbb_root_path,
-		$php_ext,
-		$articles_table,
-		$categories_table,
-		$logs_table,
-		$attachments_table,
-		$options_table,
-		$kb_users_table,
-		$kb_groups_table
+		string $phpbb_root_path,
+		string $php_ext,
+		string $articles_table,
+		string $categories_table,
+		string $logs_table,
+		string $attachments_table,
+		string $options_table,
+		string $kb_users_table,
+		string $kb_groups_table
 	)
 	{
 		$this->db = $db;
 		$this->config = $config;
 		$this->config_text = $config_text;
 		$this->helper = $helper;
-		$this->ext_manager	= $ext_manager;
+		$this->ext_manager = $ext_manager;
 		$this->language = $language;
 		$this->auth = $auth;
 		$this->request = $request;
@@ -279,7 +279,7 @@ class admin_controller
 				'EXTENSIONS_GROUP'     => $this->language->is_set('EXT_GROUP_' . $group_name) ? $this->language->lang('EXT_GROUP_' . $group_name) : $group_name,
 				'S_OPTIONS'            => $s_options,
 				'DIASABLED_EXTENSIONS' => $disabled_extensions,
-				'ASSIGNED_EXTENSIONS'  => implode( ', ', $assigned_ext),
+				'ASSIGNED_EXTENSIONS'  => implode(', ', $assigned_ext),
 			]);
 		}
 
@@ -297,7 +297,7 @@ class admin_controller
 			'S_FORUM_PREFIX'           => $this->config_text->get('kb_forum_prefix'),
 			'S_TOPIC_PREFIX'           => $this->config_text->get('kb_topic_prefix'),
 			'S_FORCIBLY'               => $this->config['kb_sort_type'] == 0,
-			'S_ALPHABET'                => $this->config['kb_sort_type'] == -1,
+			'S_ALPHABET'               => $this->config['kb_sort_type'] == -1,
 			'S_SELECTABLE'             => $this->config['kb_sort_type'] == 1,
 			'KB_FONT_ICON'             => $this->config['kb_font_icon'],
 			'S_ACTION'                 => $this->u_action,
@@ -2714,12 +2714,12 @@ class admin_controller
 		unset($cfg_array);
 
 		$this->template->assign_vars([
-				'S_SEARCH_TYPES'     => $search_options,
-				'S_YES_SEARCH'       => (bool) $this->config['kb_search'],
-				'S_SETTINGS'         => true,
-				'PER_PAGE_KB_SEARCH' => ($this->config['kb_per_page_search']) ? $this->config['kb_per_page_search'] : 10,
+			'S_SEARCH_TYPES'     => $search_options,
+			'S_YES_SEARCH'       => (bool) $this->config['kb_search'],
+			'S_SETTINGS'         => true,
+			'PER_PAGE_KB_SEARCH' => ($this->config['kb_per_page_search']) ? $this->config['kb_per_page_search'] : 10,
 
-				'U_ACTION'			=> $this->u_action . '&amp;hash=' . generate_link_hash('kb_acp_search'),
+			'U_ACTION' => $this->u_action . '&amp;hash=' . generate_link_hash('kb_acp_search'),
 		]);
 	}
 
@@ -2843,7 +2843,7 @@ class admin_controller
 				$state = [
 					self::STATE_SEARCH_TYPE  => $this->request->variable('kb_search_type', ''),
 					self::STATE_ACTION       => $action,
-					self::STATE_POST_COUNTER => 0
+					self::STATE_POST_COUNTER => 0,
 				];
 			}
 			else
@@ -2904,7 +2904,7 @@ class admin_controller
 		adm_page_header($this->language->lang($l_type));
 
 		$this->template->set_filenames([
-			'body' => 'progress_bar.html'
+			'body' => 'progress_bar.html',
 		]);
 
 		$this->template->assign_vars([
@@ -2950,7 +2950,7 @@ class admin_controller
 	 * @return void
 	 * @access public
 	 */
-	public function set_page_url($u_action)
+	public function set_page_url(string $u_action)
 	{
 		$this->u_action = $u_action;
 	}

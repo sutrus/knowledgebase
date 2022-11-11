@@ -93,7 +93,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	protected $articles_table;
 
 	/** @var string */
-	protected $search_results_table;
+	protected string $search_results_table;
 
 	/** @var string */
 	protected $wordmatch_table;

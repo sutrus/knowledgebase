@@ -51,7 +51,9 @@ dd.action {
 	padding-bottom: 0;
 }
 
-.kb_codebox hr { margin: 0; }
+.kb_codebox hr {
+	margin: 0;
+}
 
 .kb_codebox code {
 	font: 105% Monaco, "Andale Mono", "Courier New", Courier, monospace;
