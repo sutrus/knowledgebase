@@ -12,7 +12,24 @@
 namespace sheer\knowledgebase\controller;
 
 use Exception;
+use phpbb\auth\auth as auth;
+use phpbb\cache\driver\driver_interface as cache_interface;
+use phpbb\config\config as config;
+use phpbb\config\db_text as db_text;
+use phpbb\controller\helper as helper;
+use phpbb\db\driver\driver_interface as driver_interface;
+use phpbb\di\service_collection as service_collection;
+use phpbb\extension\manager as manager;
+use phpbb\group\helper as group_helper;
+use phpbb\language\language as language;
+use phpbb\log\log as log;
+use phpbb\pagination as pagination;
+use phpbb\request\request_interface as request_interface;
+use phpbb\template\template as template;
+use phpbb\user as user;
 use RuntimeException;
+use sheer\knowledgebase\inc\functions_kb as functions_kb;
+use sheer\knowledgebase\search\kb_search_backend_factory as kb_search_backend_factory;
 
 class admin_controller
 {
@@ -20,56 +37,56 @@ class admin_controller
 	protected const STATE_ACTION = 1;
 	protected const STATE_POST_COUNTER = 2;
 
-	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	/** @var driver_interface */
+	protected driver_interface $db;
 
-	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	/** @var config */
+	protected config $config;
 
-	/** @var \phpbb\config\db_text */
-	protected \phpbb\config\db_text $config_text;
+	/** @var db_text */
+	protected db_text $config_text;
 
-	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	/** @var helper */
+	protected helper $helper;
 
-	/** @var \phpbb\extension\manager */
-	protected \phpbb\extension\manager $ext_manager;
+	/** @var manager */
+	protected manager $ext_manager;
 
-	/** @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	/** @var language */
+	protected language $language;
 
-	/** @var \phpbb\auth\auth */
-	protected \phpbb\auth\auth $auth;
+	/** @var auth */
+	protected auth $auth;
 
-	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	/** @var request_interface */
+	protected request_interface $request;
 
-	/** @var \phpbb\template\template */
-	protected \phpbb\template\template $template;
+	/** @var template */
+	protected template $template;
 
-	/** @var \phpbb\user */
-	protected \phpbb\user $user;
+	/** @var user */
+	protected user $user;
 
-	/** @var \phpbb\cache\driver\driver_interface */
-	protected \phpbb\cache\driver\driver_interface $cache;
+	/** @var cache_interface */
+	protected cache_interface $cache;
 
-	/** @var \phpbb\group\helper */
-	protected \phpbb\group\helper $group_helper;
+	/** @var group_helper */
+	protected group_helper $group_helper;
 
-	/** @var \phpbb\pagination */
-	protected \phpbb\pagination $pagination;
+	/** @var pagination */
+	protected pagination $pagination;
 
-	/** @var \phpbb\log\log */
-	protected \phpbb\log\log $log;
+	/** @var log */
+	protected log $log;
 
-	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected \sheer\knowledgebase\inc\functions_kb $kb;
+	/** @var functions_kb */
+	protected functions_kb $kb;
 
-	/** @var \phpbb\di\service_collection */
-	protected \phpbb\di\service_collection $search_collection;
+	/** @var service_collection */
+	protected service_collection $search_collection;
 
-	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
+	/** @var kb_search_backend_factory */
+	protected kb_search_backend_factory $search_factory;
 
 	/** @var string */
 	protected string $phpbb_root_path;
@@ -107,51 +124,51 @@ class admin_controller
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface                     $db
-	 * @param \phpbb\config\config                                  $config
-	 * @param \phpbb\config\db_text                                 $config_text
-	 * @param \phpbb\controller\helper                              $helper
-	 * @param \phpbb\extension\manager                              $ext_manager
-	 * @param \phpbb\language\language                              $language
-	 * @param \phpbb\auth\auth                                      $auth
-	 * @param \phpbb\request\request_interface                      $request
-	 * @param \phpbb\template\template                              $template
-	 * @param \phpbb\user                                           $user
-	 * @param \phpbb\cache\driver\driver_interface                  $cache
-	 * @param \phpbb\group\helper                                   $group_helper
-	 * @param \phpbb\pagination                                     $pagination
-	 * @param \phpbb\log\log                                        $log
-	 * @param \sheer\knowledgebase\inc\functions_kb                 $kb
-	 * @param \phpbb\di\service_collection                          $search_collection
-	 * @param \sheer\knowledgebase\search\kb_search_backend_factory $search_factory
-	 * @param string                                                $phpbb_root_path
-	 * @param string                                                $php_ext
-	 * @param string                                                $articles_table
-	 * @param string                                                $categories_table
-	 * @param string                                                $logs_table
-	 * @param string                                                $attachments_table
-	 * @param string                                                $options_table
-	 * @param string                                                $kb_users_table
-	 * @param string                                                $kb_groups_table
+	 * @param driver_interface          $db
+	 * @param config                    $config
+	 * @param db_text                   $config_text
+	 * @param helper                    $helper
+	 * @param manager                   $ext_manager
+	 * @param language                  $language
+	 * @param auth                      $auth
+	 * @param request_interface         $request
+	 * @param template                  $template
+	 * @param user                      $user
+	 * @param cache_interface           $cache
+	 * @param group_helper              $group_helper
+	 * @param pagination                $pagination
+	 * @param log                       $log
+	 * @param functions_kb              $kb
+	 * @param service_collection        $search_collection
+	 * @param kb_search_backend_factory $search_factory
+	 * @param string                    $phpbb_root_path
+	 * @param string                    $php_ext
+	 * @param string                    $articles_table
+	 * @param string                    $categories_table
+	 * @param string                    $logs_table
+	 * @param string                    $attachments_table
+	 * @param string                    $options_table
+	 * @param string                    $kb_users_table
+	 * @param string                    $kb_groups_table
 	 */
 	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\config\config $config,
-		\phpbb\config\db_text $config_text,
-		\phpbb\controller\helper $helper,
-		\phpbb\extension\manager $ext_manager,
-		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
-		\phpbb\request\request_interface $request,
-		\phpbb\template\template $template,
-		\phpbb\user $user,
-		\phpbb\cache\driver\driver_interface $cache,
-		\phpbb\group\helper $group_helper,
-		\phpbb\pagination $pagination,
-		\phpbb\log\log $log,
-		\sheer\knowledgebase\inc\functions_kb $kb,
-		\phpbb\di\service_collection $search_collection,
-		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
+		driver_interface $db,
+		config $config,
+		db_text $config_text,
+		helper $helper,
+		manager $ext_manager,
+		language $language,
+		auth $auth,
+		request_interface $request,
+		template $template,
+		user $user,
+		cache_interface $cache,
+		group_helper $group_helper,
+		pagination $pagination,
+		log $log,
+		functions_kb $kb,
+		service_collection $search_collection,
+		kb_search_backend_factory $search_factory,
 		string $phpbb_root_path,
 		string $php_ext,
 		string $articles_table,
@@ -239,7 +256,7 @@ class admin_controller
 			}
 		}
 
-		$max_filesize = get_formatted_filesize($this->config['kb_max_filesize'], false, array('mb', 'kb', 'b'));
+		$max_filesize = get_formatted_filesize($this->config['kb_max_filesize'], false, ['mb', 'kb', 'b']);
 		$identifier = $max_filesize['si_identifier'];
 		$max_filesize = $max_filesize['value'];
 
@@ -313,8 +330,8 @@ class admin_controller
 	protected function set_settings()
 	{
 		// Create extension array
-		$extension_list = $this->request->variable('extensions', array('' => array('')));
-		$disabled_list = $this->request->variable('diasabled_extensions', array('' => array('')));
+		$extension_list = $this->request->variable('extensions', ['' => ['']]);
+		$disabled_list = $this->request->variable('diasabled_extensions', ['' => ['']]);
 		$extension_list = array_merge_recursive($extension_list, $disabled_list);
 
 		// Validate font icon field characters
@@ -371,9 +388,10 @@ class admin_controller
 
 		if ($submit)
 		{
-			$delete_files = ($this->request->is_set_post('delete')) ? array_keys($this->request->variable('delete', array('' => 0))) : array();
+			$delete_files = ($this->request->is_set_post('delete')) ? array_keys($this->request->variable('delete', ['' => 0])) : [];
 			if (count($delete_files))
 			{
+				$attachments_list = $attachments_ids = [];
 				$sql = 'SELECT attach_id, physical_filename
 					FROM ' . $this->attachments_table . '
 					WHERE ' . $this->db->sql_in_set('attach_id', $delete_files);
@@ -408,20 +426,30 @@ class admin_controller
 		$sort_dir = $this->request->variable('sd', 'd');
 
 		// Sorting
-		$limit_days = array(0   => $this->language->lang('ALL_ENTRIES'),
-							1   => $this->language->lang('1_DAY'),
-							7   => $this->language->lang('7_DAYS'),
-							14  => $this->language->lang('2_WEEKS'),
-							30  => $this->language->lang('1_MONTH'),
-							90  => $this->language->lang('3_MONTHS'),
-							180 => $this->language->lang('6_MONTHS'),
-							365 => $this->language->lang('1_YEAR'));
-		$sort_by_text = array('f' => $this->language->lang('FILENAME'),
-							  't' => $this->language->lang('FILEDATE'),
-							  's' => $this->language->lang('FILESIZE'),
-							  'x' => $this->language->lang('EXTENSION'),
-							  'u' => $this->language->lang('AUTHOR'));
-		$sort_by_sql = array('f' => 'a.real_filename', 't' => 'a.filetime', 's' => 'a.filesize', 'x' => 'a.extension', 'u' => 'u.username');
+		$limit_days = [
+			0   => $this->language->lang('ALL_ENTRIES'),
+			1   => $this->language->lang('1_DAY'),
+			7   => $this->language->lang('7_DAYS'),
+			14  => $this->language->lang('2_WEEKS'),
+			30  => $this->language->lang('1_MONTH'),
+			90  => $this->language->lang('3_MONTHS'),
+			180 => $this->language->lang('6_MONTHS'),
+			365 => $this->language->lang('1_YEAR'),
+		];
+		$sort_by_text = [
+			'f' => $this->language->lang('FILENAME'),
+			't' => $this->language->lang('FILEDATE'),
+			's' => $this->language->lang('FILESIZE'),
+			'x' => $this->language->lang('EXTENSION'),
+			'u' => $this->language->lang('AUTHOR'),
+		];
+		$sort_by_sql = [
+			'f' => 'a.real_filename',
+			't' => 'a.filetime',
+			's' => 'a.filesize',
+			'x' => 'a.extension',
+			'u' => 'u.username',
+		];
 
 		$s_limit_days = $s_sort_key = $s_sort_dir = $u_sort_param = '';
 		gen_sort_selects($limit_days, $sort_by_text, $sort_days, $sort_key, $sort_dir, $s_limit_days, $s_sort_key, $s_sort_dir, $u_sort_param);
@@ -458,7 +486,7 @@ class admin_controller
 			$sql_start = $start;
 		}
 
-		$attachments_list = array();
+		$attachments_list = [];
 
 		$sql = 'SELECT a.*, u.username, u.user_colour, t.article_title
 			FROM ' . $this->attachments_table . ' a
@@ -486,25 +514,25 @@ class admin_controller
 		for ($i = 0, $end = count($attachments_list); $i < $end; ++$i)
 		{
 			$row = $attachments_list[$i];
-			$img_src = ($this->kb->check_is_img($row['extension'])) ? '<span class="kb_preview"><img alt="" src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $row['attach_id'])) . '"></span>' : '';
-			$this->template->assign_block_vars('attachments', array(
+			$img_src = ($this->kb->check_is_img($row['extension'])) ? '<span class="kb_preview"><img alt="" src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $row['attach_id']]) . '"></span>' : '';
+			$this->template->assign_block_vars('attachments', [
 					'REAL_FILENAME'     => utf8_basename($row['real_filename']),
 					'FILETIME'          => $this->user->format_date($row['filetime']),
 					'ATTACHMENT_POSTER' => get_username_string('full', $row['poster_id'], $row['username'], $row['user_colour']),
-					'U_FILE'            => $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $row['attach_id'])),
+					'U_FILE'            => $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $row['attach_id']]),
 					'ATTACH_ID'         => $row['attach_id'],
 					'S_IS_ORPHAN'       => $row['is_orphan'],
 					'IMG_SRC'           => $img_src,
-					'U_ARTICLE'         => $this->helper->route('sheer_knowledgebase_article', array('k' => $row['article_id'])),
+					'U_ARTICLE'         => $this->helper->route('sheer_knowledgebase_article', ['k' => $row['article_id']]),
 					'ARTICLE_TITLE'     => $row['article_title'],
 					'FILESIZE'          => get_formatted_filesize($row['filesize']),
-				)
+				]
 			);
 		}
 
 		$this->pagination->generate_template_pagination($base_url, 'pagination', 'start', $num_files, $attachments_per_page, $start);
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'L_TITLE'         => $this->language->lang('ATTACHMENTS'),
 				'L_TITLE_EXPLAIN' => $this->language->lang('ATTACHMENTS_EXPLAIN'),
 				'S_ATTACHMENTS'   => true,
@@ -514,17 +542,17 @@ class admin_controller
 				'S_SORT_KEY'      => $s_sort_key,
 				'S_SORT_DIR'      => $s_sort_dir,
 				'S_ACTION'        => $this->u_action,
-			)
+			]
 		);
 	}
 
 	/**
 	 * Get attachment file count and size of upload directory
 	 *
-	 * @param $limit string    Additional limit for WHERE clause to filter stats by.
+	 * @param string $limit Additional limit for WHERE clause to filter stats by.
 	 * @return array Returns array with stats: num_files and upload_dir_size
 	 */
-	protected function get_kb_attachment_stats($limit = '')
+	protected function get_kb_attachment_stats(string $limit = ''): array
 	{
 		$sql = 'SELECT COUNT(a.attach_id) AS num_files, SUM(a.filesize) AS upload_dir_size
 			FROM ' . $this->attachments_table . " a
@@ -534,10 +562,10 @@ class admin_controller
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
 
-		return array(
+		return [
 			'num_files'       => (int) $row['num_files'],
 			'upload_dir_size' => (float) $row['upload_dir_size'],
-		);
+		];
 	}
 
 	/**
@@ -550,12 +578,14 @@ class admin_controller
 
 		if ($submit)
 		{
-			$delete_files = ($this->request->is_set_post('delete')) ? array_keys($this->request->variable('delete', array('' => 0))) : array();
-			$add_files = ($this->request->is_set_post('add')) ? array_keys($this->request->variable('add', array('' => 0))) : array();
-			$post_ids = $this->request->variable('post_id', array('' => 0));
+			$delete_files = ($this->request->is_set_post('delete')) ? array_keys($this->request->variable('delete', ['' => 0])) : [];
+			$add_files = ($this->request->is_set_post('add')) ? array_keys($this->request->variable('add', ['' => 0])) : [];
+			$post_ids = $this->request->variable('post_id', ['' => 0]);
 
 			if (count($delete_files))
 			{
+				$attachments_list = $attachments_ids = [];
+
 				$sql = 'SELECT attach_id, physical_filename, real_filename
 					FROM ' . $this->attachments_table . '
 					WHERE ' . $this->db->sql_in_set('attach_id', $delete_files);
@@ -579,7 +609,7 @@ class admin_controller
 				trigger_error($this->language->lang('FILES_DELETED_SUCCESS') . adm_back_link($this->u_action));
 			}
 
-			$upload_list = array();
+			$upload_list = [];
 			foreach ($add_files as $attach_id)
 			{
 				if (!isset($delete_files[$attach_id]) && !empty($post_ids[$attach_id]))
@@ -597,7 +627,7 @@ class admin_controller
 					WHERE ' . $this->db->sql_in_set('article_id', $upload_list);
 				$result = $this->db->sql_query($sql);
 
-				$post_info = array();
+				$post_info = [];
 				while ($row = $this->db->sql_fetchrow($result))
 				{
 					$post_info[$row['article_id']] = $row;
@@ -615,11 +645,11 @@ class admin_controller
 				{
 					$post_row = $post_info[$upload_list[$row['attach_id']]];
 					$mess = ($post_row['article_id']) ? sprintf($this->language->lang('POST_ROW_ARTICLE_INFO'), $post_row['article_id']) : '';
-					$this->template->assign_block_vars('upload', array(
+					$this->template->assign_block_vars('upload', [
 						'FILE_INFO' => sprintf($this->language->lang('UPLOADING_FILE_TO_ARTICLE'), $row['real_filename']) . $mess,
 						'S_DENIED'  => !$post_row['article_id'],
 						'DENIED'    => $this->language->lang('UPLOAD_DENIED_ARTICLE'),
-					));
+					]);
 
 					if (!$post_row['article_id'])
 					{
@@ -627,10 +657,10 @@ class admin_controller
 					}
 
 					// Adjust attachment entry
-					$sql_ary = array(
+					$sql_ary = [
 						'is_orphan'  => 0,
 						'article_id' => $post_row['article_id'],
-					);
+					];
 
 					$sql = 'UPDATE ' . $this->attachments_table . '
 						SET ' . $this->db->sql_build_array('UPDATE', $sql_ary) . '
@@ -651,9 +681,9 @@ class admin_controller
 
 		while ($row = $this->db->sql_fetchrow($result))
 		{
-			$img_src = ($this->kb->check_is_img($row['extension'])) ? '<span class="kb_preview"><img alt="" src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $row['attach_id'])) . '"></span>' : '';
+			$img_src = ($this->kb->check_is_img($row['extension'])) ? '<span class="kb_preview"><img alt="" src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $row['attach_id']]) . '"></span>' : '';
 
-			$this->template->assign_block_vars('orphan', array(
+			$this->template->assign_block_vars('orphan', [
 					'FILESIZE'          => get_formatted_filesize($row['filesize']),
 					'FILETIME'          => $this->user->format_date($row['filetime']),
 					'REAL_FILENAME'     => utf8_basename($row['real_filename']),
@@ -661,18 +691,18 @@ class admin_controller
 					'ATTACH_ID'         => $row['attach_id'],
 					'IMG_SRC'           => $img_src,
 					'POST_IDS'          => (!empty($post_ids[$row['attach_id']])) ? $post_ids[$row['attach_id']] : '',
-					'U_FILE'            => $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $row['attach_id'])),
-				)
+					'U_FILE'            => $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $row['attach_id']]),
+				]
 			);
 		}
 		$this->db->sql_freeresult($result);
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'S_ORPHAN'        => true,
 				'L_TITLE'         => $this->language->lang('ACP_ORPHAN_ATTACHMENTS'),
 				'L_TITLE_EXPLAIN' => $this->language->lang('ORPHAN_EXPLAIN'),
 				'S_ACTION'        => $this->u_action,
-			)
+			]
 		);
 	}
 
@@ -686,7 +716,7 @@ class admin_controller
 
 		$batch_size = 500;
 		$list = '';
-		$files = $bd_files = $delete_list = $unsuccess = array();
+		$files = $bd_files = $delete_list = $unsuccess = [];
 		ignore_user_abort(true);
 		set_time_limit(0);
 		$files_list = $this->cache->get('_kb_prune_attachments'); // Try to get data from cache
@@ -731,7 +761,7 @@ class admin_controller
 						$unsuccess[] = $del_file;
 					}
 
-					$files = array_diff($files, array($del_file));
+					$files = array_diff($files, [$del_file]);
 
 					sort($files);
 					$count++;
@@ -779,12 +809,12 @@ class admin_controller
 			}
 		}
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'S_PRUNE_ATTACHMENTS' => true,
 				'L_TITLE'             => $this->language->lang('ACP_LIBRARY_ATTACHMENTS_EXTRA_FILES'),
 				'L_TITLE_EXPLAIN'     => $this->language->lang('PRUNE_ATTACHMENTS_EXPLAIN'),
 				'S_ACTION'            => $this->u_action,
-			)
+			]
 		);
 	}
 
@@ -838,7 +868,7 @@ class admin_controller
 				trigger_error('RESYNC_ATTACHMENTS_FINISHED');
 			}
 
-			$delete_ids = array();
+			$delete_ids = [];
 
 			foreach ($batch as $row)
 			{
@@ -865,12 +895,12 @@ class admin_controller
 			trigger_error($this->language->lang('RESYNC_ATTACHMENTS_PROGRESS'));
 		}
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'S_PRUNE_ATTACHMENTS' => true,
 				'L_TITLE'             => $this->language->lang('ACP_LIBRARY_ATTACHMENTS_LOST_FILES'),
 				'L_TITLE_EXPLAIN'     => $this->language->lang('ACP_LIBRARY_ATTACHMENTS_LOST_FILES_EXPLAIN'),
 				'S_ACTION'            => $this->u_action,
-			)
+			]
 		);
 	}
 	/**
@@ -891,12 +921,19 @@ class admin_controller
 		$start = $this->request->variable('start', 0);
 
 		// Sorting
-		$limit_days = array();
-		$sort_by_text = array('u' => $this->language->lang('ARTICLE_DATE'),
-							  'd' => $this->language->lang('SORT_DATE'),
-							  'c' => $this->language->lang('CATEGORY'),
-							  'e' => $this->language->lang('EDIT_DATE'));
-		$sort_by_sql = array('u' => 'article_title', 'd' => 'article_date', 'c' => 'article_category_id', 'e' => 'edit_date');
+		$limit_days = [];
+		$sort_by_text = [
+			'u' => $this->language->lang('ARTICLE_DATE'),
+			'd' => $this->language->lang('SORT_DATE'),
+			'c' => $this->language->lang('CATEGORY'),
+			'e' => $this->language->lang('EDIT_DATE'),
+		];
+		$sort_by_sql = [
+			'u' => 'article_title',
+			'd' => 'article_date',
+			'c' => 'article_category_id',
+			'e' => 'edit_date',
+		];
 
 		$s_limit_days = $s_sort_key = $s_sort_dir = $u_sort_param = '';
 		$keywords_param = '';
@@ -925,21 +962,21 @@ class admin_controller
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$category_data = $this->kb->get_cat_info($row['article_category_id']);
-			$this->template->assign_block_vars('articles', array(
+			$this->template->assign_block_vars('articles', [
 					'ID'               => $row['article_id'],
 					'ARTICLE_TITLE'    => $row['article_title'],
 					'ARTICLE_APPROVED' => ($row['approved']) ? '<i class="icon fa-thumbs-o-up fa-fw acp-icon-settings"></i>' : '<i class="icon fa fa-exclamation-triangle fa-fw acp-icon-resync" aria-hidden="true" title="' . $this->language->lang('NEED_APPROVE') . '"></i>',
 					'CATEGORY_ID'      => $row['article_category_id'],
 					'CATEGORY'         => ($category_data['category_name']) ?: $this->language->lang('CAT_NO_EXISTS'),
-					'U_CATEGORY'       => $this->helper->route('sheer_knowledgebase_index', array('i' => '-sheer-knowledgebase-acp-manage_module', 'mode' => 'manage', 'parent_id' => $row['article_category_id'])),
-					'U_ARTICLE'        => $this->helper->route('sheer_knowledgebase_article', array('k' => $row['article_id'])),
-					'U_ARTICLE_EDIT'   => $this->helper->route('sheer_knowledgebase_posting', array('mode' => 'edit', 'id' => $row['article_category_id'], 'k' => $row['article_id'])),
+					'U_CATEGORY'       => $this->helper->route('sheer_knowledgebase_index', ['i' => '-sheer-knowledgebase-acp-manage_module', 'mode' => 'manage', 'parent_id' => $row['article_category_id']]),
+					'U_ARTICLE'        => $this->helper->route('sheer_knowledgebase_article', ['k' => $row['article_id']]),
+					'U_ARTICLE_EDIT'   => $this->helper->route('sheer_knowledgebase_posting', ['mode' => 'edit', 'id' => $row['article_category_id'], 'k' => $row['article_id']]),
 					'AUTHOR'           => $row['author'],
 					'TIME'             => $this->user->format_date($row['article_date']),
 					'EDIT_TIME'        => ($row['edit_date']) ? $this->user->format_date($row['edit_date']) : 0,
 					'U_MOVE'           => $this->u_action . '&amp;action=move&amp;aid=' . $row['article_id'],
 					'U_DELETE'         => $this->u_action . '&amp;action=delete&amp;aid=' . $row['article_id'],
-				)
+				]
 			);
 		}
 		$this->db->sql_freeresult($result);
@@ -950,14 +987,14 @@ class admin_controller
 			$this->pagination->generate_template_pagination($pagination_url, 'pagination', 'start', $article_count, $per_page, $start);
 		}
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'S_SORT_KEY'  => $s_sort_key,
 				'S_SORT_DIR'  => $s_sort_dir,
 				'S_ARTICLES'  => true,
 				'S_ACTION'    => $this->u_action . "&amp;$u_sort_param$keywords_param&amp;start=$start",
 				'TOTAL_ITEMS' => $this->language->lang('TOTAL_ITEMS', (int) $article_count),
 				'PAGE_NUMBER' => $this->pagination->on_page($article_count, $per_page, $start),
-			)
+			]
 		);
 	}
 
@@ -979,11 +1016,11 @@ class admin_controller
 			trigger_error($this->language->lang('ARTICLE_MOVED'));
 		}
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'S_MOVE_ART'              => true,
 				'S_MOVE_CATEGORY_OPTIONS' => $this->kb->make_category_select(0, $info['article_category_id'], false),
 				'S_ACTION'                => $this->u_action . '&amp;action=move&amp;aid=' . $article_id,
-			)
+			]
 		);
 	}
 
@@ -1022,10 +1059,10 @@ class admin_controller
 		}
 		else
 		{
-			$s_hidden_fields = build_hidden_fields(array(
+			$s_hidden_fields = build_hidden_fields([
 				'aid'    => $article_id,
 				'action' => 'delete',
-			));
+			]);
 
 			confirm_box(false, $this->language->lang('CONFIRM_DELETE_ARTICLE'), $s_hidden_fields);
 		}
@@ -1041,8 +1078,8 @@ class admin_controller
 	public function log($id, $mode)
 	{
 		$start = $this->request->variable('start', 0);
-		$deletemark = $this->request->variable('delmarked', false, false, \phpbb\request\request_interface::POST);
-		$deleteall = $this->request->variable('delall', false, false, \phpbb\request\request_interface::POST);
+		$deletemark = $this->request->variable('delmarked', false, false, request_interface::POST);
+		$deleteall = $this->request->variable('delall', false, false, request_interface::POST);
 		$marked = $this->request->variable('mark', array(0));
 
 		// Sort keys
@@ -1071,7 +1108,7 @@ class admin_controller
 			}
 			else
 			{
-				confirm_box(false, $this->language->lang('CONFIRM_OPERATION'), build_hidden_fields(array(
+				confirm_box(false, $this->language->lang('CONFIRM_OPERATION'), build_hidden_fields([
 						'start'     => $start,
 						'delmarked' => $deletemark,
 						'delall'    => $deleteall,
@@ -1081,17 +1118,29 @@ class admin_controller
 						'sd'        => $sort_dir,
 						'i'         => $id,
 						'mode'      => $mode,
-					))
+					])
 				);
 			}
 		}
 
 		// Sorting
-		$limit_days = array(0   => $this->language->lang('ALL_ENTRIES'), 1 => $this->language->lang('1_DAY'), 7 => $this->language->lang('7_DAYS'),
-							14  => $this->language->lang('2_WEEKS'), 30 => $this->language->lang('1_MONTH'), 90 => $this->language->lang('3_MONTHS'),
-							180 => $this->language->lang('6_MONTHS'), 365 => $this->language->lang('1_YEAR'));
-		$sort_by_text = array('u' => $this->language->lang('SORT_USERNAME'), 't' => $this->language->lang('SORT_DATE'), 'i' => $this->language->lang('SORT_IP'), 'o' => $this->language->lang('SORT_ACTION'));
-		$sort_by_sql = array('u' => 'u.username_clean', 't' => 'l.log_time', 'i' => 'l.log_ip', 'o' => 'l.log_operation');
+		$limit_days = [
+			0   => $this->language->lang('ALL_ENTRIES'), 1 => $this->language->lang('1_DAY'), 7 => $this->language->lang('7_DAYS'),
+			14  => $this->language->lang('2_WEEKS'), 30 => $this->language->lang('1_MONTH'), 90 => $this->language->lang('3_MONTHS'),
+			180 => $this->language->lang('6_MONTHS'), 365 => $this->language->lang('1_YEAR'),
+		];
+		$sort_by_text = [
+			'u' => $this->language->lang('SORT_USERNAME'),
+			't' => $this->language->lang('SORT_DATE'),
+			'i' => $this->language->lang('SORT_IP'),
+			'o' => $this->language->lang('SORT_ACTION'),
+		];
+		$sort_by_sql = [
+			'u' => 'u.username_clean',
+			't' => 'l.log_time',
+			'i' => 'l.log_ip',
+			'o' => 'l.log_operation',
+		];
 
 		$s_limit_days = $s_sort_key = $s_sort_dir = $u_sort_param = '';
 		gen_sort_selects($limit_days, $sort_by_text, $sort_days, $sort_key, $sort_dir, $s_limit_days, $s_sort_key, $s_sort_dir, $u_sort_param);
@@ -1100,7 +1149,7 @@ class admin_controller
 		$sql_where = ($sort_days) ? (time() - ($sort_days * 86400)) : 0;
 		$sql_sort = $sort_by_sql[$sort_key] . ' ' . (($sort_dir == 'd') ? 'DESC' : 'ASC');
 
-		$log_data = array();
+		$log_data = [];
 		$log_count = 0;
 		$start = view_log('admin', $log_data, $log_count, $this->config['topics_per_page'], $start, 0, 0, 0, $sql_where, $sql_sort);
 
@@ -1109,23 +1158,22 @@ class admin_controller
 
 		foreach ($log_data as $row)
 		{
-			$this->template->assign_block_vars('log', array(
+			$this->template->assign_block_vars('log', [
 					'USERNAME' => $row['username_full'],
 					'IP'       => $row['ip'],
 					'DATE'     => $this->user->format_date($row['time']),
 					'ACTION'   => $row['action'],
 					'ID'       => $row['id'],
-				)
+				]
 			);
 		}
 
-		$this->template->assign_vars(array(
-				'U_ACTION' => $this->u_action . "&amp;start=$start",
-
+		$this->template->assign_vars([
+				'U_ACTION'     => $this->u_action . "&amp;start=$start",
 				'S_LIMIT_DAYS' => $s_limit_days,
 				'S_SORT_KEY'   => $s_sort_key,
 				'S_SORT_DIR'   => $s_sort_dir,
-			)
+			]
 		);
 	}
 	/**
@@ -1141,7 +1189,8 @@ class admin_controller
 	 */
 	public function update_category_data(&$category_data, $copy_perm_from_id): array
 	{
-		$errors = array();
+		$errors = [];
+		$category_id = '';
 
 		if ($category_data['category_name'] == '')
 		{
@@ -1219,7 +1268,7 @@ class admin_controller
 				}
 
 				($category_data_sql['parent_id']) ? $dest = $this->kb->get_cat_info($category_data_sql['parent_id']) : $dest['category_name'] = $this->language->lang('KB_ROOT');
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_CAT_MOVED_TO', time(), array($category_data_sql['category_name'], $dest['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_CAT_MOVED_TO', time(), [$category_data_sql['category_name'], $dest['category_name']]);
 			}
 
 			if (count($errors))
@@ -1248,11 +1297,13 @@ class admin_controller
 
 			// Add it back
 			$category_data['category_id'] = $category_id;
-			$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_EDIT', time(), array($category_data['category_name']));
+			$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_EDIT', time(), [$category_data['category_name']]);
 		}
 
 		if ($copy_perm_from_id)
 		{
+			$options = $sql_ary = [];
+
 			if (isset($new_category_id))
 			{
 				$category_id = $new_category_id;
@@ -1278,12 +1329,12 @@ class admin_controller
 			{
 				foreach ($options as $permission)
 				{
-					$sql_ary[] = array(
+					$sql_ary[] = [
 						'category_id'    => $category_id,
 						'group_id'       => $permission['group_id'],
 						'auth_option_id' => $permission['auth_option_id'],
 						'auth_setting'   => $permission['auth_setting'],
-					);
+					];
 				}
 				$this->db->sql_multi_insert($this->kb_groups_table, $sql_ary);
 			}
@@ -1294,7 +1345,7 @@ class admin_controller
 
 	protected function move_category($from_id, $to_id): array
 	{
-		$moved_ids = $errors = array();
+		$moved_ids = $errors = [];
 
 		$moved_cats = $this->kb->get_category_branch($from_id, 'children', 'descending');
 		$from_data = $moved_cats[0];
@@ -1377,7 +1428,7 @@ class admin_controller
 				AND " . (($action == 'move_up') ? "right_id < {$category_row['right_id']} ORDER BY right_id DESC" : "left_id > {$category_row['left_id']} ORDER BY left_id ASC");
 		$result = $this->db->sql_query_limit($sql, $steps);
 
-		$target = array();
+		$target = [];
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$target = $row;
@@ -1431,7 +1482,7 @@ class admin_controller
 
 	public function sync($cat_id): array
 	{
-		$errors = array();
+		$errors = [];
 
 		$sql = 'SELECT COUNT(article_category_id) as articles
 			FROM ' . $this->articles_table . '
@@ -1446,7 +1497,7 @@ class admin_controller
 			SET number_articles = ' . $articles . '
 			WHERE category_id = ' . (int) $cat_id;
 			$this->db->sql_query($sql);
-			return array();
+			return [];
 		}
 		$errors[] = $this->language->lang('CAT_NO_EXISTS');
 		return $errors;
@@ -1455,7 +1506,8 @@ class admin_controller
 	public function delete_category($category_id, $action_posts = 'delete', $action_sub_cats = 'delete', $posts_to_id = 0, $sub_cats_to_id = 0): array
 	{
 		$category_data = $this->kb->get_cat_info($category_id);
-		$errors = array();
+		$errors = [];
+		$diff = 0;
 		$log_action_posts = $log_action_cats = $posts_to_name = $sub_cats_to_name = '';
 		$category_ids = array($category_id);
 
@@ -1599,39 +1651,39 @@ class admin_controller
 		switch ($log_action)
 		{
 			case 'POSTS_MOVE_CATS':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_POSTS_MOVE_CATS', time(), array($sub_cats_to_name, $category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_POSTS_MOVE_CATS', time(), [$sub_cats_to_name, $category_data['category_name']]);
 			break;
 
 			case '_MOVE_CATS':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_CATS', time(), array($sub_cats_to_name, $category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_CATS', time(), [$sub_cats_to_name, $category_data['category_name']]);
 			break;
 
 			case 'MOVE_POSTS_':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_POSTS', time(), array($posts_to_name, $category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_POSTS', time(), [$posts_to_name, $category_data['category_name']]);
 			break;
 
 			case 'POSTS_CATS':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_POSTS_CATS', time(), array($category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_POSTS_CATS', time(), [$category_data['category_name']]);
 			break;
 
 			case '_CATS':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_CAT', time(), array($category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_CAT', time(), [$category_data['category_name']]);
 			break;
 
 			case 'POSTS_':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_ARTICLES', time(), array($category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_ARTICLES', time(), [$category_data['category_name']]);
 			break;
 
 			case 'MOVE_POSTS_MOVE_CATS':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_POSTS_MOVE_CATS', time(), array($posts_to_name, $sub_cats_to_name, $category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_POSTS_MOVE_CATS', time(), [$posts_to_name, $sub_cats_to_name, $category_data['category_name']]);
 			break;
 
 			case 'MOVE_POSTS_CATS':
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_POSTS_CATS', time(), array($posts_to_name, $category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_MOVE_POSTS_CATS', time(), [$posts_to_name, $category_data['category_name']]);
 			break;
 
 			default:
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_CAT', time(), array($category_data['category_name']));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_DEL_CAT', time(), [$category_data['category_name']]);
 			break;
 		}
 
@@ -1651,13 +1703,16 @@ class admin_controller
 
 	/**
 	 * Delete category content
+	 *
+	 * @param $cat_id
+	 * @return array
 	 */
-	function delete_category_content($cat_id)
+	function delete_category_content($cat_id): array
 	{
 		include_once($this->phpbb_root_path . 'includes/functions_posting.' . $this->php_ext);
 
 		// remove topics
-		$topics = $articles = $errors = array();
+		$topics = $articles = $errors = [];
 		$sql = 'SELECT topic_id, article_id
 			FROM ' . $this->articles_table . '
 			WHERE article_category_id = ' . (int) $cat_id;
@@ -1706,7 +1761,7 @@ class admin_controller
 	 */
 	protected function move_category_content($from_id, $to_id): array
 	{
-		$errors = array();
+		$errors = [];
 		// count the number of articles in the sender
 		$sql = 'SELECT number_articles
 			FROM ' . $this->categories_table . '
@@ -1757,7 +1812,7 @@ class admin_controller
 			WHERE category_id = ' . (int) $to_id;
 		$this->db->sql_query($sql);
 
-		return array();
+		return [];
 	}
 	/**
 	 * END - Category management functions
@@ -1768,7 +1823,7 @@ class admin_controller
 	 */
 	public function make_array_categoryid(): array
 	{
-		$category_id = array();
+		$category_id = [];
 		$sql = 'SELECT category_id
 			FROM ' . $this->categories_table;
 		$result = $this->db->sql_query($sql);
@@ -1781,8 +1836,11 @@ class admin_controller
 		return $category_id;
 	}
 
+
 	public function get_mask($mode, $user_mode, $group_id, $category_id, $user_id)
 	{
+		$groups = [];
+
 		$view_user_mask = ($mode == 'mask' && $user_mode == 'user');
 
 		if (empty($group_id) && empty($user_id))
@@ -1791,7 +1849,10 @@ class admin_controller
 			return;
 		}
 
-		$types = array('u_' => $this->language->lang('ACL_TYPE_U_'), 'm_' => $this->language->lang('ACL_TYPE_M_'));
+		$types = [
+			'u_' => $this->language->lang('ACL_TYPE_U_'),
+			'm_' => $this->language->lang('ACL_TYPE_M_'),
+		];
 
 		$apply_all_permissions = $this->request->variable('apply_all_permissions', false);
 
@@ -1845,20 +1906,20 @@ class admin_controller
 		while ($row = $this->db->sql_fetchrow($result)) // categories
 		{
 			$cat_id = $row['category_id'];
-			$this->template->assign_block_vars('p_mask', array(
+			$this->template->assign_block_vars('p_mask', [
 					'CATEGORY_ID'   => $cat_id,
 					'CATEGORY_NAME' => $row['category_name'],
 					'S_VIEW'        => $mode == 'mask',
-				)
+				]
 			);
 
 			foreach ($groups as $key => $group_id) // groups
 			{
-				$this->template->assign_block_vars('p_mask.g_mask', array(
+				$this->template->assign_block_vars('p_mask.g_mask', [
 						'GROUP_ID'   => $group_id,
 						'GROUP_NAME' => $key,
 						'PADDING'    => '',
-					)
+					]
 				);
 
 				foreach ($types as $key => $value)
@@ -1934,12 +1995,12 @@ class admin_controller
 						$all_yes = $all_never = $all_no = false;
 					}
 
-					$this->template->assign_block_vars('p_mask.g_mask.category', array(
+					$this->template->assign_block_vars('p_mask.g_mask.category', [
 							'PERMISSION_TYPE' => $value,
 							'S_YES'           => $all_yes,
 							'S_NEVER'         => $all_never,
 							'S_NO'            => $all_no,
-						)
+						]
 					);
 
 					foreach ($_options as $name => $option)
@@ -1963,14 +2024,14 @@ class admin_controller
 							$_never = true;
 						}
 
-						$this->template->assign_block_vars('p_mask.g_mask.category.mask', array(
+						$this->template->assign_block_vars('p_mask.g_mask.category.mask', [
 								'S_FIELD_NAME' => $name,
 								'L_FIELD_NAME' => $this->language->lang($name),
 								'S_YES'        => $_yes,
 								'S_NO'         => $_no,
 								'S_NEVER'      => $_never,
 								'U_TRACE'      => ($user_mode == 'user') ? $this->u_action . '&amp;action=trace&amp;user_id=' . $group_id . '&amp;auth=' . $name . '&amp;category_id=' . $cat_id : '',
-							)
+							]
 						);
 					}
 					unset($_options);
@@ -2004,20 +2065,20 @@ class admin_controller
 			$this->apply_all_permissions($select, $user_mode);
 		}
 
-		$s_hidden_fields = array(
+		$s_hidden_fields = [
 			'category_id' => $category_id,
 			'group_id'    => $group_ids,
 			'user_id'     => $group_ids,
 			'p_mode'      => $user_mode,
-		);
+		];
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'L_TITLE'               => ($mode == 'mask') ? $this->language->lang('ACP_LIBRARY_PERMISSIONS_MASK') : $this->language->lang('ACL_SET'),
 				'L_EXPLAIN'             => '', //$this->title_explain,
 				'S_VIEWING_PERMISSIONS' => true,
 				'S_VIEWING_MASK'        => ($mode == 'mask'),
 				'S_HIDDEN_FIELDS'       => build_hidden_fields($s_hidden_fields),
-			)
+			]
 		);
 	}
 
@@ -2027,22 +2088,22 @@ class admin_controller
 
 		if (empty($category_id))
 		{
-			$this->template->assign_vars(array(
+			$this->template->assign_vars([
 					'L_TITLE'           => $this->language->lang('ACL_VIEW'),
 					'L_EXPLAIN'         => $this->language->lang('ACL_VIEW_EXPLAIN'),
-					'S_SELECT_CATEGORY' => true)
+					'S_SELECT_CATEGORY' => true]
 			);
-			return array();
+			return [];
 		}
 
 		$s_defined_group_options = $items['group_ids_options'];
 		$s_defined_user_options = $items['user_ids_options'];
-		$s_hidden_fields = array(
+		$s_hidden_fields = [
 			'category_id' => $category_id,
 			'user_id'     => $user_id,
-		);
+		];
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'S_SELECT'                    => true,
 				'S_CAN_SELECT_USER'           => true,
 				'S_CAN_SELECT_GROUP'          => true,
@@ -2054,7 +2115,7 @@ class admin_controller
 				'S_KB_PERMISSIONS_ACTION_USR' => $this->u_action . '&amp;action=settings&amp;p_mode=user',
 				'S_HIDDEN_FIELDS'             => build_hidden_fields($s_hidden_fields),
 				'MASK_MODE'                   => $mode == 'mask',
-			)
+			]
 		);
 		return $items;
 	}
@@ -2069,7 +2130,7 @@ class admin_controller
 		$sql_category_id = ($permission_scope == 'global') ? 'AND a.category_id = 0' : ((count($category_id)) ? 'AND ' . $this->db->sql_in_set('a.category_id', $category_id) : 'AND a.category_id <> 0');
 
 		// Permission options are only able to be a permission set... therefore we will pre-fetch the possible options and also the possible roles
-		$option_ids = array();
+		$option_ids = [];
 
 		$sql = 'SELECT auth_option_id
 			FROM ' . $this->options_table . '
@@ -2097,7 +2158,7 @@ class admin_controller
 		$result = $this->db->sql_query($sql);
 
 		$s_defined_user_options = '';
-		$defined_user_ids = array();
+		$defined_user_ids = [];
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$s_defined_user_options .= '<option value="' . $row['user_id'] . '">' . $row['username'] . '</option>';
@@ -2114,7 +2175,7 @@ class admin_controller
 		$result = $this->db->sql_query($sql);
 
 		$s_defined_group_options = '';
-		$defined_group_ids = array();
+		$defined_group_ids = [];
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$s_defined_group_options .= '<option' . (($row['group_type'] == GROUP_SPECIAL) ? ' class="sep"' : '') . ' value="' . $row['group_id'] . '">' . (($row['group_type'] == GROUP_SPECIAL) ? $this->language->lang('G_' . $row['group_name']) : $row['group_name']) . '</option>';
@@ -2122,12 +2183,12 @@ class admin_controller
 		}
 		$this->db->sql_freeresult($result);
 
-		return array(
+		return [
 			'group_ids'         => $defined_group_ids,
 			'group_ids_options' => $s_defined_group_options,
 			'user_ids'          => $defined_user_ids,
 			'user_ids_options'  => $s_defined_user_options,
-		);
+		];
 	}
 
 	/**
@@ -2159,18 +2220,18 @@ class admin_controller
 			$this->db->sql_freeresult($result);
 		}
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'PERMISSION'          => $this->language->lang($permission),
 				'PERMISSION_USERNAME' => $userdata['username'],
 				'FORUM_NAME'          => $cat_name,
-			)
+			]
 		);
 
-		$this->template->assign_block_vars('trace', array(
+		$this->template->assign_block_vars('trace', [
 				'WHO'          => $this->language->lang('DEFAULT'),
 				'INFORMATION'  => $this->language->lang('TRACE_DEFAULT'),
 				'S_SETTING_NO' => true,
-				'S_TOTAL_NO'   => true)
+				'S_TOTAL_NO'   => true]
 		);
 
 		$sql = 'SELECT DISTINCT g.group_name, g.group_id, g.group_type
@@ -2182,13 +2243,13 @@ class admin_controller
 			ORDER BY g.group_type DESC, g.group_id DESC';
 		$result = $this->db->sql_query($sql);
 
-		$groups = array();
+		$groups = [];
 		while ($row = $this->db->sql_fetchrow($result))
 		{
-			$groups[$row['group_id']] = array(
+			$groups[$row['group_id']] = [
 				'auth_setting' => ACL_NO,
 				'group_name'   => $this->group_helper->get_name($row['group_name']),
-			);
+			];
 		}
 		$this->db->sql_freeresult($result);
 
@@ -2225,7 +2286,7 @@ class admin_controller
 					break;
 				}
 
-				$this->template->assign_block_vars('trace', array(
+				$this->template->assign_block_vars('trace', [
 					'WHO'         => $row['group_name'],
 					'INFORMATION' => $information,
 
@@ -2235,7 +2296,7 @@ class admin_controller
 					'S_TOTAL_NO'      => $total == ACL_NO,
 					'S_TOTAL_YES'     => $total == ACL_YES,
 					'S_TOTAL_NEVER'   => $total == ACL_NEVER,
-				));
+				]);
 			}
 		}
 
@@ -2261,7 +2322,7 @@ class admin_controller
 			break;
 		}
 
-		$this->template->assign_block_vars('trace', array(
+		$this->template->assign_block_vars('trace', [
 			'WHO'         => $userdata['username'],
 			'INFORMATION' => $information,
 
@@ -2271,13 +2332,13 @@ class admin_controller
 			'S_TOTAL_NO'      => false,
 			'S_TOTAL_YES'     => $total == ACL_YES,
 			'S_TOTAL_NEVER'   => $total == ACL_NEVER,
-		));
+		]);
 
 		// Take founder or admin status into account, overwriting the default values
 		if ($userdata['user_type'] == USER_FOUNDER || (!empty($this->auth->acl_get_list($userdata['user_id'], 'a_manage_kb'))))
 		{
 			$information = ($userdata['user_type'] == USER_FOUNDER) ? $this->language->lang('KB_TRACE_USER_FOUNDER') : $this->language->lang('KB_TRACE_USER_ADMIN');
-			$this->template->assign_block_vars('trace', array(
+			$this->template->assign_block_vars('trace', [
 				'WHO'         => $userdata['username'],
 				'INFORMATION' => $information,
 
@@ -2287,17 +2348,17 @@ class admin_controller
 				'S_TOTAL_NO'      => false,
 				'S_TOTAL_YES'     => true,
 				'S_TOTAL_NEVER'   => false,
-			));
+			]);
 
 			$total = ACL_YES;
 		}
 
 		// Total value...
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 			'S_RESULT_NO'    => $total == ACL_NO,
 			'S_RESULT_YES'   => $total == ACL_YES,
 			'S_RESULT_NEVER' => $total == ACL_NEVER,
-		));
+		]);
 
 		return $total;
 	}
@@ -2311,7 +2372,7 @@ class admin_controller
 		$sql_category = ($category_id !== false) ? ((!is_array($category_id)) ? 'AND a.category_id = ' . (int) $category_id : 'AND ' . $this->db->sql_in_set('a.category_id', array_map('intval', $category_id))) : '';
 
 		$sql_opts = '';
-		$hold_ary = $sql_ary = array();
+		$hold_ary = $sql_ary = [];
 
 		if ($opts !== false)
 		{
@@ -2375,7 +2436,7 @@ class admin_controller
 			}
 			else
 			{
-				$sql = array();
+				$sql = [];
 
 				foreach ($auth_options as $option)
 				{
@@ -2403,7 +2464,7 @@ class admin_controller
 		$sql_category = ($category_id !== false) ? ((!is_array($category_id)) ? 'AND a.category_id = ' . (int) $category_id : 'AND ' . $this->db->sql_in_set('a.category_id', array_map('intval', $category_id))) : '';
 
 		$sql_opts = '';
-		$hold_ary = $sql_ary = array();
+		$hold_ary = $sql_ary = [];
 
 		if ($opts !== false)
 		{
@@ -2446,7 +2507,7 @@ class admin_controller
 
 		$table = ($user_mode == 'user') ? $this->kb_users_table : $this->kb_groups_table;
 		$id_field = $user_mode . '_id';
-		$group_id = $user_id = $category_id = array();
+		$group_id = $user_id = $category_id = [];
 
 		foreach ($hold_ary as $cat => $value)
 		{
@@ -2459,23 +2520,22 @@ class admin_controller
 					{
 						$sql = 'DELETE FROM ' . $table . '
 							WHERE ' . $id_field . ' = ' . $group . '
-							AND category_id = ' . $cat . '
-							AND auth_option_id = ' . $auth_option_ids[$opt_name];
+								AND category_id = ' . $cat . '
+								AND auth_option_id = ' . $auth_option_ids[$opt_name];
 						$this->db->sql_query($sql);
 					}
 					else
 					{
 						$sql = 'SELECT * FROM ' . $table . '
 							WHERE ' . $id_field . ' = ' . $group . '
-							AND category_id = ' . $cat . '
-							AND auth_option_id = ' . $auth_option_ids[$opt_name];
+								AND category_id = ' . $cat . '
+								AND auth_option_id = ' . $auth_option_ids[$opt_name];
 
 						$result = $this->db->sql_query($sql);
 						$row = $this->db->sql_fetchrow($result);
 						if ($row)
 						{
-							$sql = 'UPDATE ' . $table . '
-								SET auth_setting = ' . $option . '
+							$sql = 'UPDATE ' . $table . ' SET auth_setting = ' . $option . '
 								WHERE ' . $id_field . ' = ' . $group . '
 									AND category_id = ' . $cat . '
 									AND auth_option_id = ' . $auth_option_ids[$opt_name];
@@ -2483,8 +2543,10 @@ class admin_controller
 						}
 						else
 						{
-							$sql = 'INSERT INTO ' . $table . ' (' . $id_field . ', category_id, auth_option_id, auth_setting)
-								VALUES (' . $group . ', ' . $cat . ', ' . $auth_option_ids[$opt_name] . ', ' . $option . ')';
+							$sql = 'INSERT INTO ' . $table . '
+								(' . $id_field . ', category_id, auth_option_id, auth_setting)
+								VALUES
+								(' . $group . ', ' . $cat . ', ' . $auth_option_ids[$opt_name] . ', ' . $option . ')';
 							$this->db->sql_query($sql);
 						}
 					}
@@ -2518,7 +2580,7 @@ class admin_controller
 			ORDER BY left_id ASC';
 		$result = $this->db->sql_query($sql);
 
-		$category_names = array();
+		$category_names = $names = [];
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$category_names[] = $row['category_name'];
@@ -2552,7 +2614,7 @@ class admin_controller
 		{
 			foreach ($category_names as $category_name)
 			{
-				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], $log_type, time(), array($category_name, $name));
+				$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], $log_type, time(), [$category_name, $name]);
 			}
 		}
 	}
@@ -2591,10 +2653,10 @@ class admin_controller
 	/**
 	 * Settings page
 	 *
-	 * @param string $id
+	 * @param int    $id
 	 * @param string $mode
 	 */
-	public function search_settings($id, $mode): void
+	public function search_settings(int $id, string $mode): void
 	{
 		$submit = $this->request->is_set_post('submit');
 		if ($submit && !check_form_key('kb_acp_search'))
@@ -2613,10 +2675,10 @@ class admin_controller
 			$this->db->sql_freeresult($result);
 		}
 
-		$settings = array(
+		$settings = [
 			'kb_search'          => 'bool',
 			'kb_per_page_search' => 'int',
-		);
+		];
 
 		$search_options = '';
 
@@ -2726,11 +2788,11 @@ class admin_controller
 	/**
 	 * Execute action depending on the action and state
 	 *
-	 * @param string $id
+	 * @param int    $id
 	 * @param string $mode
 	 * @throws Exception
 	 */
-	public function search_index(string $id, string $mode): void
+	public function search_index(int $id, string $mode): void
 	{
 		$action = $this->request->variable('action', '');
 		$state = !empty($this->config['search_indexing_state']) ? explode(',', $this->config['search_indexing_state']) : [];
@@ -2773,12 +2835,12 @@ class admin_controller
 	}
 
 	/**
-	 * @param string $id
+	 * @param int    $id
 	 * @param string $mode
 	 *
 	 * @throws Exception
 	 */
-	private function index_overview(string $id, string $mode): void
+	private function index_overview(int $id, string $mode): void
 	{
 		foreach ($this->search_collection as $search)
 		{
@@ -2802,11 +2864,11 @@ class admin_controller
 	/**
 	 * Form to continue or cancel indexing process
 	 *
-	 * @param string $id
+	 * @param int    $id
 	 * @param string $mode
 	 * @param string $action Action in progress: 'create' or 'delete'
 	 */
-	private function index_inprogress(string $id, string $mode, string $action): void
+	private function index_inprogress(int $id, string $mode, string $action): void
 	{
 		$this->template->assign_vars([
 			'U_ACTION'           => $this->u_action . '&amp;action=' . $action . '&amp;hash=' . generate_link_hash('kb_acp_search'),
@@ -2820,12 +2882,12 @@ class admin_controller
 	/**
 	 * Progress that do the indexing/index removal, updating the page continuously until is finished
 	 *
-	 * @param string $id
+	 * @param int    $id
 	 * @param string $mode
 	 * @param string $action
 	 * @param array  $state
 	 */
-	private function index_action(string $id, string $mode, string $action, array $state): void
+	private function index_action(int $id, string $mode, string $action, array $state): void
 	{
 		// For some this may be of help...
 		@ini_set('memory_limit', '128M');
