@@ -1964,35 +1964,28 @@ class admin_controller
 						}
 					}
 
-					$option_settings = $this->request->variable('setting', array(0 => array(0 => array('' => 0))));
+					$option_settings = $this->request->variable('setting', [0 => [0 => ['' => 0]]]);
 
-					$res = array_diff(array_count_values($_options), array('1'));
+					$res = array_diff(array_count_values($_options), ['1']);
 					$index = key($res);
 					$v = $res[$index];
+
+					$all_yes = $all_never = $all_no = false;
 					if (count($_options) == $v)
 					{
 						if ($index === 1)
 						{
 							$all_yes = true;
-							$all_never = false;
-							$all_no = false;
 						}
 						else if ($index === 0)
 						{
-							$all_yes = false;
 							$all_never = true;
-							$all_no = false;
 						}
 						else if ($index === '')
 						{
-							$all_yes = false;
 							$all_never = true;
 							$all_no = true;
 						}
-					}
-					else
-					{
-						$all_yes = $all_never = $all_no = false;
 					}
 
 					$this->template->assign_block_vars('p_mask.g_mask.category', [
@@ -2005,22 +1998,19 @@ class admin_controller
 
 					foreach ($_options as $name => $option)
 					{
+						$_yes = $_no = $_never = false;
+
 						if (!isset($option) || $option === '')
 						{
-							$_yes = false;
 							$_no = true;
 							$_never = true;
 						}
 						else if ($option)
 						{
 							$_yes = true;
-							$_no = false;
-							$_never = false;
 						}
 						else
 						{
-							$_yes = false;
-							$_no = false;
 							$_never = true;
 						}
 

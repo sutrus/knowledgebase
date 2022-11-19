@@ -45,6 +45,7 @@ class search_module
 
 		add_form_key('kb_acp_search');
 
+		$id = (int) $id;
 		$admin_controller->search_settings($id, $mode);
 		$admin_controller->search_index($id, $mode);
 	}
