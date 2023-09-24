@@ -1,8 +1,8 @@
 {% INCLUDE 'overall_header.html' %}
 <style>
-.copied:after {
-	content: "{{ lang('COPYED') }}";
-}
+	.copied:after {
+		content: "{{ lang('COPYED') }}";
+	}
 </style>
 <div class="post has-profile bg2">
 	<div class="inner">
@@ -17,39 +17,48 @@
 		</dl>
 		<div class="postbody">
 			<h3 class="first">{{ ARTICLE_TITLE }}</h3>
-			<p class="author"><strong>{{ lang('ARTICLE_DESCRIPTION') }}{{ lang('COLON') }}</strong> {{ ARTICLE_DESCRIPTION }}</p>
+			<p class="author">
+				<strong>{{ lang('ARTICLE_DESCRIPTION') }}{{ lang('COLON') }}</strong> {{ ARTICLE_DESCRIPTION }}</p>
 			<div class="codebox kb_codebox">
-				<p>{{ lang('LINK_TO_ARTICLE') }}{{ lang('COLON') }} <a class="buttoncopy" data-copytarget="#bbcode">{{ lang('COPY_TO_BUFFER') }}</a></p>
+				<p>{{ lang('LINK_TO_ARTICLE') }}{{ lang('COLON') }} <a class="buttoncopy"
+						data-copytarget="#bbcode">{{ lang('COPY_TO_BUFFER') }}</a></p>
 				<code>{{ U_ARTICLE }}</code>
 				<input value="{{ U_ARTICLE }}" id="bbcode" type="text">
 				<hr>
-				<p>{{ lang('DIRECT_LINK') }}{{ lang('COLON') }} <a class="buttoncopy" data-copytarget="#link">{{ lang('COPY_TO_BUFFER') }}</a></p>
+				<p>{{ lang('DIRECT_LINK') }}{{ lang('COLON') }} <a class="buttoncopy"
+						data-copytarget="#link">{{ lang('COPY_TO_BUFFER') }}</a></p>
 				<code>{{ U_DIRECT_LINK }}</code>
 				<input value="{{ U_DIRECT_LINK }}" id="link" type="text">
 			</div>
 			<ul class="post-buttons">
 				{% if not S_APPROVED and S_CAN_APPROVE %}
-				<li>
-					<a href="{{ U_APPROVE_ART }}" title="{{ lang('NEED_APPROVE') }}" class="button button-icon-only"><i class="icon fa-check fa-fw icon-orange" aria-hidden="true"></i></a>
-				</li>
+					<li>
+						<a href="{{ U_APPROVE_ART }}" title="{{ lang('NEED_APPROVE') }}"
+							class="button button-icon-only"><i class="icon fa-check fa-fw icon-orange"
+								aria-hidden="true"></i></a>
+					</li>
 				{% endif %}
 				{% if S_CAN_EDIT %}
-				<li>
-					<a href="{{ U_EDIT_ART }}" title="{{ lang('EDIT') }}" class="button button-icon-only"><i class="icon fa-pencil fa-fw icon-blue" aria-hidden="true"></i></a>
-				</li>
+					<li>
+						<a href="{{ U_EDIT_ART }}" title="{{ lang('EDIT') }}" class="button button-icon-only">
+							<i class="icon fa-pencil fa-fw icon-blue" aria-hidden="true"></i></a>
+					</li>
 				{% endif %}
 				{% if S_CAN_DELETE %}
-				<li>
-					<a href="{{ U_DELETE_ART }}" title="{{ lang('DELETE') }}" class="button button-icon-only"><i class="icon fa-times fa-fw icon-red" aria-hidden="true"></i></a>
-				</li>
+					<li>
+						<a href="{{ U_DELETE_ART }}" title="{{ lang('DELETE') }}" class="button button-icon-only">
+							<i class="icon fa-times fa-fw icon-red" aria-hidden="true"></i></a>
+					</li>
 				{% endif %}
 				<li>
-					<a href="{{ U_PRINT }}" title="{{ lang('PRINT') }}" class="button button-icon-only"><i class="icon fa-print fa-fw icon-blue" aria-hidden="true"></i></a>
+					<a href="{{ U_PRINT }}" title="{{ lang('PRINT') }}" class="button button-icon-only">
+						<i class="icon fa-print fa-fw icon-blue" aria-hidden="true"></i></a>
 				</li>
 				{% if U_COMMENTS %}
-				<li>
-					<a href="{{ U_COMMENTS }}" title="{{ lang('LEAVE_COMMENTS') }}" class="button button-icon-only"><i class="icon fa-reply fa-fw icon-orange" aria-hidden="true"></i></a>
-				</li>
+					<li>
+						<a href="{{ U_COMMENTS }}" title="{{ lang('LEAVE_COMMENTS') }}" class="button button-icon-only">
+							<i class="icon fa-reply fa-fw icon-orange" aria-hidden="true"></i></a>
+					</li>
 				{% endif %}
 			</ul>
 		</div>
@@ -58,39 +67,45 @@
 			{{ ARTICLE_TEXT }}
 		</div>
 		<div class="back2top">
-			<a href="#top" class="top" title="{{ lang('BACK_TO_TOP') }}"><i class="icon fa-chevron-circle-up fa-fw icon-gray" aria-hidden="true"></i></a>
+			<a href="#top" class="top" title="{{ lang('BACK_TO_TOP') }}">
+				<i class="icon fa-chevron-circle-up fa-fw icon-gray" aria-hidden="true"></i></a>
 		</div>
 	</div>
 </div>
 {% if CATS_DROPBOX %}
-<div class="jumpbox dropdown-container dropdown-container-right dropdown-up dropdown-left dropdown-button-control" id="jumpbox">
+	<div class="jumpbox dropdown-container dropdown-container-right dropdown-up dropdown-left dropdown-button-control"
+		id="jumpbox">
 	<span title="{{ lang('GO') }}" class="button button-secondary dropdown-trigger dropdown-select dropdown-toggle">
 		<span>{{ lang('GO') }}</span>
 		<span class="caret"><i class="icon fa-sort-down fa-fw" aria-hidden="true"></i></span>
 	</span>
-	<div class="dropdown">
-		<div class="pointer"><div class="pointer-inner"></div></div>
-		<ul class="dropdown-contents">
-			{{ CATS_DROPBOX }}
-		</ul>
+		<div class="dropdown">
+			<div class="pointer">
+				<div class="pointer-inner"></div>
+			</div>
+			<ul class="dropdown-contents">
+				{{ CATS_DROPBOX }}
+			</ul>
+		</div>
 	</div>
-</div>
 {% endif %}
 
 {% if loops.postrow|length %}
-<table class="table1">
-	<tr>
-		<th><strong>{{ COMMENTS }}</strong></th>
-	</tr>
-	{% for postrow in loops.postrow %}
-	<tr class="bg2">
-		<td><strong>{{ postrow.POSTER_NAME }}</strong>, {{ lang('POSTED') }}{{ lang('COLON') }} {{ postrow.POST_DATE }}&nbsp;&nbsp;&nbsp;<strong>{{ lang('POST_SUBJECT') }}</strong>{{ lang('COLON') }} {{ postrow.POST_SUBJECT }}</td>
-	</tr>
-	<tr>
-		<td><span class="postbody">{{ postrow.MESSAGE }}</span></td>
-	</tr>
-	{% endfor %}
-</table>
+	<table class="table1">
+		<tr>
+			<th><strong>{{ COMMENTS }}</strong></th>
+		</tr>
+		{% for postrow in loops.postrow %}
+			<tr class="bg2">
+				<td>
+					<strong>{{ postrow.POSTER_NAME }}</strong>, {{ lang('POSTED') }}{{ lang('COLON') }} {{ postrow.POST_DATE }}&nbsp;&nbsp;&nbsp;<strong>{{ lang('POST_SUBJECT') }}</strong>{{ lang('COLON') }} {{ postrow.POST_SUBJECT }}
+				</td>
+			</tr>
+			<tr>
+				<td><span class="postbody">{{ postrow.MESSAGE }}</span></td>
+			</tr>
+		{% endfor %}
+	</table>
 {% endif %}
 <br>
 {% INCLUDE 'overall_footer.html' %}

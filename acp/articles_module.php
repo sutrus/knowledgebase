@@ -3,6 +3,7 @@
  *
  * Knowledge base. An extension for the phpBB Forum Software package.
  *
+ * @copyright (c) 2023, sutrus ( update to phpBB 3.3 )
  * @copyright (c) 2017, Sheer
  * @license       GNU General Public License, version 2 (GPL-2.0)
  *
@@ -41,7 +42,7 @@ class articles_module
 		$admin_controller->set_page_url($this->u_action);
 
 		// Load a template from adm/style for our ACP page
-		$this->tpl_name = 'acp_articles_body';
+		$this->tpl_name = 'acp_knowledgebase_articles';
 		// Set the page title for our ACP page
 		$this->page_title = $language->lang('KNOWLEDGE_BASE') . ' &bull; ' . $language->lang('ACP_LIBRARY_ARTICLES');
 

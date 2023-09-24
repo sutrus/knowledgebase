@@ -3,6 +3,7 @@
  *
  * Knowledge base. An extension for the phpBB Forum Software package.
  *
+ * @copyright (c) 2023, sutrus ( update to phpBB 3.3 )
  * @copyright (c) 2017, Sheer
  * @license       GNU General Public License, version 2 (GPL-2.0)
  *
@@ -38,7 +39,7 @@ class config_module
 		// Make the $u_action url available in the admin controller
 		$admin_controller->set_page_url($this->u_action);
 
-		$this->tpl_name = 'acp_config_body';
+		$this->tpl_name = 'acp_knowledgebase_config';
 		$this->page_title = $language->lang('KNOWLEDGE_BASE') . ' &bull; ' . $language->lang('ACP_KNOWLEDGE_BASE_CONFIGURE');
 
 		switch ($mode)

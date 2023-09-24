@@ -1,40 +1,43 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html dir="{{ S_CONTENT_DIRECTION }}">
+<!DOCTYPE html>
+<html dir="{{ S_CONTENT_DIRECTION }}" lang="{{ S_USER_LANG }}">
 <head>
-<meta charset="utf-8" />
-<meta http-equiv="X-UA-Compatible" content="text/html">
-<title>{{ SITENAME }} &bull; {{ PAGE_TITLE }}</title>
-<link href="{T_THEME_PATH}/print.css" rel="stylesheet">
-<link href="{U_FORUM}/ext/sheer/knowledgebase/styles/prosilver/theme/sheer_print.css" rel="stylesheet">
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="text/html">
+	<title>{{ SITENAME }} &bull; {{ PAGE_TITLE }}</title>
+	<link href="{{ T_THEME_PATH }}/print.css" rel="stylesheet">
+	<link href="{{ U_FORUM }}ext/sheer/knowledgebase/styles/prosilver/theme/sheer_print.css" rel="stylesheet">
 </head>
-<body id="phpbb" class="{S_CONTENT_DIRECTION}">
+<body id="phpbb" class="{{ S_CONTENT_DIRECTION }}">
 <div id="wrap" class="wrap">
 	<a id="top" class="top-anchor" accesskey="t"></a>
 
 	<div id="page-header">
-		<h1>{SITENAME}</h1>
-		<p>{SITE_DESCRIPTION}<br /><a href="{U_FORUM}">{U_FORUM}</a></p>
+		<h1>{{ SITENAME }}</h1>
+		<p>{{ SITE_DESCRIPTION }}<br/><a href="{{ U_FORUM }}">{{ U_FORUM }}</a></p>
 
-		<h2>{ARTICLE_CATEGORY} &bull; {ARTICLE_TITLE}</h2>
-		<p><a href="{U_TOPIC}"><b>{U_DIRECT_LINK}</b></a></p>
+		<h2>{{ ARTICLE_CATEGORY }} &bull; {{ ARTICLE_TITLE }}</h2>
+		<p><a href="{{ U_TOPIC }}"><b>{{ U_DIRECT_LINK }}</b></a></p>
 		<hr>
 	</div>
 
 	<div id="page-body" class="page-body">
 		<div class="post">
-			<div class="author info"><strong>{{ lang('ARTICLE_AUTHOR') }}{{ lang('COLON') }} {ARTICLE_AUTHOR}</strong></div>
-			<div class="author info"><strong>{{ lang('ARTICLE_DATE') }}{{ lang('COLON') }} {{ ARTICLE_DATE }}</strong></div>
-			<div class="author info"><strong>{{ lang('VIEWS') }}{{ lang('COLON') }} {{ VIEWS }}</strong></div>
-			<div class="author info"><strong>{{ lang('ARTICLE_DESCRIPTION') }}{{ lang('COLON') }} {{ ARTICLE_DESCRIPTION }}</strong></div>
-			<hr><br>
-			<div class="content">{ARTICLE_TEXT}</div>
+			<div class="author info">
+				<strong>{{ lang('ARTICLE_AUTHOR') }}{{ lang('COLON') }} {{ ARTICLE_AUTHOR }}</strong><br>
+				<strong>{{ lang('ARTICLE_DATE') }}{{ lang('COLON') }} {{ ARTICLE_DATE }}</strong><br>
+				<strong>{{ lang('VIEWS') }}{{ lang('COLON') }} {{ VIEWS }}</strong><br>
+				<strong>{{ lang('ARTICLE_DESCRIPTION') }}{{ lang('COLON') }} {{ ARTICLE_DESCRIPTION }}</strong>
+			</div>
+			<hr>
+			<br>
+			<div class="content">{{ ARTICLE_TEXT }}</div>
 		</div>
-		<hr />
+		<hr/>
 	</div>
 
 	<div id="page-footer" class="page-footer">
 		<div class="copyright">
-			<p>{LIBRARY} &bull; {{ CREDIT_LINE }}</p>
+			<p>{{ LIBRARY }} &bull; {{ CREDIT_LINE }}</p>
 		</div>
 	</div>
 </div>

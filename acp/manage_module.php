@@ -3,6 +3,7 @@
  *
  * Knowledge base. An extension for the phpBB Forum Software package.
  *
+ * @copyright (c) 2023, sutrus ( update to phpBB 3.3 )
  * @copyright (c) 2017, Sheer
  * @license       GNU General Public License, version 2 (GPL-2.0)
  *
@@ -62,7 +63,7 @@ class manage_module
 		$admin_controller->set_page_url($this->u_action);
 
 		// Load a template from adm/style for our ACP page
-		$this->tpl_name = 'acp_knowledgebase_body';
+		$this->tpl_name = 'acp_knowledgebase_category';
 		$this->page_title = $language->lang('ACP_LIBRARY_MANAGE');
 
 		$categories_table = $phpbb_container->getParameter('tables.categories_table');
@@ -357,7 +358,7 @@ class manage_module
 		$template->assign_vars(array(
 			'ERROR_MSG'  => (count($errors)) ? implode('<br>', $errors) : '',
 			'NAVIGATION' => $navigation,
-			'CATS_BOX'   => (isset($cats_box)) ? $cats_box : '',
+			'CATS_BOX'   => isset($cats_box) ? $cats_box : '',
 			'S_MANAGE'   => true,
 			'S_ACTION'   => "$this->u_action&amp;parent_id=$parent_id&amp;action=$action&amp;f=$category_id",
 			'U_ACTION'   => "$this->u_action&amp;parent_id=$parent_id",

@@ -1,0 +1,353 @@
+{% INCLUDE 'overall_header.html' %}
+{% INCLUDEJS 'permissions.js' %}
+
+<!--suppress ALL -->
+<script type="text/javascript">
+	// <![CDATA[
+	var active_pmask = '0';
+	var active_fmask = '0';
+	var active_cat = '0';
+	var id = '000';
+	var role_options = new Array();
+	// ]]>
+</script>
+
+<h1>{{ lang('ACP_LIBRARY_PERMISSIONS') }}</h1>
+<p>{{ lang('ACP_LIBRARY_PERMISSIONS_EXPLAIN') }}</p>
+
+{% if S_SELECT_CATEGORY %}
+	{% if CATS_BOX %}
+		<form id="select_victim" method="post" action="{{ S_KB_PERMISSIONS_ACTION }}">
+			<fieldset>
+				<legend>{{ lang('SELECTION_CATEGORY') }}</legend>
+				{% if S_FORUM_MULTIPLE %}<p>{{ lang('LOOK_UP_FORUMS_EXPLAIN') }}</p>{% endif %}
+				<dl>
+					<dt><label for="forum">{{ lang('SELECT_CATEGORY') }}:</label></dt>
+					<dd>
+						<select id="forum" name="category_id[]" multiple="multiple" size="10" style="width:60%;">
+							{{ CATS_BOX }}
+						</select>
+					</dd>
+					<dd>
+						<label>
+							<input type="checkbox" class="radio" name="all_cats" value="1"/> {{ lang('ALL_CATS') }}
+						</label>
+					</dd>
+				</dl>
+				<p class="quick">
+					{{ S_HIDDEN_FIELDS }} {{ S_FORM_TOKEN }}
+					<input type="submit" name="submit" value="{{ lang('SUBMIT') }}" class="button1"/>
+				</p>
+			</fieldset>
+		</form>
+	{% else %}
+		<div class="errorbox"><p>{{ lang('NO_CATS_IN_KB') }}<br>{{ lang('ACP_LIBRARY_PERMISSIONS_NO_CATS') }}</p></div>
+	{% endif %}
+{% elseif S_SELECT %}
+
+	{% if S_CAN_SELECT_USER %}
+		<div style="float: {{ S_CONTENT_FLOW_BEGIN }}; width: 48%;">
+			<h1>{{ lang('USERS') }}</h1>
+			<form id="users" method="post" action="{{ S_KB_PERMISSIONS_ACTION }}">
+				<fieldset>
+					<legend>{{ lang('MANAGE_USERS') }}</legend>
+					<dl>
+						<dd class="full">
+							<select style="width: 100%;" name="user_id[]" multiple="multiple"
+								size="5">{{ S_DEFINED_USER_OPTIONS }}
+							</select>
+						</dd>
+						{% if S_ALLOW_ALL_SELECT %}
+							<dd class="full" style="text-align: right;">
+								<label>
+									<input type="checkbox" class="radio" name="all_users" value="1"/>
+									{{ lang('ALL_USERS') }}
+								</label>
+							</dd>
+						{% endif %}
+					</dl>
+				</fieldset>
+
+				<fieldset class="quick">
+					{{ S_HIDDEN_FIELDS }} {{ S_FORM_TOKEN }}
+					{% if not MASK_MODE %}
+						<input type="submit" class="button2" name="delete" value="{{ lang('REMOVE_PERMISSIONS') }}"
+							style="width: 46% !important;"/>
+					{% endif %}
+					<input class="button1" type="submit" name="submit_edit_options"
+						value="{{ lang('EDIT_PERMISSIONS') }}" style="width: 46% !important;"/>
+				</fieldset>
+			</form>
+			<form id="add_user" method="post" action="{{ S_KB_PERMISSIONS_ACTION_USR }}">
+				<fieldset>
+					<legend>{{ lang('ADD_USERS') }}</legend>
+					<p>{{ lang('USERNAMES_EXPLAIN') }}</p>
+					<dl>
+						<dd class="full">
+							<textarea id="username" name="usernames" rows="5" cols="5"
+								style="width: 100%; height: 60px;"></textarea>
+						</dd>
+						<dd class="full">
+							<div style="float: {{ S_CONTENT_FLOW_END }};">
+								[ <a href="{{ U_FIND_USERNAME }}"
+									onclick="find_username(this.href); return false;">{{ lang('FIND_USERNAME') }}</a> ]
+							</div>
+							<label>
+								<input type="checkbox" class="radio" id="anonymous" name="user_id[]"
+									value="{{ ANONYMOUS_USER_ID }}"/> {{ lang('SELECT_ANONYMOUS') }}
+							</label>
+						</dd>
+					</dl>
+				</fieldset>
+				<fieldset class="quick">
+					{{ S_HIDDEN_FIELDS }} {{ S_FORM_TOKEN }}
+					<input class="button1" type="submit" name="submit_add_options"
+						value="{{ lang('ADD_PERMISSIONS') }}"/>
+				</fieldset>
+			</form>
+		</div>
+	{% endif %}
+
+	{% if S_CAN_SELECT_GROUP %}
+		<div style="float: {{ S_CONTENT_FLOW_END }}; width: 48%">
+			<h1>{{ lang('USERGROUPS') }}</h1>
+			<form id="groups" method="post" action="{{ S_KB_PERMISSIONS_ACTION }}">
+				<fieldset>
+					<legend>{{ lang('MANAGE_GROUPS') }}</legend>
+					<dl>
+						<dd class="full">
+							<select style="width: 100%;" name="group_id[]" multiple="multiple"
+								size="5">{{ S_DEFINED_GROUP_OPTIONS }}
+							</select>
+						</dd>
+						{% if S_ALLOW_ALL_SELECT %}
+							<dd class="full" style="text-align: right;">
+								<label>
+									<input type="checkbox" class="radio" name="all_groups"
+										value="1"/> {{ lang('ALL_GROUPS') }}
+								</label>
+							</dd>
+						{% endif %}
+					</dl>
+				</fieldset>
+
+				<fieldset class="quick">
+					{{ S_HIDDEN_FIELDS }} {{ S_FORM_TOKEN }}
+					{% if not MASK_MODE %}
+						<input class="button2" type="submit" name="delete" value="{{ lang('REMOVE_PERMISSIONS') }}"
+							style="width: 46% !important;"/> &nbsp;
+					{% endif %}
+					<input class="button1" type="submit" name="submit_edit_options"
+						value="{{ lang('EDIT_PERMISSIONS') }}"
+						style="width: 46% !important;"/>
+				</fieldset>
+
+			</form>
+			<form id="add_groups" method="post" action="{{ S_KB_PERMISSIONS_ACTION }}">
+				<fieldset>
+					<legend>{{ lang('ADD_GROUPS') }}</legend>
+					<dl>
+						<dd class="full">
+							<select name="group_id[]" style="width: 100%; height: 107px;"
+								multiple="multiple">{{ S_ADD_GROUP_OPTIONS }}</select>
+						</dd>
+					</dl>
+				</fieldset>
+				<fieldset class="quick">
+					{{ S_HIDDEN_FIELDS }} {{ S_FORM_TOKEN }}
+					<input type="submit" class="button1" name="submit_add_options"
+						value="{{ lang('ADD_PERMISSIONS') }}"/>
+				</fieldset>
+			</form>
+		</div>
+	{% endif %}
+
+{% elseif S_VIEWING_PERMISSIONS %}
+	<form id="set-permissions" method="post" action="{{ S_ACTION }}">
+		{% for p_mask in loops.p_mask %}
+			<h3>{{ p_mask.NAME }}
+				{% if p_mask.S_LOCAL %}
+					<span class="small"> [{{ p_mask.L_ACL_TYPE }}]</span>
+				{% endif %}
+			</h3>
+
+			{% for g_mask in p_mask.g_mask %}
+				<div class="clearfix"></div>
+				<fieldset class="permissions" id="perm{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}">
+					<legend id="legend{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}">
+						{% if not p_mask.S_VIEW %}
+							<input type="checkbox" class="permissions-checkbox"
+								name="inherit[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}]"
+								id="checkbox{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}" value="1"
+								onclick="toggle_opacity('{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}')">
+						{% endif %}
+						{{ p_mask.CATEGORY_NAME }}
+						{% if g_mask.PADDING %}<span
+							class="padding">{{ g_mask.PADDING }}{{ g_mask.PADDING }}</span>
+						{% endif %}
+						{{ g_mask.NAME }}
+					</legend>
+					{% if not p_mask.S_VIEW %}
+						<div class="permissions-switch">
+							<div class="permissions-reset">
+								<a href="#"
+									onclick="mark_options('perm{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}', 'y'); reset_role('role{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); init_colours('{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); return false;">{{ lang('ALL_YES') }}</a> &middot;
+								<a href="#"
+									onclick="mark_options('perm{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}', 'u'); reset_role('role{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); init_colours('{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); return false;">{{ lang('ALL_NO') }}</a> &middot;
+								<a href="#"
+									onclick="mark_options('perm{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}', 'n'); reset_role('role{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); init_colours('{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); return false;">{{ lang('ALL_NEVER') }}</a>
+							</div>
+						</div>
+					{% endif %}
+					{% for category in g_mask.category %}
+						<div class="permissions-category">
+							{% if category.S_YES %}
+							<li class="permissions-preset-yes{% if p_mask.S_FIRST_ROW and g_mask.S_FIRST_ROW and category.S_FIRST_ROW %} activetab{% endif %}"
+								id="tab{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}">
+								{% elseif category.S_NEVER %}
+							<li class="permissions-preset-never{% if p_mask.S_FIRST_ROW and g_mask.S_FIRST_ROW and category.S_FIRST_ROW %} activetab{% endif %}"
+								id="tab{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}">
+								{% elseif category.S_NO %}
+							<li class="permissions-preset-no{% if p_mask.S_FIRST_ROW and g_mask.S_FIRST_ROW and category.S_FIRST_ROW %} activetab{% endif %}"
+								id="tab{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}">
+								{% else %}
+							<li class="permissions-preset-custom{% if p_mask.S_FIRST_ROW and g_mask.S_FIRST_ROW and category.S_FIRST_ROW %} activetab{% endif %}"
+								id="tab{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}">
+								{% endif %}
+								<a href="#"
+									onclick="swap_options('{{ p_mask.S_ROW_COUNT }}', '{{ g_mask.S_ROW_COUNT }}', '{{ category.S_ROW_COUNT }}', false{% if p_mask.S_VIEW %}, true{% endif %}); return false;"><span
+										class="tabbg"><span
+											class="colour"></span>{{ category.PERMISSION_TYPE }}</span></a>
+							</li>
+						</div>
+					{% endfor %}
+					{% for category in g_mask.category %}
+					{% if category.S_FIRST_ROW %}
+					<div class="permissions-advanced" id="advanced{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}"
+						style="display: block;">
+						{% endif %}
+						<!-- BEGIN category -->
+						<div class="permissions-panel"
+							id="options{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}" {% if
+							p_mask.S_FIRST_ROW and g_mask.S_FIRST_ROW and category.S_FIRST_ROW %}{% else %} style="display: none;"
+							{% endif %}>
+							<div class="tablewrap">
+								<table
+									id="table{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}"
+									class="table1 not-responsive">
+									<colgroup>
+										<col class="permissions-name"/>
+										<col class="permissions-yes"/>
+										<col class="permissions-no"/>
+										{% if not p_mask.S_VIEW %}
+											<col class="permissions-never"/>
+										{% endif %}
+									</colgroup>
+									<thead>
+									<tr>
+										<th class="name" scope="col"><strong>{{ lang('ACL_SETTING') }}</strong></th>
+										{% if p_mask.S_VIEW %}
+											<th class="value" scope="col">{{ lang('ACL_YES') }}</th>
+											<th class="value" scope="col">{{ lang('ACL_NEVER') }}</th>
+										{% else %}
+											<th class="value permissions-yes" scope="col"><a href="#"
+													onclick="mark_options('options{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}', 'y'); reset_role('role{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); set_colours('{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}', false, 'yes'); return false;">{{ lang('ACL_YES') }}</a>
+											</th>
+											<th class="value permissions-no" scope="col"><a href="#"
+													onclick="mark_options('options{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}', 'u'); reset_role('role{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); set_colours('{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}', false, 'no'); return false;">{{ lang('ACL_NO') }}</a>
+											</th>
+											<th class="value permissions-never" scope="col"><a href="#"
+													onclick="mark_options('options{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}', 'n'); reset_role('role{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); set_colours('{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}{{ category.S_ROW_COUNT }}', false, 'never'); return false;">{{ lang('ACL_NEVER') }}</a>
+											</th>
+										{% endif %}
+									</tr>
+									</thead>
+									<tbody>
+									{% for mask in category.mask %}
+										{% if mask.S_ROW_COUNT is even %}
+											<tr class="row4">{% else %}
+											<tr class="row3">{% endif %}
+										<th class="permissions-name{% if mask.S_ROW_COUNT is even %} row4{% else %} row3{% endif %}">{% if mask.U_TRACE %}
+												<a
+													href="{{ mask.U_TRACE }}" class="trace"
+													onclick="popup(this.href, 750, 515, '_trace'); return false;"
+													title="{{ lang('TRACE_SETTING') }}"><img src="images/icon_trace.gif"
+														alt="{{ lang('TRACE_SETTING') }}"/>
+												</a> {% endif %}{{ mask.L_FIELD_NAME }}
+										</th>
+										{% if p_mask.S_VIEW %}
+											<td
+												{% if mask.S_YES %} class="yes"{% endif %}>&nbsp;
+											</td>
+											<td
+												{% if mask.S_NEVER %} class="never"{% endif %}></td>
+										{% else %}
+											<td class="permissions-yes"><label
+													for="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]_y"><input
+														onclick="reset_role('role00');"
+														id="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]_y"
+														name="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]"
+														class="radio"
+														type="radio" {% if mask.S_YES %} checked="checked" {% endif %}
+														value="1"></label>
+											</td>
+											<td class="permissions-no"><label
+													for="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]_u"><input
+														onclick="reset_role('role00');"
+														id="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]_u"
+														name="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]"
+														class="radio"
+														type="radio" {% if mask.S_NO %} checked="checked" {% endif %}
+														value="-1"></label>
+											</td>
+											<td class="permissions-never"><label
+													for="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]_n"><input
+														onclick="reset_role('role00');"
+														id="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]_n"
+														name="setting[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}][{{ mask.S_FIELD_NAME }}]"
+														class="radio"
+														type="radio" {% if mask.S_NEVER %} checked="checked" {% endif %}
+														value="0"></label></td>
+										{% endif %}
+										</tr>
+									{% endfor %}
+									</tbody>
+								</table>
+							</div>
+
+							{% if not p_mask.S_VIEW %}
+								<fieldset class="quick" style="margin-right: 11px;">
+									<p class="small">{{ lang('APPLY_PERMISSIONS_EXPLAIN') }}</p>
+									<input class="button1" type="submit"
+										name="submit[{{ p_mask.CATEGORY_ID }}][{{ g_mask.GROUP_ID }}]"
+										value="{{ lang('APPLY_PERMISSIONS') }}">
+								</fieldset>
+							{% endif %}
+						</div>
+
+						{% endfor %}
+						<div class="clearfix"></div>
+					</div>
+				</fieldset>
+
+				{% if not p_mask.S_VIEW %}
+					<p class="small"><a href="#"
+							onclick="reset_opacity(0, '{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); return false;">{{ lang('MARK_ALL') }}</a> &bull;
+						<a href="#"
+							onclick="reset_opacity(1, '{{ p_mask.S_ROW_COUNT }}{{ g_mask.S_ROW_COUNT }}'); return false;">{{ lang('UNMARK_ALL') }}</a>
+					</p>
+				{% endif %}
+			{% endfor %}
+		{% endfor %}
+		{% if not S_VIEWING_MASK %}
+			<fieldset class="quick" style="float: {{ S_CONTENT_FLOW_END }};">
+				<input class="button1" type="submit" name="apply_all_permissions"
+					value="{{ lang('APPLY_ALL_PERMISSIONS') }}"/>
+				<input class="button2" type="button" name="cancel" value="{{ lang('RESET') }}"
+					onclick="document.forms['set-permissions'].reset(); init_colours(active_pmask + active_fmask);"/>
+			</fieldset>
+		{% endif %}
+		{{ S_HIDDEN_FIELDS }} {{ S_FORM_TOKEN }}
+	</form>
+{% endif %}
+{% INCLUDE 'overall_footer.html' %}

@@ -1,0 +1,212 @@
+{% INCLUDE 'overall_header.html' %}
+{% INCLUDECSS 'css/acp_knowledgebase.css' %}
+
+<form action="{{ S_ACTION }}" method="post">
+	{% if S_EDIT %}
+		<a href="{{ U_BACK }}" style="float: {{ S_CONTENT_FLOW_END }};">&laquo; {{ lang('BACK') }}</a>
+		<h1>{{ lang('TITLE') }} {% if CATEGORY_NAME %}:: {{ CATEGORY_NAME }}{% endif %}</h1>
+		<p>{% if CATEGORY_NAME %}
+				{{ lang('LIBRARY_EDIT_CAT_EXPLAIN') }}
+			{% else %}
+				{{ lang('ADD_CATEGORY_EXPLAIN') }}
+			{% endif %}
+		</p>
+		{% if S_ERROR %}
+			<div class="errorbox">
+				<h3>{{ lang('WARNING') }}</h3>
+				<p>{{ ERROR_MSG }}</p>
+			</div>
+		{% endif %}
+		<fieldset>
+			<dl>
+				<dt><label for="parent">{{ lang('CAT_PARENT') }}{{ lang('COLON') }}</label></dt>
+				<dd>
+					<select id="parent" name="parent_id">
+						<option
+							value="0" {% if not S_CATEGORY_PARENT_ID %} selected="selected" {% endif %}>{{ lang('NO_PARENT') }}
+						</option>
+						{{ S_PARENT_OPTIONS }}
+					</select>
+				</dd>
+			</dl>
+			<dl>
+				<dt><label for="category_name">{{ lang('CAT_NAME') }}{{ lang('COLON') }}</label></dt>
+				<dd>
+					<input class="text medium" type="text" id="category_name" name="category_name"
+						value="{{ CATEGORY_NAME }}" maxlength="255"/>
+				</dd>
+			</dl>
+			<dl>
+				<dt><label for="category_details">{{ lang('CAT_DESCR') }}{{ lang('COLON') }}</label></dt>
+				<dd>
+					<textarea id="category_details" name="category_details" rows="2"
+						cols="40">{{ CATEGORY_DESCR }}</textarea>
+				</dd>
+			</dl>
+			<dl>
+				<dt>
+					<label for="cat_perm_from">{{ lang('COPY_CAT_PERMISSIONS') }}{{ lang('COLON') }}</label><br>
+					<span>{{ lang('COPY_CAT_PERMISSIONS_EXPLAIN') }}</span>
+				</dt>
+				<dd>
+					<select id="cat_perm_from" name="cat_perm_from">
+						<option value="0" selected="selected">{{ lang('NO_COPY_PERMISSIONS') }}</option>
+						{{ S_COPY_OPTIONS }}
+					</select>
+				</dd>
+			</dl>
+		</fieldset>
+		<fieldset class="submit-buttons">
+			<legend>{{ lang('SUBMIT') }}</legend>
+			<input class="button1" type="submit" id="submit" name="update" value="{{ lang('SUBMIT') }}"/>&nbsp;
+			<input class="button2" type="reset" id="reset" name="reset" value="{{ lang('RESET') }}"/>
+			{{ S_FORM_TOKEN }}
+		</fieldset>
+	{% elseif S_DELETE_CATEGORY %}
+		<a href="{{ U_BACK }}" style="float: {{ S_CONTENT_FLOW_END }};">&laquo; {{ lang('BACK') }}</a>
+		<h1>{{ lang('DEL_CATEGORY') }}</h1>
+		<p>{{ lang('DEL_CATEGORY_EXPLAIN') }}</p>
+		{% if S_ERROR %}
+			<div class="errorbox">
+				<h3>{{ lang('WARNING') }}</h3>
+				<p>{{ ERROR_MSG }}</p>
+			</div>
+		{% endif %}
+		<fieldset>
+			<dl>
+				<dt><label>{{ lang('CAT_NAME') }}{{ lang('COLON') }}</label></dt>
+				<dd><strong>{{ CATEGORY_NAME }}</strong></dd>
+			</dl>
+			<dl>
+				<dt><label for="delete_action">{{ lang('ACTION') }}{{ lang('COLON') }}</label></dt>
+				<dd>
+					<label>
+						<input type="radio" class="radio" id="delete_action" name="action_posts" value="delete"
+							checked="checked"/> {{ lang('DELETE_ALL_ARTICLES') }}
+					</label>
+				</dd>
+				{% if S_MOVE_CATEGORY_OPTIONS %}
+					<dd>
+						<label>
+							<input type="radio" class="radio" name="action_posts"
+								value="move"/> {{ lang('MOVE_ARTICLES_TO') }}
+						</label>
+						<label><select name="posts_to_id">{{ S_MOVE_CATEGORY_OPTIONS }}</select></label>
+					</dd>
+				{% endif %}
+			</dl>
+			{% if S_HAS_SUBCATS %}
+				<dl>
+					<dt><label for="sub_delete_action">{{ lang('ACTION') }}{{ lang('COLON') }}</label></dt>
+					<dd>
+						<label>
+							<input type="radio" class="radio" id="sub_delete_action" name="action_sub_cats"
+								value="delete" checked="checked"/> {{ lang('DELETE_SUBCATS') }}
+						</label>
+					</dd>
+					{% if S_CATS_LIST %}
+						<dd>
+							<label>
+								<input type="radio" class="radio" name="action_sub_cats"
+									value="move"/> {{ lang('MOVE_SUBCATS_TO') }}
+							</label>
+							<label><select name="sub_cats_to_id">{{ S_CATS_LIST }}</select></label>
+						</dd>
+					{% endif %}
+				</dl>
+			{% endif %}
+			<p class="quick"><input class="button1" type="submit" name="update" value="{{ lang('SUBMIT') }}"/></p>
+			{{ S_FORM_TOKEN }}
+		</fieldset>
+	{% elseif S_MANAGE %}
+		<h1>{{ lang('ACP_LIBRARY_MANAGE') }}</h1>
+		<p>{{ lang('ACP_LIBRARY_MANAGE_EXPLAIN') }}</p>
+		{% if ERROR_MSG %}
+			<div class="errorbox">
+				<h3>{{ lang('WARNING') }}</h3>
+				<p>{{ ERROR_MSG }}</p>
+			</div>
+		{% endif %}
+		<table class="table1">
+			<tbody>
+			<tr>
+				<td class="row3"><b>{{ NAVIGATION }}</b></td>
+			</tr>
+			</tbody>
+		</table>
+		{% if loops.categories|length %}
+			<table class="responsive">
+				<colgroup>
+					<col class="row1"/>
+					<col class="row1"/>
+					<col class="row2"/>
+				</colgroup>
+				<tbody>
+				{% for categories in loops.categories %}
+					<tr>
+						<td style="text-align: center; width: 5%;">{{ categories.ID }}</td>
+						<td class="forum-desc">
+							<strong><a href="{{ categories.U_CATEGORY }}">{{ categories.CATEGORY_NAME }}</a></strong>
+							{% if categories.CATEGORY_DESCR %}<br>
+								<span>{{ categories.CATEGORY_DESCR }}</span>
+							{% endif %}
+							<br>
+							<span>{{ lang('ARTICLES') }}{{ lang('COLON') }} <strong>{{ categories.ARTICLES }}</strong></span>
+						</td>
+						<td class="actions">
+							{% if categories.S_FIRST_ROW && not categories.S_LAST_ROW %}
+								<i class="icon acp-icon acp-icon-disabled fa-arrow-up fa-fw"
+									title="{{ lang('MOVE_UP') }}"></i>
+								<a href="{{ categories.U_MOVE_DOWN }}"><i class="icon acp-icon fa-arrow-down fa-fw"
+										title="{{ lang('MOVE_DOWN') }}"></i></a>
+							{% elseif not categories.S_FIRST_ROW && not categories.S_LAST_ROW %}
+								<a href="{{ categories.U_MOVE_UP }}"><i class="icon acp-icon fa-arrow-up fa-fw"
+										title="{{ lang('MOVE_UP') }}"></i></a>
+								<a href="{{ categories.U_MOVE_DOWN }}"><i class="icon acp-icon fa-arrow-down fa-fw"
+										title="{{ lang('MOVE_DOWN') }}"></i></a>
+							{% elseif categories.S_LAST_ROW && not categories.S_FIRST_ROW %}
+								<a href="{{ categories.U_MOVE_UP }}"><i class="icon acp-icon fa-arrow-up fa-fw"
+										title="{{ lang('MOVE_UP') }}"></i></a>
+								<i class="icon acp-icon acp-icon-disabled fa-arrow-down fa-fw"
+									title="{{ lang('MOVE_DOWN') }}"></i>
+							{% else %}
+								<i class="icon acp-icon acp-icon-disabled fa-arrow-up fa-fw"
+									title="{{ lang('MOVE_UP') }}"></i>
+								<i class="icon acp-icon acp-icon-disabled fa-arrow-down fa-fw"
+									title="{{ lang('MOVE_DOWN') }}"></i>
+							{% endif %}
+							<a href="{{ categories.U_EDIT }}"><i class="icon acp-icon fa-pencil fa-fw"
+									title="{{ lang('EDIT') }}"></i></a>
+							<a href="{{ categories.U_DELETE }}"><i class="icon acp-icon fa-trash fa-fw"
+									title="{{ lang('DELETE') }}"></i></a>
+							<a href="{{ categories.U_SYNC }}"><i class="icon acp-icon fa-refresh fa-fw"
+									title="{{ lang('RESYNC') }}"></i></a>
+						</td>
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		{% endif %}
+		{% if CATS_BOX %}
+			<fieldset class="quick">
+				{{ lang('SELECT_CATEGORY') }}{{ lang('COLON') }}
+				<label>
+					<select name="parent_id"
+						onchange="if(this.options[this.selectedIndex].value !== -1){ this.form.submit(); }">{{ CATS_BOX }}
+					</select>
+				</label>
+				<input class="button2" type="submit" value="{{ lang('GO') }}"/>{{ S_FORM_TOKEN }}
+			</fieldset>
+		{% else %}
+			<div class="errorbox"><p>{{ lang('NO_CATS_IN_KB') }}</p></div>
+		{% endif %}
+		<fieldset class="quick">
+			<input type="hidden" name="action" value="add"/>
+			<label><input type="text" name="category_name" value="" maxlength="255"/></label>
+			<input class="button2" name="addcat" type="submit" value="{{ lang('ADD_CATEGORY') }}"/>
+			{{ S_FORM_TOKEN }}
+		</fieldset>
+	{% endif %}
+</form>
+{% INCLUDEJS 'js/acp_knowledgebase.js' %}
+{% INCLUDE 'overall_footer.html' %}

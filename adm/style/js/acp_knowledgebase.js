@@ -1,5 +1,4 @@
 (function($) { // Avoid conflicts with other libraries
-
 	'use strict';
 
 	$('#kb_font_icon').on('keyup blur', function() {
@@ -13,12 +12,11 @@
 	});
 })(jQuery);
 
-
 function show_extensions(elem) {
 	const selected = elem.querySelectorAll('#' + elem.id + ' option:checked');
 	let values = Array.from(selected).map(el => el.value);
 	let str = values.join(', ');
-	let elementname = 'ext_' + (elem.name).replace(/extensions|\[|\]/ig, "");
+	let elementname = 'ext_' + (elem.name).replace(/extensions|\[|]/ig, "");
 
 	if (!str) {
 		str = ' ';

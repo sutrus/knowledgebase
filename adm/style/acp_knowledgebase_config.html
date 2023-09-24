@@ -1,0 +1,182 @@
+{% INCLUDE 'overall_header.html' %}
+{% INCLUDECSS 'css/acp_knowledgebase.css' %}
+
+<form action="{{ S_ACTION }}" method="post">
+	<h1>{{ lang('ACP_KNOWLEDGE_BASE_CONFIGURE') }}</h1>
+	<p>{{ lang('KB_CONFIG_EXPLAIN') }}</p>
+
+	{% if S_NOT_WRITABLE %}
+		<div class="errorbox">
+			<p>{{ lang('KB_NOT_WRITABLE') }}</p>
+		</div>
+	{% endif %}
+
+	<fieldset>
+		<legend>{{ lang('SETTINGS') }}</legend>
+		<dl>
+			<dt>
+				<label for="kb_font_icon">{{ lang('KB_FONT_ICON') }}{{ lang('COLON') }}</label><br>
+				<span>{{ lang('KB_FONT_ICON_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<input name="kb_font_icon" id="kb_font_icon" placeholder="book" type="text" size="20" maxlength="50"
+					value="{{ KB_FONT_ICON }}"/>
+				<i class="icon acp-icon fa-{{ KB_FONT_ICON }} fa-2x"></i>
+			</dd>
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>{{ lang('ACP_KNOWLEDGE_BASE_CONFIGURE') }}</legend>
+		<dl>
+			<dt>
+				<label for="anounce">{{ lang('ANOUNCE') }}{{ lang('COLON') }}</label><br>
+				<span>{{ lang('ANOUNCE_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<input name="anounce" id="anounce" type="checkbox" value="1"
+					onClick="if (document.getElementById) { toggle_form_advanced = document.getElementById('form_advanced').style; } else { alert('Upgrade your browser!'); return; } if (toggle_form_advanced.display === 'none') { toggle_form_advanced.display = ''; } else { toggle_form_advanced.display = 'none'; }"
+					{{ ADVANCED_FORM_ON }}/>
+			</dd>
+		</dl>
+		<div id="form_advanced" style="display: {{ ADVANCED_FORM }};">
+			<dl>
+				<dt>
+					<label>{{ lang('FORUM') }}{{ lang('COLON') }}</label><br>
+					<span>{{ lang('KB_FORUM_EXPLAIN') }}</span>
+				</dt>
+				<dd><label><select name="forum_id">{{ S_FORUM_POST }}</select></label></dd>
+			</dl>
+			<dl>
+				<dt>
+					<label for="forum_prefix">{{ lang('FORUM_PREFIX') }}{{ lang('COLON') }}</label><br>
+					<span>{{ lang('FORUM_PREFIX_EXPLAIN') }}</span>
+				</dt>
+				<dd>
+					<input name="forum_prefix" id="forum_prefix" type="text" size="40" maxlength="50"
+						value="{{ S_FORUM_PREFIX }}"/>
+				</dd>
+			</dl>
+			<dl>
+				<dt>
+					<label for="topic_prefix">{{ lang('TOPIC_PREFIX') }}{{ lang('COLON') }}</label><br>
+					<span>{{ lang('TOPIC_PREFIX_EXPLAIN') }}</span>
+				</dt>
+				<dd>
+					<input name="topic_prefix" id="topic_prefix" type="text" size="40" maxlength="50"
+						value="{{ S_TOPIC_PREFIX }}"/>
+				</dd>
+			</dl>
+		</div>
+		<dl>
+			<dt>
+				<label for="articles_per_page">{{ lang('PER_PAGE') }}{{ lang('COLON') }}</label><br>
+				<span>{{ lang('PER_PAGE_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<input name="articles_per_page" id="articles_per_page" class="post" type="number" max="20" min="5"
+					maxlength="12" size="12" value="{{ PER_PAGE }}"/>
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				<label for="sort_type">{{ lang('SORT_TYPE') }}{{ lang('COLON') }}</label><br>
+				<span>{{ lang('SORT_TYPE_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<label>
+					<input type="radio" class="radio" id="sort_type" name="sort_type" value="0" {% if S_FORCIBLY %}
+						checked="checked" {% endif %}/> {{ lang('FORCIBLY') }}
+				</label>
+				<label>
+					<input type="radio" class="radio" name="sort_type" value="1" {% if S_SELECTABLE %}
+						checked="checked" {% endif %}/> {{ lang('SELECTABLE') }}
+				</label>
+				<label>
+					<input type="radio" class="radio" name="sort_type" value="-1" {% if S_ALPHABET %}
+						checked="checked" {% endif %}/> {{ lang('ALPHABET') }}
+				</label>
+			</dd>
+		</dl>
+	</fieldset>
+	<br>
+	<fieldset>
+		<legend>{{ lang('ACP_ATTACHMENT_SETTINGS') }}</legend>
+		<dl>
+			<dt><label for="allow_attachments">{{ lang('ALLOW_ATTACHMENTS') }}{{ lang('COLON') }}</label></dt>
+			<dd>
+				<label>
+					<input type="radio" class="radio" id="allow_attachments" name="allow_attachments" value="1"
+						{% if S_YES_ATTACH %} checked="checked" {% endif %}/> {{ lang('YES') }}
+				</label>
+				<label>
+					<input type="radio" class="radio" name="allow_attachments" value="0"
+						{% if not S_YES_ATTACH %} checked="checked" {% endif %}/> {{ lang('NO') }}
+				</label>
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				<label for="thumbnail">{{ lang('CREATE_THUMBNAIL') }}{{ lang('COLON') }}</label><br>
+				<span>{{ lang('CREATE_THUMBNAIL_EXPLAIN') }}<br>{{ lang('THUMBNAIL_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<label>
+					<input type="radio" class="radio" id="thumbnail" name="thumbnail"
+						value="1" {% if S_YES_THUMBNAIL %} checked="checked" {% endif %}/> {{ lang('YES') }}
+				</label>
+				<label>
+					<input type="radio" class="radio" name="thumbnail" value="0"
+						{% if not S_YES_THUMBNAIL %} checked="checked" {% endif %}/> {{ lang('NO') }}
+				</label>
+			</dd>
+		</dl>
+		<dl>
+			<dt><label for="max_attachments">{{ lang('MAX_ATTACHMENTS') }}{{ lang('COLON') }}</label></dt>
+			<dd>
+				<input id="max_attachments" max="999" name="max_attachments" value="{{ MAX_ATTACHMENTS }}"
+					type="number">
+			</dd>
+		</dl>
+		<dl>
+			<dt>
+				<label for="extgroup_filesize">{{ lang('ATTACH_MAX_FILESIZE') }}{{ lang('COLON') }}</label><br>
+				<span>{{ lang('ATTACH_MAX_FILESIZE_EXPLAIN') }}</span>
+			</dt>
+			<dd>
+				<input type="number" id="extgroup_filesize" min="0" max="999999999999999" step="any" name="max_filesize"
+					value="{{ EXTGROUP_FILESIZE }}"/>
+				<label><select name="size_select"> {{ S_EXT_GROUP_SIZE_OPTIONS }}</select></label>
+			</dd>
+		</dl>
+	</fieldset>
+	<fieldset>
+		<legend>{{ lang('EXTENSION_GROUP') }}</legend>
+		<dl>{{ lang('EXTENSION_GROUP_EXPLAIN') }}</dl>
+		{% for row in loops.row %}
+			<dl>
+				<dt><label for="extensions_group">{{ row.EXTENSIONS_GROUP }}</label></dt>
+				<dd><div id="ext_{{ row.GROUP }}">{{ row.ASSIGNED_EXTENSIONS }}</div></dd>
+				<dd>
+					<label for="assigned_extensions"></label>
+					<select name="extensions[{{ row.GROUP }}][]" id="assigned_extensions" class="narrow"
+						onchange="show_extensions(this);" multiple="multiple" size="6"
+						style="width: 25%; margin-right: 25%;">{{ row.S_OPTIONS }}
+					</select>
+					<label>
+						<select name="diasabled_extensions[{{ row.GROUP }}][]" class="narrow" multiple="multiple"
+							size="6" style="width: 25%;">{{ row.DIASABLED_EXTENSIONS }}
+						</select>
+					</label>
+				</dd>
+			</dl>
+		{% endfor %}
+	</fieldset>
+	<fieldset class="submit-buttons">
+		<legend>{{ lang('SUBMIT') }}</legend>
+		<input class="button1" type="submit" id="submit" name="submit" value="{{ lang('SUBMIT') }}"/>&nbsp;
+		<input class="button2" type="reset" id="reset" name="reset" value="{{ lang('RESET') }}"/>
+		{{ S_FORM_TOKEN }}
+	</fieldset>
+</form>
+{% INCLUDEJS 'js/acp_knowledgebase.js' %}
+{% INCLUDE 'overall_footer.html' %}

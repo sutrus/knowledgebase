@@ -1,9 +1,9 @@
 <?php
-
 /**
  *
  * Knowledge base. An extension for the phpBB Forum Software package.
  *
+ * @copyright (c) 2023, sutrus ( update to phpBB 3.3 )
  * @copyright (c) 2017, Sheer
  * @license       GNU General Public License, version 2 (GPL-2.0)
  *
@@ -40,11 +40,13 @@ class ext extends \phpbb\extension\base
 	}
 
 	/**
-	 * Overwrite enable_step to enable notifications
-	 * before any included migrations are installed.
+	 * Enable notifications for the extension
 	 *
-	 * @param mixed $old_state State returned by previous call of this method
-	 * @return bool|string Returns false after last step, otherwise temporary state
+	 * @param mixed $old_state        The return value of the previous call
+	 *                                of this method, or false on the first call
+	 * @return    mixed                Returns false after last step, otherwise
+	 *                                temporary state which is passed as an
+	 *                                argument to the next step
 	 */
 	function enable_step($old_state)
 	{
@@ -63,11 +65,13 @@ class ext extends \phpbb\extension\base
 	}
 
 	/**
-	 * Overwrite disable_step to disable notifications
-	 * before the extension is disabled.
+	 * Disable notifications for the extension
 	 *
-	 * @param mixed $old_state State returned by previous call of this method
-	 * @return false|string Returns false after last step, otherwise temporary state
+	 * @param mixed $old_state        The return value of the previous call
+	 *                                of this method, or false on the first call
+	 * @return    mixed                Returns false after last step, otherwise
+	 *                                temporary state which is passed as an
+	 *                                argument to the next step
 	 */
 	function disable_step($old_state)
 	{
@@ -86,11 +90,13 @@ class ext extends \phpbb\extension\base
 	}
 
 	/**
-	 * Overwrite purge_step to purge notifications before
-	 * any included and installed migrations are reverted.
+	 * Purge notifications for the extension
 	 *
-	 * @param mixed $old_state State returned by previous call of this method
-	 * @return bool|string Returns false after last step, otherwise temporary state
+	 * @param mixed $old_state        The return value of the previous call
+	 *                                of this method, or false on the first call
+	 * @return    mixed                Returns false after last step, otherwise
+	 *                                temporary state which is passed as an
+	 *                                argument to the next step
 	 */
 	function purge_step($old_state)
 	{

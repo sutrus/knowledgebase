@@ -2,31 +2,37 @@
 <h2><a href="{{ U_LIBRARY }}" class="nav">{{ lang('LIBRARY') }}</a></h2>
 <div class="action-bar bar-top">
 	{% if S_IS_SEARCH %}
-	<div class="search-box">
-		<form method="get" id="forum-search" action="{{ S_KB_SEARCH_ACTION }}">
-			<fieldset>
-				<input class="inputbox search tiny" name="keywords" id="search_keywords" size="20" placeholder="{{ lang('SEARCH') }}" type="search">
-				<button class="button button-search" type="submit" title="{{ lang('SEARCH') }}"><i class="icon fa-search fa-fw" aria-hidden="true"></i></button>
-				<a href="{{ U_KB_SEARCH }}" class="button button-search-end" title="{{ lang('SEARCH_ADV') }}"><i class="icon fa-cog fa-fw" aria-hidden="true"></i></a>
-				<input type="hidden" name="sf" value="articles">
-			</fieldset>
-		</form>
-	</div>
+		<div class="search-box">
+			<form method="get" id="forum-search" action="{{ S_KB_SEARCH_ACTION }}">
+				<fieldset>
+					<input class="inputbox search tiny" name="keywords" id="search_keywords" size="20"
+						placeholder="{{ lang('SEARCH') }}" type="search">
+					<button class="button button-search" type="submit" title="{{ lang('SEARCH') }}">
+						<i class="icon fa-search fa-fw" aria-hidden="true"></i></button>
+					<a href="{{ U_KB_SEARCH }}" class="button button-search-end" title="{{ lang('SEARCH_ADV') }}">
+						<i class="icon fa-cog fa-fw" aria-hidden="true"></i></a>
+					<input type="hidden" name="sf" value="articles">
+				</fieldset>
+			</form>
+		</div>
 	{% endif %}
 </div>
 {% if loops.cat_row|length %}{% INCLUDE '@sheer_knowledgebase/kb_cat_list.html' %}{% else %}
-<p class="error">{{ lang('NO_CAT_YET') }}</p>
+	<p class="error">{{ lang('NO_CAT_YET') }}</p>
 {% endif %}
 {% if CATS_DROPBOX %}
-<div class="jumpbox dropdown-container dropdown-container-right dropdown-up dropdown-left dropdown-button-control" id="jumpbox">
+	<div class="jumpbox dropdown-container dropdown-container-right dropdown-up dropdown-left dropdown-button-control"
+		id="jumpbox">
 	<span title="{{ lang('GO') }}" class="button button-secondary dropdown-trigger dropdown-select dropdown-toggle">
 		<span>{{ lang('GO') }}</span>
 		<span class="caret"><i class="icon fa-sort-down fa-fw" aria-hidden="true"></i></span>
 	</span>
-	<div class="dropdown">
-		<div class="pointer"><div class="pointer-inner"></div></div>
-		<ul class="dropdown-contents">{{ CATS_DROPBOX }}</ul>
+		<div class="dropdown">
+			<div class="pointer">
+				<div class="pointer-inner"></div>
+			</div>
+			<ul class="dropdown-contents">{{ CATS_DROPBOX }}</ul>
+		</div>
 	</div>
-</div>
 {% endif %}
 {% INCLUDE 'overall_footer.html' %}

@@ -211,8 +211,7 @@ class admin_controller
 	}
 
 
-	/**
-	 * Settings management functions
+	/** Settings management functions
 	 *
 	 * @return void
 	 * @access public
@@ -321,8 +320,7 @@ class admin_controller
 		]);
 	}
 
-	/**
-	 * Set the options a user can configure
+	/** Set the options a user can configure
 	 *
 	 * @return void
 	 * @access protected
@@ -361,16 +359,11 @@ class admin_controller
 		$this->config->set('kb_max_filesize', $max_filesize, 0);
 		$this->config_text->set('kb_extensions', json_encode($extension_list));
 	}
-	/**
-	 * END - Settings management functions
-	 */
+	/** END - Settings management functions */
 
 
-	/**
-	 * Attachments management functions
-	 */
-
-	/**
+	/** Attachments management functions
+	 *
 	 * @return void
 	 * @access public
 	 */
@@ -1097,7 +1090,6 @@ class admin_controller
 					$sql = 'DELETE FROM ' . $this->logs_table . '
 						WHERE ' . $this->db->sql_in_set('log_id', $marked);
 				}
-
 				if ($deleteall)
 				{
 					$sql = 'DELETE FROM ' . $this->logs_table;
@@ -1738,7 +1730,7 @@ class admin_controller
 			{
 				$kb_search = $this->search_factory->get_active();
 				// remove index
-				$kb_search->index_remove($articles);
+				$kb_search->index_remove($articles, []);
 			}
 			catch (RuntimeException $e)
 			{
@@ -1924,8 +1916,8 @@ class admin_controller
 
 				foreach ($types as $key => $value)
 				{
-					$submit = $this->request->variable('submit', array(array(0)));
-					$inherit = $this->request->variable('inherit', array(array(0)));
+					$submit = $this->request->variable('submit', [[0]]);
+					$inherit = $this->request->variable('inherit', [[0]]);
 
 					$sql = 'SELECT *
 						FROM ' . $this->options_table . '
@@ -2024,8 +2016,7 @@ class admin_controller
 							]
 						);
 					}
-					unset($_options);
-					unset($options);
+					unset($_options, $options);
 				}
 			}
 		}
@@ -2529,7 +2520,6 @@ class admin_controller
 								WHERE ' . $id_field . ' = ' . $group . '
 									AND category_id = ' . $cat . '
 									AND auth_option_id = ' . $auth_option_ids[$opt_name];
-							$this->db->sql_query($sql);
 						}
 						else
 						{
@@ -2537,8 +2527,8 @@ class admin_controller
 								(' . $id_field . ', category_id, auth_option_id, auth_setting)
 								VALUES
 								(' . $group . ', ' . $cat . ', ' . $auth_option_ids[$opt_name] . ', ' . $option . ')';
-							$this->db->sql_query($sql);
 						}
+						$this->db->sql_query($sql);
 					}
 
 					if ($user_mode == 'user')
@@ -2631,16 +2621,10 @@ class admin_controller
 		$url = $this->u_action . '&amp;action=setting_group_local&amp;category_id[]=' . implode('&amp;category_id[]=', $category_id);
 		trigger_error($this->language->lang('AUTH_UPDATED') . adm_back_link($url));
 	}
-	/**
-	 * END - Permission management functions
-	 */
+	/** END - Permission management functions */
 
 
-	/**
-	 * Search management functions
-	 */
-
-	/**
+	/** Search management functions
 	 * Settings page
 	 *
 	 * @param int    $id

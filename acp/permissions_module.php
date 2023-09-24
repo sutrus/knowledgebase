@@ -3,6 +3,7 @@
  *
  * Knowledge base. An extension for the phpBB Forum Software package.
  *
+ * @copyright (c) 2023, sutrus ( update to phpBB 3.3 )
  * @copyright (c) 2017, Sheer
  * @license       GNU General Public License, version 2 (GPL-2.0)
  *
@@ -66,7 +67,7 @@ class permissions_module
 
 		include_once($phpbb_root_path . 'includes/functions_user.' . $phpEx);
 
-		$this->tpl_name = 'acp_permissions_body';
+		$this->tpl_name = 'acp_knowledgebase_permissions';
 
 //mode: permissions
 //mode: mask
