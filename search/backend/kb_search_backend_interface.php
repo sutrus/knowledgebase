@@ -2,6 +2,7 @@
 /**
  *
  * Knowledge base. An extension for the phpBB Forum Software package.
+ *
  * @license GNU General Public License, version 2 (GPL-2.0)
  *
  * For full copyright and license information, please see
@@ -68,30 +69,37 @@ interface kb_search_backend_interface
 	 * Then it analyses the query and fills the internal arrays $must_not_contain_ids,
 	 * $must_contain_ids and $must_exclude_one_ids which are later used by keyword_search()
 	 *
-	 * @param	string	$keywords	contains the search query string as entered by the user
-	 * @param	string	$terms		is either 'all' (use search query as entered, default words to 'must be contained in post')
-	 * 	or 'any' (find all posts containing at least one of the given words)
-	 * @return	boolean				false if no valid keywords were found and otherwise true
+	 * @param string $keywords contains the search query string as entered by the user
+	 * @param string $terms    is either 'all' (use search query as entered, default words to 'must be contained in
+	 *                         post') or 'any' (find all posts containing at least one of the given words)
+	 * @return    boolean                false if no valid keywords were found and otherwise true
 	 */
 	public function split_keywords(string &$keywords, string $terms): bool;
 
 	/**
 	 * Performs a search on keywords depending on display specific params. You have to run split_keywords() first
 	 *
-	 * @param string $type contains either posts or topics depending on what should be searched for
-	 * @param string $fields contains either titleonly (topic titles should be searched), msgonly (only message bodies should be searched), firstpost (only subject and body of the first post should be searched) or all (all post bodies and subjects should be searched)
-	 * @param string $terms is either 'all' (use query as entered, words without prefix should default to "have to be in field") or 'any' (ignore search query parts and just return all posts that contain any of the specified words)
-	 * @param array $sort_by_sql contains SQL code for the ORDER BY part of a query
-	 * @param string $sort_key is the key of $sort_by_sql for the selected sorting
-	 * @param string $sort_dir is either a or d representing ASC and DESC
-	 * @param string $sort_days specifies the maximum amount of days a post may be old
-	 * @param array $ex_fid_ary specifies an array of forum ids which should not be searched
-	 * @param int $category_id is set to 0 or a topic id, if it is not 0 then only posts in this topic should be searched
-	 * @param array $author_ary an array of author ids if the author should be ignored during the search the array is empty
-	 * @param string $author_name specifies the author match, when ANONYMOUS is also a search-match
-	 * @param array  &$id_ary passed by reference, to be filled with ids for the page specified by $start and $per_page, should be ordered
-	 * @param int $start indicates the first index of the page
-	 * @param int $per_page number of ids each page is supposed to contain
+	 * @param string  $type        contains either posts or topics depending on what should be searched for
+	 * @param string  $fields      contains either titleonly (topic titles should be searched), msgonly (only message
+	 *                             bodies should be searched), firstpost (only subject and body of the first post
+	 *                             should be searched) or all (all post bodies and subjects should be searched)
+	 * @param string  $terms       is either 'all' (use query as entered, words without prefix should default to "have
+	 *                             to be in field") or 'any' (ignore search query parts and just return all posts that
+	 *                             contain any of the specified words)
+	 * @param array   $sort_by_sql contains SQL code for the ORDER BY part of a query
+	 * @param string  $sort_key    is the key of $sort_by_sql for the selected sorting
+	 * @param string  $sort_dir    is either a or d representing ASC and DESC
+	 * @param string  $sort_days   specifies the maximum amount of days a post may be old
+	 * @param array   $ex_fid_ary  specifies an array of forum ids which should not be searched
+	 * @param int     $category_id is set to 0 or a topic id, if it is not 0 then only posts in this topic should be
+	 *                             searched
+	 * @param array   $author_ary  an array of author ids if the author should be ignored during the search the array
+	 *                             is empty
+	 * @param string  $author_name specifies the author match, when ANONYMOUS is also a search-match
+	 * @param array  &$id_ary      passed by reference, to be filled with ids for the page specified by $start and
+	 *                             $per_page, should be ordered
+	 * @param int     $start       indicates the first index of the page
+	 * @param int     $per_page    number of ids each page is supposed to contain
 	 * @return    boolean|int                        total number of results
 	 */
 	public function keyword_search(string $type, string $fields, string $terms, array $sort_by_sql, string $sort_key, string $sort_dir, string $sort_days, array $ex_fid_ary, int $category_id, array $author_ary, string $author_name, array &$id_ary, int &$start, int $per_page);
@@ -99,18 +107,20 @@ interface kb_search_backend_interface
 	/**
 	 * Performs a search on an author's posts without caring about message contents. Depends on display specific params
 	 *
-	 * @param string $type contains either posts or topics depending on what should be searched for
-	 * @param array $sort_by_sql contains SQL code for the ORDER BY part of a query
-	 * @param string $sort_key is the key of $sort_by_sql for the selected sorting
-	 * @param string $sort_dir is either a or d representing ASC and DESC
-	 * @param string $sort_days specifies the maximum amount of days a post may be old
-	 * @param array $ex_fid_ary specifies an array of forum ids which should not be searched
-	 * @param int $category_id is set to 0 or a topic id, if it is not 0 then only posts in this topic should be searched
-	 * @param array $author_ary an array of author ids
-	 * @param string $author_name specifies the author match, when ANONYMOUS is also a search-match
-	 * @param array        &$id_ary passed by reference, to be filled with ids for the page specified by $start and $per_page, should be ordered
-	 * @param int $start indicates the first index of the page
-	 * @param int $per_page number of ids each page is supposed to contain
+	 * @param string        $type        contains either posts or topics depending on what should be searched for
+	 * @param array         $sort_by_sql contains SQL code for the ORDER BY part of a query
+	 * @param string        $sort_key    is the key of $sort_by_sql for the selected sorting
+	 * @param string        $sort_dir    is either a or d representing ASC and DESC
+	 * @param string        $sort_days   specifies the maximum amount of days a post may be old
+	 * @param array         $ex_fid_ary  specifies an array of forum ids which should not be searched
+	 * @param int           $category_id is set to 0 or a topic id, if it is not 0 then only posts in this topic should
+	 *                                   be searched
+	 * @param array         $author_ary  an array of author ids
+	 * @param string        $author_name specifies the author match, when ANONYMOUS is also a search-match
+	 * @param array        &$id_ary      passed by reference, to be filled with ids for the page specified by $start
+	 *                                   and $per_page, should be ordered
+	 * @param int           $start       indicates the first index of the page
+	 * @param int           $per_page    number of ids each page is supposed to contain
 	 * @return    boolean|int                        total number of results
 	 */
 	public function author_search(string $type, array $sort_by_sql, string $sort_key, string $sort_dir, string $sort_days, array $ex_fid_ary, int $category_id, array $author_ary, string $author_name, array &$id_ary, int &$start, int $per_page);
@@ -126,16 +136,17 @@ interface kb_search_backend_interface
 	 * Updates wordlist and wordmatch tables when a message is posted or changed
 	 * Destroys cached search results, that contained one of the new words in a post so the results won't be outdated
 	 *
-	 * @param string $mode contains the post mode: edit, post, reply, quote ...
-	 * @param int $article_id contains the post id of the post to index
-	 * @param string $message contains the post text of the post
-	 * @param string $subject contains the subject of the post to index
-	 * @param int $poster_id contains the user id of the poster
+	 * @param string $mode       contains the post mode: edit, post, reply, quote ...
+	 * @param int    $article_id contains the post id of the post to index
+	 * @param string $message    contains the post text of the post
+	 * @param string $subject    contains the subject of the post to index
+	 * @param int    $poster_id  contains the user id of the poster
 	 */
 	public function index(string $mode, int $article_id, string &$message, string &$subject, string &$description, int $poster_id);
 
 	/**
 	 * Destroy cached results, that might be outdated after deleting a post
+	 *
 	 * @param array $article_ids
 	 * @param array $author_ids
 	 *

@@ -11,6 +11,9 @@
 
 namespace sheer\knowledgebase\notification\type;
 
+use phpbb\controller\helper;
+use phpbb\user_loader;
+
 class approve extends \phpbb\notification\type\base
 {
 	/**
@@ -19,14 +22,14 @@ class approve extends \phpbb\notification\type\base
 	 * @var bool|array False if the service should use its default data
 	 *                 Array of data (including keys 'id', 'lang', and 'group')
 	 */
-	public static $notification_option = array(
+	public static $notification_option = [
 		'lang'  => 'NOTIFICATION_TYPE_ARTICLE_APPROVE',
 		'group' => 'NOTIFICATION_GROUP_MISCELLANEOUS',
-	);
+	];
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 	/** @var \phpbb\user_loader */
-	protected \phpbb\user_loader $user_loader;
+	protected user_loader $user_loader;
 
 	/**
 	 * Get the id of the item
@@ -54,12 +57,12 @@ class approve extends \phpbb\notification\type\base
 	 * @param \phpbb\controller\helper $helper
 	 * @return void
 	 */
-	public function set_controller_helper(\phpbb\controller\helper $helper)
+	public function set_controller_helper(\phpbb\controller\helper $helper): void
 	{
 		$this->helper = $helper;
 	}
 
-	public function set_user_loader(\phpbb\user_loader $user_loader)
+	public function set_user_loader(\phpbb\user_loader $user_loader): void
 	{
 		$this->user_loader = $user_loader;
 	}
@@ -93,13 +96,11 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return array
 	 */
-	public function find_users_for_notification($type_data, $options = array()): array
+	public function find_users_for_notification($type_data, $options = []): array
 	{
-		$options = array_merge(array(
-			'ignore_users' => array(),
-		), $options);
+		$options = array_merge(['ignore_users' => [],], $options);
 
-		$users = array((int) $type_data['author_id']);
+		$users = [(int) $type_data['author_id']];
 		return $this->check_user_notification_options($users, $options);
 	}
 
@@ -110,7 +111,7 @@ class approve extends \phpbb\notification\type\base
 	 */
 	public function users_to_query(): array
 	{
-		return array($this->get_data('moderator'));
+		return [$this->get_data('moderator')];
 	}
 
 	/**
@@ -139,9 +140,9 @@ class approve extends \phpbb\notification\type\base
 	 */
 	public function get_url(): string
 	{
-		return $this->helper->route('sheer_knowledgebase_article', array(
+		return $this->helper->route('sheer_knowledgebase_article', [
 			'k' => $this->get_data('item_id'),
-		));
+		]);
 	}
 
 	/**
@@ -162,12 +163,12 @@ class approve extends \phpbb\notification\type\base
 	public function get_email_template_variables(): array
 	{
 		$username = $this->user_loader->get_username($this->get_data('author_id'), 'username');
-		return array(
+		return [
 			'USERNAME'       => htmlspecialchars_decode($username),
 			'MODERATOR'      => htmlspecialchars_decode($this->user_loader->get_username($this->get_data('author_id'), 'username')),
 			'ARTICLE_TITLE'  => htmlspecialchars_decode(censor_text($this->get_data('title'))),
 			'U_VIEW_ARTICLE' => generate_board_url() . '/knowledgebase/article?k=' . $this->get_data('item_id'),
-		);
+		];
 	}
 
 	/**
@@ -205,7 +206,7 @@ class approve extends \phpbb\notification\type\base
 	 *
 	 * @return void Array of data ready to be inserted into the database
 	 */
-	public function create_insert_array($type_data, $pre_create_data = array()): void
+	public function create_insert_array($type_data, $pre_create_data = []): void
 	{
 		$this->set_data('author_id', $type_data['author_id']);
 		$this->set_data('title', $type_data['title']);
@@ -230,7 +231,7 @@ class approve extends \phpbb\notification\type\base
 
 		$sql_where = ($category_id) ? ' AND category_id = ' . $category_id : '';
 
-		$moderators = $groups = $exclude = array();
+		$moderators = $groups = $exclude = [];
 
 		$sql = 'SELECT auth_option_id
 			FROM ' . $kb_options_table . '

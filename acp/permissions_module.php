@@ -13,9 +13,9 @@ namespace sheer\knowledgebase\acp;
 
 class permissions_module
 {
-	public $page_title;
-	public $tpl_name;
-	public $u_action;
+	public string $page_title;
+	public string $tpl_name;
+	public string $u_action;
 
 	/**
 	 * Permissions ACP module
@@ -24,7 +24,7 @@ class permissions_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main($id, $mode)
+	public function main(int $id, string $mode): void
 	{
 		global $phpbb_container;
 
@@ -71,7 +71,7 @@ class permissions_module
 
 //mode: permissions
 //mode: mask
-		if ($mode == 'mask')
+		if ($mode === 'mask')
 		{
 			$this->page_title = $language->lang('KNOWLEDGE_BASE') . ' &bull; ' . $language->lang('ACP_LIBRARY_PERMISSIONS_MASK');
 			$title_edit_permissions = $title_add_permissions = $language->lang('VIEW_PERMISSIONS');
@@ -83,15 +83,15 @@ class permissions_module
 			$title_add_permissions = $language->lang('ADD_PERMISSIONS');
 		}
 
-		$user_id = $request->variable('user_id', array(0));
-		$group_id = $request->variable('group_id', array(0));
-		$username = $request->variable('username', array(''), true);
+		$user_id = $request->variable('user_id', [0]);
+		$group_id = $request->variable('group_id', [0]);
+		$username = $request->variable('username', [''], true);
 		$usernames = $request->variable('usernames', '', true);
 		$all_cats = $request->variable('all_cats', 0);
 		$p_mode = $request->variable('p_mode', '');
 		$action = $request->variable('action', '');
 		$delete = $request->variable('delete', false);
-		$category_id = $all_cats ? $admin_controller->make_array_categoryid() : $request->variable('category_id', array(0));
+		$category_id = $all_cats ? $admin_controller->make_array_categoryid() : $request->variable('category_id', [0]);
 
 		// Map usernames to ids and vice versa
 		if ($usernames)
@@ -133,7 +133,6 @@ class permissions_module
 					return;
 				}
 				trigger_error('NO_MODE', E_USER_ERROR);
-			break;
 
 			case 'settings':
 				$admin_controller->get_mask($mode, $p_mode, (count($group_id)) ? $group_id : false, $category_id, (count($user_id)) ? $user_id : false);
@@ -146,15 +145,15 @@ class permissions_module
 				}
 				else
 				{
-					$s_hidden_fields = array(
+					$s_hidden_fields = [
 						'i'           => $id,
 						'mode'        => $mode,
-						'action'      => array($action => 1),
+						'action'      => [$action => 1],
 						'user_id'     => $user_id,
 						'group_id'    => $group_id,
 						'category_id' => $category_id,
 						'delete'      => true,
-					);
+					];
 					confirm_box(false, $language->lang('CONFIRM_OPERATION'), build_hidden_fields($s_hidden_fields));
 				}
 			break;
@@ -169,13 +168,12 @@ class permissions_module
 			break;
 
 			default:
-				$cats_box = $phpbb_ext_kb->make_category_select(0, false, true);
-				$template->assign_vars(array(
-						'S_SELECT_CATEGORY'       => true, //($cats_box) ? true : false,
-						'CATS_BOX'                => $cats_box,
-						'S_KB_PERMISSIONS_ACTION' => $this->u_action . '&amp;action=setting_group_local',
-					)
-				);
+				$cats_box = $phpbb_ext_kb->make_category_select(0, [], true);
+				$template->assign_vars([
+					'S_SELECT_CATEGORY'       => true, //($cats_box) ? true : false,
+					'CATS_BOX'                => $cats_box,
+					'S_KB_PERMISSIONS_ACTION' => $this->u_action . '&amp;action=setting_group_local',
+				]);
 			break;
 		}
 
@@ -187,23 +185,22 @@ class permissions_module
 				ORDER BY left_id ASC';
 			$result = $db->sql_query($sql);
 
-			$category_names = array();
+			$category_names = [];
 			while ($row = $db->sql_fetchrow($result))
 			{
 				$category_names[] = $row['category_name'];
 			}
 			$db->sql_freeresult($result);
 
-			$template->assign_vars(array(
-					'S_CATEGORY_NAMES' => (bool) count($category_names),
-					'CATEGORY_NAMES'   => implode($language->lang('COMMA_SEPARATOR'), $category_names))
-			);
+			$template->assign_vars([
+				'S_CATEGORY_NAMES' => (bool) count($category_names),
+				'CATEGORY_NAMES'   => implode($language->lang('COMMA_SEPARATOR'), $category_names),
+			]);
 		}
 
-		$template->assign_vars(array(
-				'L_EDIT_PERMISSIONS' => $title_edit_permissions,
-				'L_ADD_PERMISSIONS'  => $title_add_permissions,
-			)
-		);
+		$template->assign_vars([
+			'L_EDIT_PERMISSIONS' => $title_edit_permissions,
+			'L_ADD_PERMISSIONS'  => $title_add_permissions,
+		]);
 	}
 }

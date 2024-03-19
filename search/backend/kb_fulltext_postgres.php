@@ -1,15 +1,15 @@
 <?php
 /**
-*
-* This file is part of the phpBB Forum Software package.
-*
-* @copyright (c) phpBB Limited <https://www.phpbb.com>
-* @license GNU General Public License, version 2 (GPL-2.0)
-*
-* For full copyright and license information, please see
-* the docs/CREDITS.txt file.
-*
-*/
+ *
+ * This file is part of the phpBB Forum Software package.
+ *
+ * @copyright (c) phpBB Limited <https://www.phpbb.com>
+ * @license       GNU General Public License, version 2 (GPL-2.0)
+ *
+ * For full copyright and license information, please see
+ * the docs/CREDITS.txt file.
+ *
+ */
 
 namespace sheer\knowledgebase\search\backend;
 
@@ -20,24 +20,27 @@ use phpbb\user;
 use RuntimeException;
 
 /**
-* Fulltext search for PostgreSQL
-*/
+ * Fulltext search for PostgreSQL
+ */
 class kb_fulltext_postgres extends kb_base implements kb_search_backend_interface
 {
 	/**
 	 * Associative array holding index stats
+	 *
 	 * @var array
 	 */
-	protected $stats = array();
+	protected $stats = [];
 
 	/**
 	 * Holds the words entered by user, obtained by splitting the entered query on whitespace
+	 *
 	 * @var array
 	 */
-	protected $split_words = array();
+	protected $split_words = [];
 
 	/**
 	 * Stores the tsearch query
+	 *
 	 * @var string
 	 */
 	protected $tsearch_query = '';
@@ -45,6 +48,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	/**
 	 * True if phrase search is supported.
 	 * PostgreSQL fulltext currently doesn't support it
+	 *
 	 * @var boolean
 	 */
 	protected $phrase_search = false;
@@ -56,6 +60,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	/**
 	 * Contains tidied search query.
 	 * Operators are prefixed in search query and common words excluded
+	 *
 	 * @var string
 	 */
 	protected $search_query = '';
@@ -63,15 +68,17 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	/**
 	 * Contains common words.
 	 * Common words are words with length less/more than min/max length
+	 *
 	 * @var array
 	 */
-	protected $common_words = array();
+	protected $common_words = [];
 
 	/**
 	 * Associative array stores the min and max word length to be searched
+	 *
 	 * @var array
 	 */
-	protected $word_length = array();
+	protected $word_length = [];
 
 	/** @var string */
 	protected $articles_table;
@@ -83,14 +90,14 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	 * Constructor
 	 * Creates a new \phpbb\search\backend\fulltext_postgres, which is used as a search backend
 	 *
-	 * @param config $config Config object
-	 * @param driver_interface $db Database object
-	 * @param language $language
-	 * @param user $user User object
-	 * @param string $articles_table Articles_table
-	 * @param string $search_results_table Search_results_table
-	 * @param string $phpbb_root_path Relative path to phpBB root
-	 * @param string $phpEx PHP file extension
+	 * @param config           $config               Config object
+	 * @param driver_interface $db                   Database object
+	 * @param language         $language
+	 * @param user             $user                 User object
+	 * @param string           $articles_table       Articles_table
+	 * @param string           $search_results_table Search_results_table
+	 * @param string           $phpbb_root_path      Relative path to phpBB root
+	 * @param string           $phpEx                PHP file extension
 	 */
 	public function __construct(
 		config $config,
@@ -108,7 +115,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 		parent::__construct($cache, $config, $db, $user, $search_results_table);
 		$this->language = $language;
 
-		$this->word_length = array('min' => $this->config['fulltext_postgres_min_word_len'], 'max' => $this->config['fulltext_postgres_max_word_len']);
+		$this->word_length = ['min' => $this->config['fulltext_postgres_min_word_len'], 'max' => $this->config['fulltext_postgres_max_word_len']];
 
 		$this->articles_table = $articles_table;
 		$this->search_results_table = $search_results_table;
@@ -182,8 +189,8 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	{
 		if ($terms == 'all')
 		{
-			$match		= array('#\sand\s#iu', '#\sor\s#iu', '#\snot\s#iu', '#(^|\s)\+#', '#(^|\s)-#', '#(^|\s)\|#');
-			$replace	= array(' +', ' |', ' -', ' +', ' -', ' |');
+			$match = ['#\sand\s#iu', '#\sor\s#iu', '#\snot\s#iu', '#(^|\s)\+#', '#(^|\s)-#', '#(^|\s)\|#'];
+			$replace = [' +', ' |', ' -', ' +', ' -', ' |'];
 
 			$keywords = preg_replace($match, $replace, $keywords);
 		}
@@ -193,7 +200,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 
 		// Split words
 		$split_keywords = preg_replace('#([^\p{L}\p{N}\'*"()])#u', '$1$1', str_replace('\'\'', '\' \'', trim($split_keywords)));
-		$matches = array();
+		$matches = [];
 		preg_match_all('#(?:[^\p{L}\p{N}*"()]|^)([+\-|]?(?:[\p{L}\p{N}*"()]+\'?)*[\p{L}\p{N}*"()])(?:[^\p{L}\p{N}*"()]|$)#u', $split_keywords, $matches);
 		$this->split_words = $matches[1];
 
@@ -210,10 +217,10 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 			}
 		}
 
+		$this->search_query = '';
+		$this->tsearch_query = '';
 		if ($terms == 'any')
 		{
-			$this->search_query = '';
-			$this->tsearch_query = '';
 			foreach ($this->split_words as $word)
 			{
 				if ((strpos($word, '+') === 0) || (strpos($word, '-') === 0) || (strpos($word, '|') === 0))
@@ -226,8 +233,6 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 		}
 		else
 		{
-			$this->search_query = '';
-			$this->tsearch_query = '';
 			foreach ($this->split_words as $word)
 			{
 				if (strpos($word, '+') === 0)
@@ -272,19 +277,14 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	public function keyword_search(string $type, string $fields, string $terms, array $sort_by_sql, string $sort_key, string $sort_dir, string $sort_days, array $ex_fid_ary, int $category_id, array $author_ary, string $author_name, array &$id_ary, int &$start, int $per_page)
 	{
 		// No keywords? No posts
-		if (!$this->search_query)
-		{
-			return false;
-		}
-
 		// When search query contains queries like -foo
-		if (strpos($this->search_query, '+') === false)
+		if (!$this->search_query || strpos($this->search_query, '+') === false)
 		{
 			return false;
 		}
 
 		// generate a search_key from all the options to identify the results
-		$search_key_array = array(
+		$search_key_array = [
 			implode(', ', $this->split_words),
 			$type,
 			$fields,
@@ -294,8 +294,8 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 			$category_id,
 			implode(',', $ex_fid_ary),
 			true,
-			implode(',', $author_ary)
-		);
+			implode(',', $author_ary),
+		];
 		$search_key = md5(implode('#', $search_key_array));
 
 		if ($start < 0)
@@ -310,7 +310,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 			return $result_count;
 		}
 
-		$id_ary = array();
+		$id_ary = [];
 
 		// Build sql strings for sorting
 		$sql_sort = $sort_by_sql[$sort_key] . (($sort_dir == 'a') ? ' ASC' : ' DESC');
@@ -332,7 +332,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 
 			default:
 				$sql_match = 'p.article_title, p.article_body, p.article_description';
-				break;
+			break;
 		}
 
 		$tsearch_query = $this->tsearch_query;
@@ -343,7 +343,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 		if (count($author_ary) && $author_name)
 		{
 			// first one matches post of registered users, second one guests and deleted users
-			$sql_author = ' AND (' . $this->db->sql_in_set('p.author_id', array_diff($author_ary, array(ANONYMOUS)), false, true) . ' OR p.author = ' . $author_name . ')';
+			$sql_author = ' AND (' . $this->db->sql_in_set('p.author_id', array_diff($author_ary, [ANONYMOUS]), false, true) . ' OR p.author = ' . $author_name . ')';
 		}
 		else if (count($author_ary))
 		{
@@ -365,8 +365,8 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 
 		$this->db->sql_transaction('begin');
 
-		$sql_from = "FROM " . $this->articles_table . " p";
-		$sql_where = "WHERE (" . $tmp_sql_match . ")
+		$sql_from = 'FROM ' . $this->articles_table . ' p';
+		$sql_where = 'WHERE (' . $tmp_sql_match . ")
 			$sql_where_options";
 		$sql = "SELECT $sql_select
 			$sql_from
@@ -417,7 +417,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 
 		// store the ids, from start on then delete anything that isn't on the current page because we only need ids for one page
 		$this->save_ids($search_key, implode(' ', $this->split_words), $author_ary, $result_count, $id_ary, $start, $sort_dir);
-		$id_ary = array_slice($id_ary, 0, (int) $per_page);
+		$id_ary = array_slice($id_ary, 0, $per_page);
 
 		return $result_count;
 	}
@@ -434,7 +434,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 		}
 
 		// generate a search_key from all the options to identify the results
-		$search_key_array = array(
+		$search_key_array = [
 			'',
 			$type,
 			'',
@@ -447,7 +447,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 			true,
 			implode(',', $author_ary),
 			$author_name,
-		);
+		];
 		$search_key = md5(implode('#', $search_key_array));
 
 		if ($start < 0)
@@ -462,21 +462,21 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 			return $result_count;
 		}
 
-		$id_ary = array();
+		$id_ary = [];
 
 		// Create some display specific sql strings
 		$sql_author = $this->db->sql_in_set('p.author_id', $author_ary) . ' AND p.approved=1 ';
 
 		$sql_fora = (count($ex_fid_ary)) ? ' AND ' . $this->db->sql_in_set('p.article_category_id', $ex_fid_ary, true) : '';
-		$sql_category_id = ($category_id) ? ' AND p.article_category_id = ' . (int) $category_id : '';
+		$sql_category_id = ($category_id) ? ' AND p.article_category_id = ' . $category_id : '';
 		$sql_time = ($sort_days) ? ' AND p.article_date >= ' . (time() - ($sort_days * 86400)) : '';
 
 		// Build sql strings for sorting
 		$sql_sort = $sort_by_sql[$sort_key] . (($sort_dir == 'a') ? ' ASC' : ' DESC');
 
 		// Build the query for really selecting the post_ids
-		$sql = "SELECT p.article_id
-			FROM " . $this->articles_table . ' p' . "
+		$sql = 'SELECT p.article_id
+			FROM ' . $this->articles_table . ' p' . "
 			WHERE $sql_author
 				$sql_category_id
 				$sql_fora
@@ -498,8 +498,8 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 		// retrieve the total result count if needed
 		if (!$result_count)
 		{
-			$sql_count = "SELECT COUNT(*) as result_count
-				FROM " . $this->articles_table . " p
+			$sql_count = 'SELECT COUNT(*) as result_count
+				FROM ' . $this->articles_table . " p
 				WHERE $sql_author
 					$sql_category_id
 					$sql_fora
@@ -556,15 +556,15 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	{
 		// Split old and new post/subject to obtain array of words
 		$split_text = $this->split_message($message);
-		$split_title = ($subject) ? $this->split_message($subject) : array();
-		$split_descr = ($description) ? $this->split_message($description) : array();
+		$split_title = ($subject) ? $this->split_message($subject) : [];
+		$split_descr = ($description) ? $this->split_message($description) : [];
 
 		$words = array_unique(array_merge($split_text, $split_title, $split_descr));
 
 		unset($split_text, $split_title, $split_descr);
 
 		// destroy cached search results containing any of the words removed or added
-		$this->destroy_cache($words, array($poster_id));
+		$this->destroy_cache($words, [$poster_id]);
 
 		unset($words);
 	}
@@ -583,7 +583,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	public function tidy(): void
 	{
 		// destroy too old cached search results
-		$this->destroy_cache(array());
+		$this->destroy_cache([]);
 
 		$this->config->set('search_last_gc', time(), false);
 	}
@@ -608,22 +608,22 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 
 		if (!isset($this->stats['article_title']))
 		{
-			$sql_queries[] = "CREATE INDEX " . $this->articles_table . "_" . $this->config['fulltext_postgres_ts_name'] . "_post_subject ON " . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_title))";
+			$sql_queries[] = 'CREATE INDEX ' . $this->articles_table . '_' . $this->config['fulltext_postgres_ts_name'] . '_post_subject ON ' . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_title))";
 		}
 
 		if (!isset($this->stats['article_description']))
 		{
-			$sql_queries[] = "CREATE INDEX " . $this->articles_table . "_" . $this->config['fulltext_postgres_ts_name'] . "_post_content ON " . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_description))";
+			$sql_queries[] = 'CREATE INDEX ' . $this->articles_table . '_' . $this->config['fulltext_postgres_ts_name'] . '_post_content ON ' . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_description))";
 		}
 
 		if (!isset($this->stats['article_body']))
 		{
-			$sql_queries[] = "CREATE INDEX " . $this->articles_table . "_" . $this->config['fulltext_postgres_ts_name'] . "_post_content ON " . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_body))";
+			$sql_queries[] = 'CREATE INDEX ' . $this->articles_table . '_' . $this->config['fulltext_postgres_ts_name'] . '_post_content ON ' . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_body))";
 		}
 
 		if (!isset($this->stats['article_content']))
 		{
-			$sql_queries[] = "CREATE INDEX " . $this->articles_table . "_" . $this->config['fulltext_postgres_ts_name'] . "_post_subject_content ON " . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_content ))";
+			$sql_queries[] = 'CREATE INDEX ' . $this->articles_table . '_' . $this->config['fulltext_postgres_ts_name'] . '_post_subject_content ON ' . POSTS_TABLE . " USING gin (to_tsvector ('" . $this->db->sql_escape($this->config['fulltext_postgres_ts_name']) . "', article_content ))";
 		}
 
 		$stats = $this->stats;
@@ -641,7 +641,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	/**
 	 * {@inheritdoc}
 	 */
-	public function delete_index(int &$post_counter = null): ?array
+	public function delete_index(?int &$post_counter = null): ?array
 	{
 		// Make sure we can actually use PostgreSQL with fulltext indexes
 		if ($error = $this->init())
@@ -690,7 +690,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 
 	/**
 	 * {@inheritdoc}
-	*/
+	 */
 	public function index_created(): bool
 	{
 		if (empty($this->stats))
@@ -698,12 +698,12 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 			$this->get_stats();
 		}
 
-		return (isset($this->stats['article_title']) && isset($this->stats['article_content']) && isset($this->stats['article_description']) && isset($this->stats['article_body'])) ? true : false;
+		return isset($this->stats['article_title']) && isset($this->stats['article_content']) && isset($this->stats['article_description']) && isset($this->stats['article_body']);
 	}
 
 	/**
 	 * {@inheritdoc}
-	*/
+	 */
 	public function index_stats()
 	{
 		if (empty($this->stats))
@@ -711,19 +711,16 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 			$this->get_stats();
 		}
 
-		return array(
+		return [
 			$this->language->lang('FULLTEXT_POSTGRES_TOTAL_POSTS') => ($this->index_created()) ? $this->stats['total_posts'] : 0,
-		);
+		];
 	}
 
-	/**
-	 * {@inheritdoc}
-	 */
 	protected function get_stats()
 	{
 		if ($this->db->get_sql_layer() != 'postgres')
 		{
-			$this->stats = array();
+			$this->stats = [];
 			return;
 		}
 
@@ -766,6 +763,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 
 	/**
 	 * Turns text into an array of words
+	 *
 	 * @param string $text contains post text/subject
 	 * @return array
 	 */
@@ -773,7 +771,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	{
 		// Split words
 		$text = preg_replace('#([^\p{L}\p{N}\'*])#u', '$1$1', str_replace('\'\'', '\' \'', trim($text)));
-		$matches = array();
+		$matches = [];
 		preg_match_all('#(?:[^\p{L}\p{N}*]|^)([+\-|]?(?:[\p{L}\p{N}*]+\'?)*[\p{L}\p{N}*])(?:[^\p{L}\p{N}*]|$)#u', $text, $matches);
 		$text = $matches[1];
 

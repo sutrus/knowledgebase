@@ -11,42 +11,53 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\auth\auth;
+use phpbb\config\config;
+use phpbb\controller\helper;
+use phpbb\db\driver\driver_interface;
+use phpbb\language\language;
+use phpbb\pagination;
+use phpbb\request\request_interface;
+use phpbb\template\template;
+use phpbb\user;
 use RuntimeException;
+use sheer\knowledgebase\inc\functions_kb;
+use sheer\knowledgebase\search\kb_search_backend_factory;
 
 class search
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	protected config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	protected language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected \phpbb\auth\auth $auth;
+	protected auth $auth;
 
 	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	protected request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected \phpbb\template\template $template;
+	protected template $template;
 
 	/** @var \phpbb\user */
-	protected \phpbb\user $user;
+	protected user $user;
 
 	/** @var \phpbb\pagination */
-	protected \phpbb\pagination $pagination;
+	protected pagination $pagination;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected \sheer\knowledgebase\inc\functions_kb $kb;
+	protected functions_kb $kb;
 
 	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
+	protected kb_search_backend_factory $search_factory;
 
 	/** @var string */
 	protected string $phpbb_root_path;
@@ -63,38 +74,26 @@ class search
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface                     $db
-	 * @param \phpbb\config\config                                  $config
-	 * @param \phpbb\controller\helper                              $helper
-	 * @param \phpbb\language\language                              $language
-	 * @param \phpbb\auth\auth                                      $auth
-	 * @param \phpbb\request\request_interface                      $request
-	 * @param \phpbb\template\template                              $template
-	 * @param \phpbb\user                                           $user
-	 * @param \phpbb\pagination                                     $pagination
-	 * @param \sheer\knowledgebase\inc\functions_kb                 $kb
-	 * @param \sheer\knowledgebase\search\kb_search_backend_factory $search_factory
-	 * @param string                                                $phpbb_root_path
-	 * @param string                                                $php_ext
-	 * @param string                                                $articles_table
-	 * @param string                                                $categories_table
+	 * @param driver_interface          $db
+	 * @param config                    $config
+	 * @param helper                    $helper
+	 * @param language                  $language
+	 * @param auth                      $auth
+	 * @param request_interface         $request
+	 * @param template                  $template
+	 * @param user                      $user
+	 * @param pagination                $pagination
+	 * @param functions_kb              $kb
+	 * @param kb_search_backend_factory $search_factory
+	 * @param string                    $phpbb_root_path
+	 * @param string                    $php_ext
+	 * @param string                    $articles_table
+	 * @param string                    $categories_table
 	 */
 	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\config\config $config,
-		\phpbb\controller\helper $helper,
-		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
-		\phpbb\request\request_interface $request,
-		\phpbb\template\template $template,
-		\phpbb\user $user,
-		\phpbb\pagination $pagination,
-		\sheer\knowledgebase\inc\functions_kb $kb,
-		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
-		string $phpbb_root_path,
-		string $php_ext,
-		string $articles_table,
-		string $categories_table
+		driver_interface $db, config $config, helper $helper, language $language, auth $auth, request_interface $request,
+		template $template, user $user, pagination $pagination, functions_kb $kb, kb_search_backend_factory $search_factory,
+		string $phpbb_root_path, string $php_ext, string $articles_table, string $categories_table
 	)
 	{
 		$this->db = $db;
@@ -119,7 +118,7 @@ class search
 	 */
 	public function main(): \Symfony\Component\HttpFoundation\Response
 	{
-		$this->language->add_lang(array('search'));
+		$this->language->add_lang(['search']);
 
 		// Define initial vars
 		$start = $this->request->variable('start', 0);
@@ -137,7 +136,7 @@ class search
 		$sort_dir = $this->request->variable('sd', 'd');
 
 		$return_chars = $this->request->variable('ch', 300);
-		$categories = $this->request->variable('cat_ids', array(0));
+		$categories = $this->request->variable('cat_ids', [0]);
 
 		// Is search enabled?
 		if (!$this->config['kb_search'])
@@ -153,7 +152,8 @@ class search
 		}
 
 		// Check search load limit
-		if ($this->user->load && $this->config['limit_search_load'] && ($this->user->load > doubleval($this->config['limit_search_load'])))
+		if ($this->user->load && $this->config['limit_search_load'] &&
+			$this->user->load > (float) $this->config['limit_search_load'])
 		{
 			$this->template->assign_var('S_NO_SEARCH', true);
 			trigger_error('NO_SEARCH_TIME');
@@ -174,7 +174,7 @@ class search
 		$s_limit_days = $s_sort_key = $s_sort_dir = $u_sort_param = '';
 		gen_sort_selects($limit_days, $sort_by_text, $sort_days, $sort_key, $sort_dir, $s_limit_days, $s_sort_key, $s_sort_dir, $u_sort_param);
 
-		$cat_ary = $ex_fid_ary = array();
+		$cat_ary = $ex_fid_ary = [];
 		if (!empty($categories))
 		{
 			$sql = 'SELECT category_id
@@ -196,7 +196,7 @@ class search
 		}
 
 		// clear arrays
-		$id_ary = array();
+		$id_ary = [];
 
 		// If we are looking for authors get their ids
 		$author_id_ary = [];
@@ -214,7 +214,7 @@ class search
 		}
 		catch (RuntimeException $e)
 		{
-			if (strpos($e->getMessage(), 'No service found') === 0)
+			if (str_starts_with($e->getMessage(), 'No service found'))
 			{
 				trigger_error('NO_SUCH_SEARCH_MODULE');
 			}
@@ -249,7 +249,7 @@ class search
 			'a' => 'author',
 			't' => 'article_date',
 			'c' => 'article_category_id',
-			's' => (($show_results == 'posts') ? 'article_title' : 'category_name'),
+			's' => (($show_results === 'posts') ? 'article_title' : 'category_name'),
 		];
 
 		// show_results should not change after this
@@ -266,7 +266,7 @@ class search
 
 		// define some vars for urls
 		// A single wildcard will make the search results look ugly
-		$hilit = phpbb_clean_search_string(str_replace(array('+', '-', '|', '(', ')', '&quot;'), ' ', $keywords));
+		$hilit = phpbb_clean_search_string(str_replace(['+', '-', '|', '(', ')', '&quot;'], ' ', $keywords));
 		$hilit = str_replace(' ', '|', $hilit);
 
 		$u_hilit = urlencode(htmlspecialchars_decode(str_replace('|', ' ', $hilit), ENT_COMPAT));
@@ -325,7 +325,7 @@ class search
 				$article_info = $this->kb->get_kb_article_info($article_id);
 				$category_id = $article_info['article_category_id'];
 
-				if ($show_results == 'posts')
+				if ($show_results === 'posts')
 				{
 					$text_only_message = $message = $row['article_body'];
 					if ($row['bbcode_uid'])
@@ -343,7 +343,7 @@ class search
 						$row['bbcode_bitfield'] = false;
 						$parse_flags = ($row['bbcode_bitfield'] ? OPTION_FLAG_BBCODE : 0) | OPTION_FLAG_SMILIES;
 						$row['article_body'] = generate_text_for_display($message, $row['bbcode_uid'], $row['bbcode_bitfield'], $parse_flags, false);
-						$row['article_body'] = strtr($row['article_body'], array('&lt;' => '<', '&gt;' => '>'));
+						$row['article_body'] = strtr($row['article_body'], ['&lt;' => '<', '&gt;' => '>']);
 					}
 
 					if ($hilit)
@@ -355,24 +355,23 @@ class search
 
 				$category = $this->kb->get_cat_info($row['article_category_id']);
 
-				$this->template->assign_block_vars('searchrow', array(
-						'MESSAGE'   => $row['article_body'],
-						'DATE'      => $this->user->format_date($row['article_date']),
-						'TITLE'     => $row['article_title'],
-						'U_VIEW'    => $this->helper->route('sheer_knowledgebase_article', array('k' => $article_id)),
-						'CATEGORY'  => $category['category_name'],
-						'U_CAT'     => $this->helper->route('sheer_knowledgebase_category', array('id' => $category_id)),
-						'USER_FULL' => get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']),
-						'ID'        => $article_id,
-					)
-				);
+				$this->template->assign_block_vars('searchrow', [
+					'MESSAGE'   => $row['article_body'],
+					'DATE'      => $this->user->format_date($row['article_date']),
+					'TITLE'     => $row['article_title'],
+					'U_VIEW'    => $this->helper->route('sheer_knowledgebase_article', ['k' => $article_id]),
+					'CATEGORY'  => $category['category_name'],
+					'U_CAT'     => $this->helper->route('sheer_knowledgebase_category', ['id' => $category_id]),
+					'USER_FULL' => get_username_string('full', $row['user_id'], $row['username'], $row['user_colour']),
+					'ID'        => $article_id,
+				]);
 			}
 			$this->db->sql_freeresult($result);
 		}
 
 		$this->pagination->generate_template_pagination($search_url, 'pagination', 'start', $total_match_count, $per_page, $start);
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 			'TOTAL_ITEMS'             => $this->language->lang('TOTAL_ITEMS', (int) $total_match_count),
 			'PAGE_NUMBER'             => $this->pagination->on_page($total_match_count, $per_page, $start),
 			'TOTAL_MATCHES'           => $total_match_count,
@@ -380,30 +379,27 @@ class search
 			'U_SEARCH_WORDS'          => $search_url,
 			'SEARCH_WORDS_AND_AUTHOR' => $author . ' &bull; ' . $keywords,
 			'SEARCH_WORDS'            => $keywords,
-		));
+		]);
 
-		$this->template->assign_vars(array(
-				'S_SHOW_TITLES'      => !(($show_results == 'posts')),
-				'S_SELECT_SORT_DAYS' => $s_limit_days,
-				'S_SELECT_SORT_KEY'  => $s_sort_key,
-				'S_SELECT_SORT_DIR'  => $s_sort_dir,
-				'S_SEARCH_ACTION'    => $search_url,
-				'U_KB_SEARCH'        => $this->helper->route('sheer_knowledgebase_search'),
-				'CATS_BOX'           => $this->kb->make_category_select(0, false, false),
-			)
-		);
+		$this->template->assign_vars([
+			'S_SHOW_TITLES'      => !($show_results === 'posts'),
+			'S_SELECT_SORT_DAYS' => $s_limit_days,
+			'S_SELECT_SORT_KEY'  => $s_sort_key,
+			'S_SELECT_SORT_DIR'  => $s_sort_dir,
+			'S_SEARCH_ACTION'    => $search_url,
+			'U_KB_SEARCH'        => $this->helper->route('sheer_knowledgebase_search'),
+			'CATS_BOX'           => $this->kb->make_category_select(0, [], false),
+		]);
 
-		$this->template->assign_block_vars('navlinks', array(
-				'FORUM_NAME'   => $this->language->lang('LIBRARY'),
-				'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_index'),
-			)
-		);
+		$this->template->assign_block_vars('navlinks', [
+			'FORUM_NAME'   => $this->language->lang('LIBRARY'),
+			'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_index'),
+		]);
 
-		$this->template->assign_block_vars('navlinks', array(
-				'FORUM_NAME'   => $this->language->lang('SEARCH'),
-				'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_search'),
-			)
-		);
+		$this->template->assign_block_vars('navlinks', [
+			'FORUM_NAME'   => $this->language->lang('SEARCH'),
+			'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_search'),
+		]);
 
 		if (($keywords && $keywords != $this->language->lang('SEARCH_MINI')) || $author)
 		{

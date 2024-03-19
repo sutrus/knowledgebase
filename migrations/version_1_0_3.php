@@ -15,7 +15,7 @@ class version_1_0_3 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\sheer\knowledgebase\migrations\version_1_0_2');
+		return ['\sheer\knowledgebase\migrations\version_1_0_2'];
 	}
 
 	public function effectively_installed()
@@ -29,37 +29,37 @@ class version_1_0_3 extends \phpbb\db\migration\migration
 
 	public function update_schema()
 	{
-		return array(
-			'add_columns'  => array(
-				$this->table_prefix . 'kb_src_wrdmtch' => array(
-					'descr_match' => array('BOOL', 0),
-				),
-			),
-			'drop_columns' => array(
-				$this->table_prefix . 'kb_src_wrdmtch' => array(
+		return [
+			'add_columns'  => [
+				$this->table_prefix . 'kb_src_wrdmtch' => [
+					'descr_match' => ['BOOL', 0],
+				],
+			],
+			'drop_columns' => [
+				$this->table_prefix . 'kb_src_wrdmtch' => [
 					'reply_id',
-				),
-			),
-			'drop_columns' => array(
-				$this->table_prefix . 'kb_articles' => array(
+				],
+			],
+			'drop_columns' => [
+				$this->table_prefix . 'kb_articles' => [
 					'bbcode_bitfield',
-				),
-			),
-		);
+				],
+			],
+		];
 	}
 
 	public function revert_schema()
 	{
-		return array();
+		return [];
 	}
 
 	public function update_data()
 	{
-		return array(
+		return [
 			// Update configs
-			array('config.update', array('knowledge_base_version', '1.0.3')),
-			array('custom', array(array($this, 'add_key'))),
-		);
+			['config.update', ['knowledge_base_version', '1.0.3']],
+			['custom', [[$this, 'add_key']]],
+		];
 	}
 
 	public function add_key()

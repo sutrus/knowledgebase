@@ -11,16 +11,20 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\config\config;
+use phpbb\db\driver\driver_interface;
+use phpbb\request\request_interface;
+
 class set_order
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	protected config $config;
 
 	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	protected request_interface $request;
 
 	/** @var string */
 	protected string $articles_table;
@@ -28,17 +32,12 @@ class set_order
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface $db
-	 * @param \phpbb\config\config              $config
-	 * @param \phpbb\request\request_interface  $request
-	 * @param string                            $articles_table
+	 * @param driver_interface  $db
+	 * @param config            $config
+	 * @param request_interface $request
+	 * @param string            $articles_table
 	 */
-	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\config\config $config,
-		\phpbb\request\request_interface $request,
-		string $articles_table
-	)
+	public function __construct(driver_interface $db, config $config, request_interface $request, string $articles_table)
 	{
 		$this->db = $db;
 		$this->config = $config;
@@ -49,7 +48,7 @@ class set_order
 	/**
 	 * @return void
 	 */
-	public function main()
+	public function main(): void
 	{
 		$list_order = $this->request->variable('list_order', '');
 		$page = $this->request->variable('page', 0);

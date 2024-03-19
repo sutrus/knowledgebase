@@ -11,48 +11,61 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\auth\auth;
+use phpbb\cache\driver\driver_interface as cache;
+use phpbb\config\config;
+use phpbb\controller\helper;
+use phpbb\db\driver\driver_interface;
+use phpbb\language\language;
+use phpbb\log\log;
+use phpbb\notification\manager;
+use phpbb\request\request_interface;
+use phpbb\template\template;
+use phpbb\user;
 use RuntimeException;
+use sheer\knowledgebase\inc\functions_kb;
+use sheer\knowledgebase\search\kb_search_backend_factory;
 
 class approve
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	protected config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	protected language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected \phpbb\auth\auth $auth;
+	protected auth $auth;
 
 	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	protected request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected \phpbb\template\template $template;
+	protected template $template;
 
 	/** @var \phpbb\user */
-	protected \phpbb\user $user;
+	protected user $user;
 
 	/** @var \phpbb\cache\driver\driver_interface */
-	protected \phpbb\cache\driver\driver_interface $cache;
+	protected cache $cache;
 
 	/** @var \phpbb\log\log */
-	protected $log;
+	protected log $log;
 
 	/** @var \phpbb\notification\manager */
-	protected \phpbb\notification\manager $notification_manager;
+	protected manager $notification_manager;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected \sheer\knowledgebase\inc\functions_kb $kb;
+	protected functions_kb $kb;
 
 	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
+	protected kb_search_backend_factory $search_factory;
 
 	/** @var string */
 	protected string $phpbb_root_path;
@@ -66,40 +79,28 @@ class approve
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface                     $db
-	 * @param \phpbb\config\config                                  $config
-	 * @param \phpbb\controller\helper                              $helper
-	 * @param \phpbb\language\language                              $language
-	 * @param \phpbb\auth\auth                                      $auth
-	 * @param \phpbb\request\request_interface                      $request
-	 * @param \phpbb\template\template                              $template
-	 * @param \phpbb\user                                           $user
-	 * @param \phpbb\cache\driver\driver_interface                  $cache
-	 * @param \phpbb\log\log_interface                              $log
-	 * @param \phpbb\notification\manager                           $notification_manager
-	 * @param \sheer\knowledgebase\inc\functions_kb                 $kb
-	 * @param \sheer\knowledgebase\search\kb_search_backend_factory $search_factory
-	 * @param string                                                $phpbb_root_path
-	 * @param string                                                $php_ext
-	 * @param string                                                $articles_table
+	 * @param driver_interface          $db
+	 * @param config                    $config
+	 * @param helper                    $helper
+	 * @param language                  $language
+	 * @param auth                      $auth
+	 * @param request_interface         $request
+	 * @param template                  $template
+	 * @param user                      $user
+	 * @param cache                     $cache
+	 * @param log                       $log
+	 * @param manager                   $notification_manager
+	 * @param functions_kb              $kb
+	 * @param kb_search_backend_factory $search_factory
+	 * @param string                    $phpbb_root_path
+	 * @param string                    $php_ext
+	 * @param string                    $articles_table
 	 */
 	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\config\config $config,
-		\phpbb\controller\helper $helper,
-		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
-		\phpbb\request\request_interface $request,
-		\phpbb\template\template $template,
-		\phpbb\user $user,
-		\phpbb\cache\driver\driver_interface $cache,
-		\phpbb\log\log_interface $log,
-		\phpbb\notification\manager $notification_manager,
-		\sheer\knowledgebase\inc\functions_kb $kb,
-		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
-		string $phpbb_root_path,
-		string $php_ext,
-		string $articles_table
+		driver_interface $db, config $config, helper $helper, language $language, auth $auth,
+		request_interface $request, template $template, user $user, cache $cache, log $log,
+		manager $notification_manager, functions_kb $kb, kb_search_backend_factory $search_factory,
+		string $phpbb_root_path, string $php_ext, string $articles_table
 	)
 	{
 		$this->db = $db;
@@ -141,14 +142,14 @@ class approve
 		$kb_category_info = $this->kb->get_cat_info($kb_article_info['article_category_id']);
 		$category_name = $kb_category_info['category_name'];
 
-		$redirect = $this->helper->route('sheer_knowledgebase_category', array('id' => $kb_article_info['article_category_id']));
+		$redirect = $this->helper->route('sheer_knowledgebase_category', ['id' => $kb_article_info['article_category_id']]);
 
-		if ($this->user->data['user_type'] != USER_FOUNDER)
+		if ($this->user->data['user_type'] != USER_FOUNDER &&
+			!$this->kb->acl_kb_get($kb_article_info['article_category_id'], 'kb_m_approve') &&
+			!$this->auth->acl_get('a_manage_kb')
+		)
 		{
-			if (!$this->kb->acl_kb_get($kb_article_info['article_category_id'], 'kb_m_approve') && !$this->auth->acl_get('a_manage_kb'))
-			{
-				trigger_error('RULES_KB_APPROVE_MOD_CANNOT');
-			}
+			trigger_error('RULES_KB_APPROVE_MOD_CANNOT');
 		}
 
 		if ($kb_article_info['approved'])
@@ -167,7 +168,7 @@ class approve
 			}
 			catch (RuntimeException $e)
 			{
-				if (strpos($e->getMessage(), 'No service found') === 0)
+				if (str_starts_with($e->getMessage(), 'No service found'))
 				{
 					trigger_error('NO_SUCH_SEARCH_MODULE');
 				}
@@ -177,9 +178,7 @@ class approve
 				}
 			}
 
-			$sql = 'UPDATE ' . $this->articles_table . '
-				SET approved = 1
-				WHERE article_id = ' . (int) $art_id;
+			$sql = 'UPDATE ' . $this->articles_table . ' SET approved = 1 WHERE article_id = ' . (int) $art_id;
 			$this->db->sql_query($sql);
 
 			if (isset($kb_search))
@@ -196,9 +195,7 @@ class approve
 		}
 		else if ($disapprove)
 		{
-			$sql = 'DELETE
-				FROM ' . $this->articles_table . '
-				WHERE article_id = ' . (int) $art_id;
+			$sql = 'DELETE FROM ' . $this->articles_table . ' WHERE article_id = ' . (int) $art_id;
 			$this->db->sql_query($sql);
 		}
 
@@ -206,40 +203,39 @@ class approve
 		{
 			// add log
 			$log_type = ($approve) ? 'LOG_LIBRARY_APPROVED_ARTICLE' : 'LOG_LIBRARY_REJECTED_ARTICLE';
-			$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], $log_type, time(), array($kb_article_info['article_title'], $kb_category_info['category_name'], $kb_article_info['author']));
+			$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], $log_type, time(), [$kb_article_info['article_title'], $kb_category_info['category_name'], $kb_article_info['author']]);
 
 			// Delete notification - moderator
-			$notification_data = array(
+			$notification_data = [
 				'author_id'           => $this->user->data['user_id'],
 				'title'               => $kb_article_info['article_title'],
 				'article_category_id' => $kb_article_info['article_category_id'],
 				'item_id'             => $art_id,
-			);
+			];
 			$this->notification_manager->delete_notifications('sheer.knowledgebase.notification.type.need_approval', $notification_data);
 
 			// Send notification - author
 			$message = ($approve) ? 'ARTICLE_APPROVED_SUCESS' : 'ARTICLE_DISAPPROVED_SUCESS';
 			$notification_type = ($approve) ? 'sheer.knowledgebase.notification.type.approve' : 'sheer.knowledgebase.notification.type.disapprove';
-			$notification_data = array(
+			$notification_data = [
 				'author_id' => $kb_article_info['author_id'],
 				'title'     => $kb_article_info['article_title'],
 				'moderator' => $this->user->data['user_id'],
 				'item_id'   => $art_id,
-			);
+			];
 			$this->notification_manager->add_notifications($notification_type, $notification_data);
 
 			meta_refresh(2, $redirect);
 			trigger_error($message);
 		}
 
-		$this->template->assign_vars(array(
-				'ARTICLE_AUTHOR'      => $kb_article_info['author'],
-				'ARTICLE_TITLE'       => $kb_article_info['article_title'],
-				'ARTICLE_DESCRIPTION' => $kb_article_info['article_description'],
-				'ARTICLE_CATEGORY'    => $kb_category_info['category_name'],
-				'S_ACTION'            => $this->helper->route('sheer_knowledgebase_approve', array('id' => $art_id)),
-			)
-		);
+		$this->template->assign_vars([
+			'ARTICLE_AUTHOR'      => $kb_article_info['author'],
+			'ARTICLE_TITLE'       => $kb_article_info['article_title'],
+			'ARTICLE_DESCRIPTION' => $kb_article_info['article_description'],
+			'ARTICLE_CATEGORY'    => $kb_category_info['category_name'],
+			'S_ACTION'            => $this->helper->route('sheer_knowledgebase_approve', ['id' => $art_id]),
+		]);
 
 		return $this->helper->render('@sheer_knowledgebase/kb_approve_body.html', ($this->language->lang('LIBRARY') . ' &raquo; ' . $this->language->lang('APPROVE')));
 	}

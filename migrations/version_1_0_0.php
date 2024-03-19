@@ -15,7 +15,7 @@ class version_1_0_0 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\phpbb\db\migration\data\v310\dev');
+		return ['\phpbb\db\migration\data\v310\dev'];
 	}
 
 	public function effectively_installed()
@@ -25,190 +25,190 @@ class version_1_0_0 extends \phpbb\db\migration\migration
 
 	public function update_schema()
 	{
-		return array(
-			'add_tables' => array(
-				$this->table_prefix . 'kb_articles' => array(
-					'COLUMNS'     => array(
-						'article_id'          => array('UINT', null, 'auto_increment'),
-						'article_category_id' => array('UINT', 0),
-						'approved'            => array('BOOL', 0),
-						'article_title'       => array('VCHAR:255', ''),
-						'article_description' => array('VCHAR:255', ''),
-						'article_date'        => array('UINT:11', 0),
-						'edit_date'           => array('UINT:11', 0),
-						'author_id'           => array('UINT', 0),
-						'author'              => array('VCHAR:255', ''),
-						'bbcode_uid'          => array('VCHAR:10', ''),
-						'bbcode_bitfield'     => array('VCHAR:32', ''),
-						'article_body'        => array('MTEXT_UNI', ''),
-						'topic_id'            => array('UINT', 0),
-						'views'               => array('BINT', 0),
-					),
+		return [
+			'add_tables' => [
+				$this->table_prefix . 'kb_articles' => [
+					'COLUMNS'     => [
+						'article_id'          => ['UINT', null, 'auto_increment'],
+						'article_category_id' => ['UINT', 0],
+						'approved'            => ['BOOL', 0],
+						'article_title'       => ['VCHAR:255', ''],
+						'article_description' => ['VCHAR:255', ''],
+						'article_date'        => ['UINT:11', 0],
+						'edit_date'           => ['UINT:11', 0],
+						'author_id'           => ['UINT', 0],
+						'author'              => ['VCHAR:255', ''],
+						'bbcode_uid'          => ['VCHAR:10', ''],
+						'bbcode_bitfield'     => ['VCHAR:32', ''],
+						'article_body'        => ['MTEXT_UNI', ''],
+						'topic_id'            => ['UINT', 0],
+						'views'               => ['BINT', 0],
+					],
 					'PRIMARY_KEY' => 'article_id',
-					'KEYS'        => array(
-						'topic_id'  => array('INDEX', 'topic_id'),
-						'author_id' => array('INDEX', 'author_id'),
-						'author'    => array('INDEX', 'author'),
-					),
-				),
+					'KEYS'        => [
+						'topic_id'  => ['INDEX', 'topic_id'],
+						'author_id' => ['INDEX', 'author_id'],
+						'author'    => ['INDEX', 'author'],
+					],
+				],
 
-				$this->table_prefix . 'kb_config' => array(
-					'COLUMNS'     => array(
-						'config_name'  => array('VCHAR:255', ''),
-						'config_value' => array('MTEXT_UNI', ''),
-					),
+				$this->table_prefix . 'kb_config' => [
+					'COLUMNS'     => [
+						'config_name'  => ['VCHAR:255', ''],
+						'config_value' => ['MTEXT_UNI', ''],
+					],
 					'PRIMARY_KEY' => 'config_name',
-				),
+				],
 
-				$this->table_prefix . 'kb_categories' => array(
-					'COLUMNS'     => array(
-						'category_id'      => array('UINT', null, 'auto_increment'),
-						'parent_id'        => array('UINT', 0),
-						'left_id'          => array('UINT', 0),
-						'right_id'         => array('UINT', 0),
-						'category_parents' => array('MTEXT_UNI', ''),
-						'category_name'    => array('VCHAR:255', ''),
-						'category_details' => array('VCHAR:255', ''),
-						'number_articles'  => array('USINT', 0),
-					),
+				$this->table_prefix . 'kb_categories' => [
+					'COLUMNS'     => [
+						'category_id'      => ['UINT', null, 'auto_increment'],
+						'parent_id'        => ['UINT', 0],
+						'left_id'          => ['UINT', 0],
+						'right_id'         => ['UINT', 0],
+						'category_parents' => ['MTEXT_UNI', ''],
+						'category_name'    => ['VCHAR:255', ''],
+						'category_details' => ['VCHAR:255', ''],
+						'number_articles'  => ['USINT', 0],
+					],
 					'PRIMARY_KEY' => 'category_id',
-					'KEYS'        => array(
-						'left_id'  => array('INDEX', 'left_id'),
-						'right_id' => array('INDEX', 'right_id'),
-					),
-				),
+					'KEYS'        => [
+						'left_id'  => ['INDEX', 'left_id'],
+						'right_id' => ['INDEX', 'right_id'],
+					],
+				],
 
-				$this->table_prefix . 'kb_options' => array(
-					'COLUMNS'     => array(
-						'auth_option_id' => array('UINT', null, 'auto_increment'),
-						'auth_option'    => array('VCHAR:50', ''),
-						'is_global'      => array('BOOL', 0),
-						'is_local'       => array('BOOL', 1),
-					),
+				$this->table_prefix . 'kb_options' => [
+					'COLUMNS'     => [
+						'auth_option_id' => ['UINT', null, 'auto_increment'],
+						'auth_option'    => ['VCHAR:50', ''],
+						'is_global'      => ['BOOL', 0],
+						'is_local'       => ['BOOL', 1],
+					],
 					'PRIMARY_KEY' => 'auth_option_id',
-					'KEYS'        => array(
-						'auth_option' => array('UNIQUE', 'auth_option'),
-					),
-				),
+					'KEYS'        => [
+						'auth_option' => ['UNIQUE', 'auth_option'],
+					],
+				],
 
-				$this->table_prefix . 'kb_src_wrdlist' => array(
-					'COLUMNS'     => array(
-						'word_id'     => array('UINT', null, 'auto_increment'),
-						'word_text'   => array('VCHAR_UNI', ''),
-						'word_common' => array('BOOL', 0),
-						'word_count'  => array('UINT', 0),
-					),
+				$this->table_prefix . 'kb_src_wrdlist' => [
+					'COLUMNS'     => [
+						'word_id'     => ['UINT', null, 'auto_increment'],
+						'word_text'   => ['VCHAR_UNI', ''],
+						'word_common' => ['BOOL', 0],
+						'word_count'  => ['UINT', 0],
+					],
 					'PRIMARY_KEY' => 'word_id',
-					'KEYS'        => array(
-						'word_text'  => array('UNIQUE', 'word_text'),
-						'word_count' => array('INDEX', 'word_count'),
-					),
-				),
+					'KEYS'        => [
+						'word_text'  => ['UNIQUE', 'word_text'],
+						'word_count' => ['INDEX', 'word_count'],
+					],
+				],
 
-				$this->table_prefix . 'kb_src_wrdmtch' => array(
-					'COLUMNS' => array(
-						'article_id'  => array('UINT', 0),
-						'reply_id'    => array('UINT', 0),
-						'word_id'     => array('UINT', 0),
-						'title_match' => array('BOOL', 0),
-					),
-					'KEYS'    => array(
-						'un_mtch'    => array('UNIQUE', array('article_id', 'word_id', 'title_match')),
-						'word_id'    => array('INDEX', 'word_id'),
-						'article_id' => array('INDEX', 'article_id'),
-					),
-				),
+				$this->table_prefix . 'kb_src_wrdmtch' => [
+					'COLUMNS' => [
+						'article_id'  => ['UINT', 0],
+						'reply_id'    => ['UINT', 0],
+						'word_id'     => ['UINT', 0],
+						'title_match' => ['BOOL', 0],
+					],
+					'KEYS'    => [
+						'un_mtch'    => ['UNIQUE', ['article_id', 'word_id', 'title_match']],
+						'word_id'    => ['INDEX', 'word_id'],
+						'article_id' => ['INDEX', 'article_id'],
+					],
+				],
 
-				$this->table_prefix . 'kb_groups' => array(
-					'COLUMNS' => array(
-						'group_id'       => array('UINT', 0),
-						'category_id'    => array('UINT', 0),
-						'auth_option_id' => array('UINT', 0),
-						'auth_setting'   => array('TINT:2', 0),
-					),
-					'KEYS'    => array(
-						'group_id'       => array('INDEX', 'group_id'),
-						'auth_option_id' => array('INDEX', 'auth_option_id'),
-					),
-				),
+				$this->table_prefix . 'kb_groups' => [
+					'COLUMNS' => [
+						'group_id'       => ['UINT', 0],
+						'category_id'    => ['UINT', 0],
+						'auth_option_id' => ['UINT', 0],
+						'auth_setting'   => ['TINT:2', 0],
+					],
+					'KEYS'    => [
+						'group_id'       => ['INDEX', 'group_id'],
+						'auth_option_id' => ['INDEX', 'auth_option_id'],
+					],
+				],
 
-				$this->table_prefix . 'kb_users' => array(
-					'COLUMNS' => array(
-						'user_id'        => array('UINT', 0),
-						'category_id'    => array('UINT', 0),
-						'auth_option_id' => array('UINT', 0),
-						'auth_setting'   => array('TINT:2', 0),
-					),
-					'KEYS'    => array(
-						'user_id'        => array('INDEX', 'user_id'),
-						'auth_option_id' => array('INDEX', 'auth_option_id'),
-					),
-				),
+				$this->table_prefix . 'kb_users' => [
+					'COLUMNS' => [
+						'user_id'        => ['UINT', 0],
+						'category_id'    => ['UINT', 0],
+						'auth_option_id' => ['UINT', 0],
+						'auth_setting'   => ['TINT:2', 0],
+					],
+					'KEYS'    => [
+						'user_id'        => ['INDEX', 'user_id'],
+						'auth_option_id' => ['INDEX', 'auth_option_id'],
+					],
+				],
 
-				$this->table_prefix . 'kb_search_results' => array(
-					'COLUMNS'     => array(
-						'search_key'      => array('VCHAR:32', 0),
-						'search_time'     => array('UINT:11', 0),
-						'search_keywords' => array('MTEXT_UNI', ''),
-						'search_authors'  => array('MTEXT_UNI', ''),
-					),
+				$this->table_prefix . 'kb_search_results' => [
+					'COLUMNS'     => [
+						'search_key'      => ['VCHAR:32', 0],
+						'search_time'     => ['UINT:11', 0],
+						'search_keywords' => ['MTEXT_UNI', ''],
+						'search_authors'  => ['MTEXT_UNI', ''],
+					],
 					'PRIMARY_KEY' => 'search_key',
-				),
+				],
 
-				$this->table_prefix . 'kb_log' => array(
-					'COLUMNS'     => array(
-						'log_id'        => array('UINT', null, 'auto_increment'),
-						'log_type'      => array('TINT:4', 0),
-						'user_id'       => array('UINT', 0),
-						'forum_id'      => array('UINT', 0),
-						'reportee_id'   => array('UINT', 0),
-						'topic_id'      => array('UINT', 0),
-						'log_ip'        => array('VCHAR:40', ''),
-						'log_time'      => array('UINT:11', 0),
-						'log_operation' => array('TEXT', ''),
-						'log_data'      => array('MTEXT_UNI', ''),
-					),
+				$this->table_prefix . 'kb_log' => [
+					'COLUMNS'     => [
+						'log_id'        => ['UINT', null, 'auto_increment'],
+						'log_type'      => ['TINT:4', 0],
+						'user_id'       => ['UINT', 0],
+						'forum_id'      => ['UINT', 0],
+						'reportee_id'   => ['UINT', 0],
+						'topic_id'      => ['UINT', 0],
+						'log_ip'        => ['VCHAR:40', ''],
+						'log_time'      => ['UINT:11', 0],
+						'log_operation' => ['TEXT', ''],
+						'log_data'      => ['MTEXT_UNI', ''],
+					],
 					'PRIMARY_KEY' => 'log_id',
-					'KEYS'        => array(
-						'log_type'    => array('INDEX', 'log_type'),
-						'forum_id'    => array('INDEX', 'forum_id'),
-						'topic_id'    => array('INDEX', 'topic_id'),
-						'reportee_id' => array('INDEX', 'reportee_id'),
-						'user_id'     => array('INDEX', 'user_id'),
-					),
-				),
+					'KEYS'        => [
+						'log_type'    => ['INDEX', 'log_type'],
+						'forum_id'    => ['INDEX', 'forum_id'],
+						'topic_id'    => ['INDEX', 'topic_id'],
+						'reportee_id' => ['INDEX', 'reportee_id'],
+						'user_id'     => ['INDEX', 'user_id'],
+					],
+				],
 
-				$this->table_prefix . 'kb_attachments' => array(
-					'COLUMNS'     => array(
-						'attach_id'         => array('UINT', null, 'auto_increment'),
-						'article_id'        => array('UINT', 0),
-						'poster_id'         => array('UINT', 0),
-						'is_orphan'         => array('BOOL', 1),
-						'physical_filename' => array('VCHAR:255', ''),
-						'real_filename'     => array('VCHAR:255', ''),
-						'download_count'    => array('UINT', 0),
-						'attach_comment'    => array('MTEXT_UNI', ''),
-						'extension'         => array('VCHAR:100', ''),
-						'mimetype'          => array('VCHAR:100', ''),
-						'filesize'          => array('UINT:20', 0),
-						'filetime'          => array('UINT:11', 0),
-						'thumbnail'         => array('BOOL', 0),
-					),
+				$this->table_prefix . 'kb_attachments' => [
+					'COLUMNS'     => [
+						'attach_id'         => ['UINT', null, 'auto_increment'],
+						'article_id'        => ['UINT', 0],
+						'poster_id'         => ['UINT', 0],
+						'is_orphan'         => ['BOOL', 1],
+						'physical_filename' => ['VCHAR:255', ''],
+						'real_filename'     => ['VCHAR:255', ''],
+						'download_count'    => ['UINT', 0],
+						'attach_comment'    => ['MTEXT_UNI', ''],
+						'extension'         => ['VCHAR:100', ''],
+						'mimetype'          => ['VCHAR:100', ''],
+						'filesize'          => ['UINT:20', 0],
+						'filetime'          => ['UINT:11', 0],
+						'thumbnail'         => ['BOOL', 0],
+					],
 					'PRIMARY_KEY' => 'attach_id',
-					'KEYS'        => array(
-						'filetime'  => array('INDEX', 'filetime'),
-						'poster_id' => array('INDEX', 'poster_id'),
-						'is_orphan' => array('INDEX', 'is_orphan'),
-					),
-				),
-			),
-		);
+					'KEYS'        => [
+						'filetime'  => ['INDEX', 'filetime'],
+						'poster_id' => ['INDEX', 'poster_id'],
+						'is_orphan' => ['INDEX', 'is_orphan'],
+					],
+				],
+			],
+		];
 	}
 
 	public function revert_schema()
 	{
-		return array(
-			'drop_tables' => array(
+		return [
+			'drop_tables' => [
 				$this->table_prefix . 'kb_articles',
 				$this->table_prefix . 'kb_config',
 				$this->table_prefix . 'kb_categories',
@@ -220,91 +220,91 @@ class version_1_0_0 extends \phpbb\db\migration\migration
 				$this->table_prefix . 'kb_search_results',
 				$this->table_prefix . 'kb_log',
 				$this->table_prefix . 'kb_attachments',
-			),
-		);
+			],
+		];
 	}
 
 	public function update_data()
 	{
-		return array(
+		return [
 			// Current version
-			array('config.add', array('knowledge_base_version', '1.0.0')),
+			['config.add', ['knowledge_base_version', '1.0.0']],
 
 			// Search in Knowledge Base
-			array('config.add', array('kb_search', '1')),
-			array('config.add', array('kb_search_type', 'kb_fulltext_native')),
-			array('config.add', array('kb_per_page_search', '10')),
+			['config.add', ['kb_search', '1']],
+			['config.add', ['kb_search_type', 'kb_fulltext_native']],
+			['config.add', ['kb_per_page_search', '10']],
 
 			// Add permissions
-			array('permission.add', array('a_manage_kb', true)),
+			['permission.add', ['a_manage_kb', true]],
 
 			// Add permissions sets
-			array('permission.permission_set', array('ROLE_ADMIN_FULL', 'a_manage_kb', 'role', true)),
+			['permission.permission_set', ['ROLE_ADMIN_FULL', 'a_manage_kb', 'role', true]],
 
 			// Update kb_options table
-			array('custom', array(array($this, 'update_kb_options_table'))),
+			['custom', [[$this, 'update_kb_options_table']]],
 			// Set default config
-			array('custom', array(array($this, 'set_default_config'))),
+			['custom', [[$this, 'set_default_config']]],
 			// Remove old modules, etc...
-			array('custom', array(array($this, 'remove_knowlege_base_ext'))),
+			['custom', [[$this, 'remove_knowlege_base_ext']]],
 
 			// ACP
-			array('module.add', array('acp', 'ACP_CAT_DOT_MODS', 'KNOWLEDGE_BASE')),
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'ACP_CAT_DOT_MODS', 'KNOWLEDGE_BASE']],
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\config_module',
 				'module_langname' => 'ACP_KNOWLEDGE_BASE_CONFIGURE',
 				'module_mode'     => 'settings',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			]]],
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\manage_module',
 				'module_langname' => 'ACP_LIBRARY_MANAGE',
 				'module_mode'     => 'manage',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
+			]]],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\articles_module',
 				'module_langname' => 'ACP_LIBRARY_ARTICLES',
 				'module_mode'     => 'articles',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
+			]]],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\permissions_module',
 				'module_langname' => 'ACP_LIBRARY_PERMISSIONS',
 				'module_mode'     => 'permissions',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
+			]]],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\search_module',
 				'module_langname' => 'ACP_LIBRARY_SEARCH',
 				'module_mode'     => 'index',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
+			]]],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\attachments_module',
 				'module_langname' => 'ACP_LIBRARY_ATTACHMENTS',
 				'module_mode'     => 'attachments',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
+			]]],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\attachments_module',
 				'module_langname' => 'ACP_LIBRARY_ATTACHMENTS_ORPHAN',
 				'module_mode'     => 'orphan',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
+			]]],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\logs_module',
 				'module_langname' => 'ACP_LIBRARY_LOGS',
 				'module_mode'     => 'logs',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
-		);
+			]]],
+		];
 	}
 
 	public function remove_knowlege_base_ext()
@@ -409,7 +409,7 @@ class version_1_0_0 extends \phpbb\db\migration\migration
 		$this->db->sql_freeresult($result);
 		if (empty($row))
 		{
-			$options = array(
+			$options = [
 				1 => 'kb_u_add',
 				2 => 'kb_u_edit',
 				3 => 'kb_u_delete',
@@ -417,16 +417,16 @@ class version_1_0_0 extends \phpbb\db\migration\migration
 				5 => 'kb_m_edit',
 				6 => 'kb_m_delete',
 				7 => 'kb_m_approve',
-			);
+			];
 
 			foreach ($options as $key => $value)
 			{
-				$sql_ary[] = array(
+				$sql_ary[] = [
 					'auth_option_id' => $key,
 					'auth_option'    => $value,
 					'is_global'      => 0,
 					'is_local'       => 1,
-				);
+				];
 			}
 			$this->db->sql_multi_insert($this->table_prefix . 'kb_options', $sql_ary);
 		}

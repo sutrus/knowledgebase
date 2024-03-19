@@ -13,9 +13,9 @@ namespace sheer\knowledgebase\acp;
 
 class manage_module
 {
-	public $page_title;
-	public $tpl_name;
-	public $u_action;
+	public string $page_title;
+	public string $tpl_name;
+	public string $u_action;
 
 	/**
 	 * Manage ACP module
@@ -24,7 +24,7 @@ class manage_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main($id, $mode)
+	public function main(int $id, string $mode): void
 	{
 		global $phpbb_container;
 
@@ -70,7 +70,7 @@ class manage_module
 		$phpbb_admin_path = $phpbb_container->getParameter('core.root_path') . 'adm/';
 		$phpEx = $phpbb_container->getParameter('core.php_ext');
 
-		$category_data = $errors = array();
+		$category_data = $errors = [];
 
 		$action = $request->variable('action', '');
 		$update = ($request->is_set_post('update'));
@@ -98,18 +98,16 @@ class manage_module
 					trigger_error($language->lang('CATEGORY_DELETED') . adm_back_link($this->u_action . '&amp;parent_id=' . $parent_id));
 				break;
 				case 'edit':
-					$category_data = array(
-						'category_id' => $category_id,
-					);
+					$category_data = compact('category_id');
 //				break;
 				case 'add':
-					$category_data += array(
+					$category_data += [
 						'parent_id'        => $request->variable('parent_id', $parent_id),
 						'type_action'      => $request->variable('type_action', ''),
 						'category_parents' => '',
 						'category_name'    => utf8_normalize_nfc($request->variable('category_name', '', true)),
 						'category_details' => utf8_normalize_nfc($request->variable('category_details', '', true)),
-					);
+					];
 					$errors = $admin_controller->update_category_data($category_data, $copy_perm_from_id);
 					if (!count($errors))
 					{
@@ -130,9 +128,7 @@ class manage_module
 				{
 					trigger_error($language->lang('CAT_NO_EXISTS') . adm_back_link($this->u_action . '&amp;parent_id=' . $parent_id), E_USER_WARNING);
 				}
-				$sql = 'SELECT *
-					FROM ' . $categories_table . "
-					WHERE category_id = $category_id";
+				$sql = 'SELECT * FROM ' . $categories_table . ' WHERE category_id = ' . $category_id;
 				$result = $db->sql_query($sql);
 				$row = $db->sql_fetchrow($result);
 				$db->sql_freeresult($result);
@@ -143,7 +139,7 @@ class manage_module
 				$move_category_name = $admin_controller->move_category_by($row, $action, 1);
 				if ($move_category_name !== false)
 				{
-					$phpbb_log->add('admin', $user->data['user_id'], $user->data['user_ip'], 'LOG_CATS_' . strtoupper($action), time(), array($row['category_name'], $move_category_name));
+					$phpbb_log->add('admin', $user->data['user_id'], $user->data['user_ip'], 'LOG_CATS_' . strtoupper($action), time(), [$row['category_name'], $move_category_name]);
 					$cache->destroy('sql', $categories_table);
 				}
 			break;
@@ -166,7 +162,7 @@ class manage_module
 					}
 
 					// Make sure no direct child cats are able to be selected as parents.
-					$exclude_cats = array();
+					$exclude_cats = [];
 					foreach ($kb->get_category_branch($category_id, 'children') as $row)
 					{
 						$exclude_cats[] = $row['category_id'];
@@ -178,26 +174,24 @@ class manage_module
 				{
 					$this->page_title = 'ADD_CATEGORY';
 					$category_id = $parent_id;
-					$parents_list = $kb->make_category_select($parent_id, false, false);
+					$parents_list = $kb->make_category_select($parent_id, [], false);
 
 					// Fill category data with default values
 					if (!$update)
 					{
-						$category_data = array(
+						$category_data = [
 							'parent_id'        => $parent_id,
 							'category_name'    => utf8_normalize_nfc($request->variable('category_name', '', true)),
 							'category_details' => '',
-						);
+						];
 					}
 				}
 
-				$category_desc_data = array(
+				$category_desc_data = [
 					'text' => $category_data['category_details'],
-				);
+				];
 
-				$sql = 'SELECT category_id
-					FROM ' . $categories_table . '
-					WHERE  category_id <> ' . (int) $category_id;
+				$sql = 'SELECT category_id FROM ' . $categories_table . ' WHERE  category_id <> ' . (int) $category_id;
 				$result = $db->sql_query_limit($sql, 1);
 				$postable_category_exists = false;
 				if ($db->sql_fetchrow($result))
@@ -209,27 +203,29 @@ class manage_module
 				// Subcat move options
 				if ($postable_category_exists)
 				{
-					$template->assign_vars(array(
-							'S_MOVE_CATEGORY_OPTIONS' => $kb->make_category_select($category_data['parent_id'], $category_id, false))
+					$template->assign_vars([
+							'S_MOVE_CATEGORY_OPTIONS' => $kb->make_category_select($category_data['parent_id'], [$category_id], false),
+						]
 					);
 				}
 
 				$copy_category_id = ($action == 'add') ? 0 : $category_id;
-				$template->assign_vars(array(
-					'S_EDIT'               => true,
-					'S_ERROR'              => (bool) count($errors),
-					'S_PARENT_ID'          => $parent_id,
-					'S_CATEGORY_PARENT_ID' => $category_data['parent_id'],
-					'S_ADD_ACTION'         => ($action == 'add'),
-					'U_BACK'               => "$this->u_action&amp;parent_id=$parent_id",
-					'U_EDIT_ACTION'        => "$this->u_action&amp;parent_id=$parent_id&amp;action=$action&amp;f=$category_id",
-					'L_TITLE'              => $language->lang($this->page_title),
-					'ERROR_MSG'            => (count($errors)) ? implode('br/>', $errors) : '',
-					'CATEGORY_NAME'        => $category_data['category_name'],
-					'CATEGORY_DESCR'       => $category_desc_data['text'],
-					'S_PARENT_OPTIONS'     => $parents_list,
-					'S_COPY_OPTIONS'       => $kb->make_category_select(false, $copy_category_id, false),
-				));
+				$template->assign_vars([
+						'S_EDIT'               => true,
+						'S_ERROR'              => (bool) count($errors),
+						'S_PARENT_ID'          => $parent_id,
+						'S_CATEGORY_PARENT_ID' => $category_data['parent_id'],
+						'S_ADD_ACTION'         => ($action == 'add'),
+						'U_BACK'               => $this->u_action . '&amp;parent_id=' . $parent_id,
+						'U_EDIT_ACTION'        => $this->u_action . '&amp;parent_id=' . $parent_id . '&amp;action=' . $action . '&amp;f=' . $category_id,
+						'L_TITLE'              => $language->lang($this->page_title),
+						'ERROR_MSG'            => (count($errors)) ? implode('br/>', $errors) : '',
+						'CATEGORY_NAME'        => $category_data['category_name'],
+						'CATEGORY_DESCR'       => $category_desc_data['text'],
+						'S_PARENT_OPTIONS'     => $parents_list,
+						'S_COPY_OPTIONS'       => $kb->make_category_select(false, [$copy_category_id], false),
+					]
+				);
 
 			break;
 			case 'delete':
@@ -238,7 +234,7 @@ class manage_module
 					trigger_error($language->lang('CAT_NO_EXISTS') . adm_back_link($this->u_action . '&amp;parent_id=' . $parent_id), E_USER_WARNING);
 				}
 				$category_data = $kb->get_cat_info($category_id);
-				$sub_cats_id = array();
+				$sub_cats_id = [];
 				$sub_cats = $kb->get_category_branch($category_id, 'children');
 				foreach ($sub_cats as $row)
 				{
@@ -251,29 +247,30 @@ class manage_module
 				$result = $db->sql_query_limit($sql, 1);
 				if ($db->sql_fetchrow($result))
 				{
-					$template->assign_vars(array(
-							'S_MOVE_CATEGORY_OPTIONS' => $kb->make_category_select($category_data['parent_id'], $sub_cats_id, false))
+					$template->assign_vars([
+							'S_MOVE_CATEGORY_OPTIONS' => $kb->make_category_select($category_data['parent_id'], $sub_cats_id, false),
+						]
 					);
 				}
 				$db->sql_freeresult($result);
 				$parent_id = ($parent_id == $category_id) ? 0 : $parent_id;
-				$template->assign_vars(array(
+				$template->assign_vars([
 					'S_DELETE_CATEGORY' => true,
-					'U_ACTION'          => "$this->u_action&amp;parent_id=$parent_id&amp;action=delete&amp;f=$category_id",
-					'U_BACK'            => "$this->u_action&amp;parent_id=$parent_id",
+					'U_ACTION'          => $this->u_action . '&amp;parent_id=' . $parent_id . '&amp;action=delete&amp;f=' . $category_id,
+					'U_BACK'            => $this->u_action . '&amp;parent_id=' . $parent_id,
 					'CATEGORY_NAME'     => $category_data['category_name'],
 					'S_HAS_SUBCATS'     => ($category_data['right_id'] - $category_data['left_id'] > 1),
 					'S_CATS_LIST'       => $cats_list,
 					'S_ERROR'           => (bool) count($errors),
 					'ERROR_MSG'         => (count($errors)) ? implode('<br>', $errors) : '',
-				));
+				]);
 			break;
 			case 'sync':
 				$errors = $admin_controller->sync($category_id);
 				$category_data = $kb->get_cat_info($category_id);
 				if (!count($errors))
 				{
-					$phpbb_log->add('admin', $user->data['user_id'], $user->data['user_ip'], 'LOG_CATS_' . strtoupper($action), time(), array($category_data['category_name']));
+					$phpbb_log->add('admin', $user->data['user_id'], $user->data['user_ip'], 'LOG_CATS_' . strtoupper($action), time(), [$category_data['category_name']]);
 					$cache->destroy('sql', $categories_table);
 					meta_refresh(2, $this->u_action . '&amp;parent_id=' . $parent_id);
 					trigger_error('SYNC_OK');
@@ -308,19 +305,18 @@ class manage_module
 		}
 
 		// Jumpbox
-		$cats_box = $kb->make_category_select($parent_id, false, false);
-		$sql = 'SELECT *
-			FROM ' . $categories_table . "
-			WHERE parent_id = " . (int) $parent_id . "
-			ORDER BY left_id";
+		$cats_box = $kb->make_category_select($parent_id, [], false);
+		$sql = 'SELECT * FROM ' . $categories_table . '
+			WHERE parent_id = ' . (int) $parent_id . '
+			ORDER BY left_id';
 		$result = $db->sql_query($sql);
 		if ($row = $db->sql_fetchrow($result))
 		{
 			do
 			{
-				$url = $this->u_action . "&amp;parent_id=$parent_id&amp;f={$row['category_id']}";
+				$url = $this->u_action . '&amp;parent_id=' . $parent_id . '&amp;f=' . $row['category_id'];
 
-				$template->assign_block_vars('categories', array(
+				$template->assign_block_vars('categories', [
 						'ID'             => $row['category_id'],
 						'CATEGORY_NAME'  => $row['category_name'],
 						'CATEGORY_DESCR' => $row['category_details'],
@@ -331,7 +327,7 @@ class manage_module
 						'U_EDIT'         => $url . '&amp;action=edit',
 						'U_DELETE'       => $url . '&amp;action=delete',
 						'U_SYNC'         => $url . '&amp;action=sync',
-					)
+					]
 				);
 			} while ($row = $db->sql_fetchrow($result));
 		}
@@ -345,23 +341,23 @@ class manage_module
 
 			$url = $this->u_action . '&amp;parent_id=' . $parent_id . '&amp;f=' . $row['category_id'];
 
-			$template->assign_vars(array(
+			$template->assign_vars([
 					'S_NO_CATS' => true,
 					'U_EDIT'    => $url . '&amp;action=edit',
 					'U_DELETE'  => $url . '&amp;action=delete',
-				)
+				]
 			);
 		}
 
 		$db->sql_freeresult($result);
 
-		$template->assign_vars(array(
+		$template->assign_vars([
 			'ERROR_MSG'  => (count($errors)) ? implode('<br>', $errors) : '',
 			'NAVIGATION' => $navigation,
-			'CATS_BOX'   => isset($cats_box) ? $cats_box : '',
+			'CATS_BOX'   => $cats_box,
 			'S_MANAGE'   => true,
-			'S_ACTION'   => "$this->u_action&amp;parent_id=$parent_id&amp;action=$action&amp;f=$category_id",
-			'U_ACTION'   => "$this->u_action&amp;parent_id=$parent_id",
-		));
+			'S_ACTION'   => $this->u_action . '&amp;parent_id=' . $parent_id . '&amp;action=' . $action . '&amp;f=' . $category_id,
+			'U_ACTION'   => $this->u_action . '&amp;parent_id=' . $parent_id,
+		]);
 	}
 }

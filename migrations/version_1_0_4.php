@@ -15,7 +15,7 @@ class version_1_0_4 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\sheer\knowledgebase\migrations\version_1_0_3');
+		return ['\sheer\knowledgebase\migrations\version_1_0_3'];
 	}
 
 	public function effectively_installed()
@@ -29,27 +29,27 @@ class version_1_0_4 extends \phpbb\db\migration\migration
 
 	public function update_schema()
 	{
-		return array();
+		return [];
 	}
 
 
 	public function revert_schema()
 	{
-		return array();
+		return [];
 	}
 
 	public function update_data()
 	{
-		return array(
+		return [
 			// Update configs
-			array('config.update', array('knowledge_base_version', '1.0.4')),
+			['config.update', ['knowledge_base_version', '1.0.4']],
 			// ACP
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\permissions_module',
 				'module_langname' => 'ACP_LIBRARY_PERMISSIONS_MASK',
 				'module_mode'     => 'mask',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
-		);
+			]]],
+		];
 	}
 }

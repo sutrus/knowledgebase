@@ -13,7 +13,7 @@ namespace sheer\knowledgebase\acp;
 
 class logs_info
 {
-	public function module()
+	public function module(): array
 	{
 		return [
 			'filename' => '\sheer\knowledgebase\acp\logs_module',

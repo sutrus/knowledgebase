@@ -15,7 +15,7 @@ class version_1_0_6 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\sheer\knowledgebase\migrations\version_1_0_5');
+		return ['\sheer\knowledgebase\migrations\version_1_0_5'];
 	}
 
 	public function effectively_installed()
@@ -29,26 +29,26 @@ class version_1_0_6 extends \phpbb\db\migration\migration
 
 	public function update_schema()
 	{
-		return array(
-			'add_columns' => array(
-				$this->table_prefix . 'kb_log' => array(
-					'post_id' => array('UINT', 0),
-				),
-			),
-		);
+		return [
+			'add_columns' => [
+				$this->table_prefix . 'kb_log' => [
+					'post_id' => ['UINT', 0],
+				],
+			],
+		];
 	}
 
 
 	public function revert_schema()
 	{
-		return array();
+		return [];
 	}
 
 	public function update_data()
 	{
-		return array(
+		return [
 			// Update configs
-			array('config.update', array('knowledge_base_version', '1.0.6')),
-		);
+			['config.update', ['knowledge_base_version', '1.0.6']],
+		];
 	}
 }

@@ -14,10 +14,10 @@ if (!defined('IN_PHPBB'))
 
 if (empty($lang) || !is_array($lang))
 {
-	$lang = array();
+	$lang = [];
 }
 
-$lang = array_merge($lang, array(
+$lang = array_merge($lang, [
 	'ALPHABET'                             => 'A-B-C-D-E-F-G-H-I-J-K-L-M-N-O-P-Q-R-S-T-U-V-W-X-Y-Z',
 	'ALPHABET_NAV'                         => 'Alphabetical order navigation:',
 	'ADD_ARTICLE'                          => 'Add article',
@@ -116,4 +116,4 @@ $lang = array_merge($lang, array(
 	'SORT_ARTICLE_TITLE'                   => 'Article title',
 	'TOTAL_ITEMS'                          => 'Articles: <strong>%d</strong>',
 	'WARNING_DEFAULT_CONFIG'               => 'The configuration settings Knowledge base are installed by default, it can lead to incorrect operation of the module.<br>Please go to <strong>Configuration</strong> and specify the required values.',
-));
+]);

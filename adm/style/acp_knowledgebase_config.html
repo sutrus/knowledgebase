@@ -155,7 +155,9 @@
 		{% for row in loops.row %}
 			<dl>
 				<dt><label for="extensions_group">{{ row.EXTENSIONS_GROUP }}</label></dt>
-				<dd><div id="ext_{{ row.GROUP }}">{{ row.ASSIGNED_EXTENSIONS }}</div></dd>
+				<dd>
+					<div id="ext_{{ row.GROUP }}">{{ row.ASSIGNED_EXTENSIONS }}</div>
+				</dd>
 				<dd>
 					<label for="assigned_extensions"></label>
 					<select name="extensions[{{ row.GROUP }}][]" id="assigned_extensions" class="narrow"

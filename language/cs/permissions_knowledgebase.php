@@ -17,11 +17,11 @@ if (!defined('IN_PHPBB'))
 
 if (empty($lang) || !is_array($lang))
 {
-	$lang = array();
+	$lang = [];
 }
 
-$lang = array_merge($lang, array(
+$lang = array_merge($lang, [
 	'KNOWLEDGEBASE'   => 'Znalostní báze',
 	'ACL_A_MANAGE_KB' => 'Může spravovat znalostní bázi',
 	'ACL_U_KB_VIEW'   => 'Může zobrazit znalostní bázi',
-));
+]);

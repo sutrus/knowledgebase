@@ -13,9 +13,9 @@ namespace sheer\knowledgebase\acp;
 
 class config_module
 {
-	public $page_title;
-	public $tpl_name;
-	public $u_action;
+	public string $page_title;
+	public string $tpl_name;
+	public string $u_action;
 
 	/**
 	 * Config ACP module
@@ -24,14 +24,14 @@ class config_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main($id, $mode)
+	public function main(int $id, string $mode): void
 	{
 		global $phpbb_container;
 
 		/** @var \phpbb\language\language $language */
 		$language = $phpbb_container->get('language');
 		$language->add_lang('acp_knowledgebase', 'sheer/knowledgebase');
-		$language->add_lang(array('acp/attachments'));
+		$language->add_lang(['acp/attachments']);
 
 		// Get an instance of the admin controller
 		$admin_controller = $phpbb_container->get('sheer.knowledgebase.admin.controller');
@@ -52,6 +52,5 @@ class config_module
 			default:
 			break;
 		}
-
 	}
 }

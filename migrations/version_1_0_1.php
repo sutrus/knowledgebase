@@ -15,7 +15,7 @@ class version_1_0_1 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\sheer\knowledgebase\migrations\version_1_0_0');
+		return ['\sheer\knowledgebase\migrations\version_1_0_0'];
 	}
 
 	public function effectively_installed()
@@ -29,33 +29,33 @@ class version_1_0_1 extends \phpbb\db\migration\migration
 
 	public function update_schema()
 	{
-		return array();
+		return [];
 	}
 
 	public function revert_schema()
 	{
-		return array();
+		return [];
 	}
 
 	public function update_data()
 	{
-		return array(
+		return [
 			// Update configs
-			array('config.update', array('knowledge_base_version', '1.0.1')),
+			['config.update', ['knowledge_base_version', '1.0.1']],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\attachments_module',
 				'module_langname' => 'ACP_LIBRARY_ATTACHMENTS_EXTRA_FILES',
 				'module_mode'     => 'extra_files',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
+			]]],
 
-			array('module.add', array('acp', 'KNOWLEDGE_BASE', array(
+			['module.add', ['acp', 'KNOWLEDGE_BASE', [
 				'module_basename' => '\sheer\knowledgebase\acp\attachments_module',
 				'module_langname' => 'ACP_LIBRARY_ATTACHMENTS_LOST_FILES',
 				'module_mode'     => 'lost_files',
 				'module_auth'     => 'ext_sheer/knowledgebase && acl_a_board && acl_a_manage_kb',
-			))),
-		);
+			]]],
+		];
 	}
 }

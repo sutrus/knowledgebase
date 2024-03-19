@@ -4,7 +4,7 @@
  * This file is part of the phpBB Forum Software package.
  *
  * @copyright (c) phpBB Limited <https://www.phpbb.com>
- * @license GNU General Public License, version 2 (GPL-2.0)
+ * @license       GNU General Public License, version 2 (GPL-2.0)
  *
  * For full copyright and license information, please see
  * the docs/CREDITS.txt file.
@@ -23,15 +23,17 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 {
 	/**
 	 * Associative array holding index stats
+	 *
 	 * @var array
 	 */
-	protected $stats = array();
+	protected $stats = [];
 
 	/**
 	 * Holds the words entered by user, obtained by splitting the entered query on whitespace
+	 *
 	 * @var array
 	 */
-	protected $split_words = array();
+	protected $split_words = [];
 
 	/**
 	 * @var language
@@ -40,13 +42,15 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 
 	/**
 	 * Associative array stores the min and max word length to be searched
+	 *
 	 * @var array
 	 */
-	protected $word_length = array();
+	protected $word_length = [];
 
 	/**
 	 * Contains tidied search query.
 	 * Operators are prefixed in search query and common words excluded
+	 *
 	 * @var string
 	 */
 	protected $search_query = '';
@@ -54,9 +58,10 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	/**
 	 * Contains common words.
 	 * Common words are words with length less/more than min/max length
+	 *
 	 * @var array
 	 */
-	protected $common_words = array();
+	protected $common_words = [];
 
 	/** @var string */
 	protected $articles_table;
@@ -68,14 +73,14 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	 * Constructor
 	 * Creates a new \phpbb\search\backend\fulltext_mysql, which is used as a search backend
 	 *
-	 * @param config $config Config object
-	 * @param driver_interface $db Database object
-	 * @param language $language
-	 * @param user $user User object
-	 * @param string $articles_table Articles_table
-	 * @param string $search_results_table Search_results_table
-	 * @param string $phpbb_root_path Relative path to phpBB root
-	 * @param string $phpEx PHP file extension
+	 * @param config           $config               Config object
+	 * @param driver_interface $db                   Database object
+	 * @param language         $language
+	 * @param user             $user                 User object
+	 * @param string           $articles_table       Articles_table
+	 * @param string           $search_results_table Search_results_table
+	 * @param string           $phpbb_root_path      Relative path to phpBB root
+	 * @param string           $phpEx                PHP file extension
 	 */
 	public function __construct(
 		config $config,
@@ -93,7 +98,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		parent::__construct($cache, $config, $db, $user, $search_results_table);
 		$this->language = $language;
 
-		$this->word_length = array('min' => $this->config['fulltext_mysql_min_word_len'], 'max' => $this->config['fulltext_mysql_max_word_len']);
+		$this->word_length = ['min' => $this->config['fulltext_mysql_min_word_len'], 'max' => $this->config['fulltext_mysql_max_word_len']];
 
 		$this->articles_table = $articles_table;
 		$this->search_results_table = $search_results_table;
@@ -165,7 +170,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			LIKE \'%ft\_%\'';
 		$result = $this->db->sql_query($sql);
 
-		$mysql_info = array();
+		$mysql_info = [];
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$mysql_info[$row['Variable_name']] = $row['Value'];
@@ -217,8 +222,8 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	{
 		if ($terms == 'all')
 		{
-			$match		= array('#\sand\s#iu', '#\sor\s#iu', '#\snot\s#iu', '#(^|\s)\+#', '#(^|\s)-#', '#(^|\s)\|#');
-			$replace	= array(' +', ' |', ' -', ' +', ' -', ' |');
+			$match = ['#\sand\s#iu', '#\sor\s#iu', '#\snot\s#iu', '#(^|\s)\+#', '#(^|\s)-#', '#(^|\s)\|#'];
+			$replace = [' +', ' |', ' -', ' +', ' -', ' |'];
 
 			$keywords = preg_replace($match, $replace, $keywords);
 		}
@@ -228,7 +233,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 
 		// Split words
 		$split_keywords = preg_replace('#([^\p{L}\p{N}\'*"()])#u', '$1$1', str_replace('\'\'', '\' \'', trim($split_keywords)));
-		$matches = array();
+		$matches = [];
 		preg_match_all('#(?:[^\p{L}\p{N}*"()]|^)([+\-|]?(?:[\p{L}\p{N}*"()]+\'?)*[\p{L}\p{N}*"()])(?:[^\p{L}\p{N}*"()]|$)#u', $split_keywords, $matches);
 		$this->split_words = $matches[1];
 
@@ -239,20 +244,20 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		}
 
 		// to allow phrase search, we need to concatenate quoted words
-		$tmp_split_words = array();
+		$tmp_split_words = [];
 		$phrase = '';
 		foreach ($this->split_words as $word)
 		{
 			if ($phrase)
 			{
 				$phrase .= ' ' . $word;
-				if (strpos($word, '"') !== false && substr_count($word, '"') % 2 == 1)
+				if (strpos($word, '"') !== false && substr_count($word, '"') % 2 === 1)
 				{
 					$tmp_split_words[] = $phrase;
 					$phrase = '';
 				}
 			}
-			else if (strpos($word, '"') !== false && substr_count($word, '"') % 2 == 1)
+			else if (strpos($word, '"') !== false && substr_count($word, '"') % 2 === 1)
 			{
 				$phrase = $word;
 			}
@@ -305,9 +310,9 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			}
 		}
 
+		$this->search_query = '';
 		if ($terms == 'any')
 		{
-			$this->search_query = '';
 			foreach ($this->split_words as $word)
 			{
 				if ((strpos($word, '+') === 0) || (strpos($word, '-') === 0) || (strpos($word, '|') === 0))
@@ -319,7 +324,6 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		}
 		else
 		{
-			$this->search_query = '';
 			foreach ($this->split_words as $word)
 			{
 				if ((strpos($word, '+') === 0) || (strpos($word, '-') === 0))
@@ -360,7 +364,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		}
 
 		// generate a search_key from all the options to identify the results
-		$search_key_array = array(
+		$search_key_array = [
 			implode(', ', $this->split_words),
 			$type,
 			$fields,
@@ -371,7 +375,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			implode(',', $ex_fid_ary),
 			'',
 			implode(',', $author_ary),
-		);
+		];
 		$search_key = md5(implode('#', $search_key_array));
 
 		if ($start < 0)
@@ -387,7 +391,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			return $result_count;
 		}
 
-		$id_ary = array();
+		$id_ary = [];
 
 		// Build sql strings for sorting
 		$sql_sort = $sort_by_sql[$sort_key] . (($sort_dir == 'a') ? ' ASC' : ' DESC');
@@ -420,7 +424,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		if (count($author_ary) && $author_name)
 		{
 			// first one matches post of registered users, second one guests and deleted users
-			$sql_author = ' AND (' . $this->db->sql_in_set('p.author_id', array_diff($author_ary, array(ANONYMOUS)), false, true) . ' OR p.author = ' . $author_name . ')';
+			$sql_author = ' AND (' . $this->db->sql_in_set('p.author_id', array_diff($author_ary, [ANONYMOUS]), false, true) . ' OR p.author = ' . $author_name . ')';
 		}
 		else if (count($author_ary))
 		{
@@ -456,7 +460,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		// if the total result count is not cached yet, retrieve it from the db
 		if (!$result_count && count($id_ary))
 		{
-			$sql_found_rows = str_replace("SELECT $sql_select", "SELECT COUNT(*) as result_count", $sql);
+			$sql_found_rows = str_replace("SELECT $sql_select", 'SELECT COUNT(*) as result_count', $sql);
 			$result = $this->db->sql_query($sql_found_rows);
 			$result_count = (int) $this->db->sql_fetchfield('result_count');
 			$this->db->sql_freeresult($result);
@@ -484,7 +488,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 
 		// store the ids, from start on then delete anything that isn't on the current page because we only need ids for one page
 		$this->save_ids($search_key, implode(' ', $this->split_words), $author_ary, $result_count, $id_ary, $start, $sort_dir);
-		$id_ary = array_slice($id_ary, 0, (int) $per_page);
+		$id_ary = array_slice($id_ary, 0, $per_page);
 
 		return $result_count;
 	}
@@ -501,7 +505,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		}
 
 		// generate a search_key from all the options to identify the results
-		$search_key_array = array(
+		$search_key_array = [
 			'',
 			$type,
 			'',
@@ -514,7 +518,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			'',
 			implode(',', $author_ary),
 			$author_name,
-		);
+		];
 		$search_key = md5(implode('#', $search_key_array));
 
 		if ($start < 0)
@@ -529,13 +533,13 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			return $result_count;
 		}
 
-		$id_ary = array();
+		$id_ary = [];
 
 		// Create some display specific sql strings
 		$sql_author = $this->db->sql_in_set('p.author_id', $author_ary) . ' AND p.approved=1 ';
 
 		$sql_fora = (count($ex_fid_ary)) ? ' AND ' . $this->db->sql_in_set('p.article_category_id', $ex_fid_ary, true) : '';
-		$sql_category_id = ($category_id) ? ' AND p.article_category_id = ' . (int) $category_id : '';
+		$sql_category_id = ($category_id) ? ' AND p.article_category_id = ' . $category_id : '';
 		$sql_time = ($sort_days) ? ' AND p.article_date >= ' . (time() - ($sort_days * 86400)) : '';
 
 		// Build sql strings for sorting
@@ -567,7 +571,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		// retrieve the total result count if needed
 		if (!$result_count)
 		{
-			$sql_found_rows = str_replace("SELECT $sql_select", "SELECT COUNT(*) as result_count", $sql);
+			$sql_found_rows = str_replace("SELECT $sql_select", 'SELECT COUNT(*) as result_count', $sql);
 			$result = $this->db->sql_query($sql_found_rows);
 			$result_count = (int) $this->db->sql_fetchfield('result_count');
 
@@ -618,15 +622,15 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	{
 		// Split old and new post/subject to obtain array of words
 		$split_text = $this->split_message($message);
-		$split_title = ($subject) ? $this->split_message($subject) : array();
-		$split_descr = ($description) ? $this->split_message($description) : array();
+		$split_title = ($subject) ? $this->split_message($subject) : [];
+		$split_descr = ($description) ? $this->split_message($description) : [];
 
 		$words = array_unique(array_merge($split_text, $split_title, $split_descr));
 
 		unset($split_text, $split_title, $split_descr);
 
 		// destroy cached search results containing any of the words removed or added
-		$this->destroy_cache($words, array($poster_id));
+		$this->destroy_cache($words, [$poster_id]);
 
 		unset($words);
 	}
@@ -666,11 +670,11 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			$this->get_stats();
 		}
 
-		$alter_list = array();
+		$alter_list = [];
 
 		if (!isset($this->stats['article_title']))
 		{
-			$alter_entry = array();
+			$alter_entry = [];
 			$alter_entry[] = 'MODIFY article_title varchar(255) COLLATE utf8_unicode_ci DEFAULT \'\' NOT NULL';
 			$alter_entry[] = 'ADD FULLTEXT (article_title)';
 			$alter_list[] = $alter_entry;
@@ -678,7 +682,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 
 		if (!isset($this->stats['article_description']))
 		{
-			$alter_entry = array();
+			$alter_entry = [];
 			$alter_entry[] = 'MODIFY article_description mediumtext COLLATE utf8_unicode_ci NOT NULL';
 			$alter_entry[] = 'ADD FULLTEXT (article_description)';
 			$alter_list[] = $alter_entry;
@@ -686,7 +690,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 
 		if (!isset($this->stats['article_body']))
 		{
-			$alter_entry = array();
+			$alter_entry = [];
 			$alter_entry[] = 'MODIFY article_body mediumtext COLLATE utf8_unicode_ci NOT NULL';
 			$alter_entry[] = 'ADD FULLTEXT article_body (article_body)';
 			$alter_list[] = $alter_entry;
@@ -694,7 +698,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 
 		if (!isset($this->stats['article_content']))
 		{
-			$alter_entry = array();
+			$alter_entry = [];
 			$alter_entry[] = 'MODIFY article_body mediumtext COLLATE utf8_unicode_ci NOT NULL';
 			$alter_entry[] = 'ADD FULLTEXT article_content (article_body, article_title, article_description)';
 			$alter_list[] = $alter_entry;
@@ -722,7 +726,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	/**
 	 * {@inheritdoc}
 	 */
-	public function delete_index(int &$post_counter = null): ?array
+	public function delete_index(?int &$post_counter = null): ?array
 	{
 		// Make sure we can actually use MySQL with fulltext indexes
 		if ($error = $this->init())
@@ -735,7 +739,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			$this->get_stats();
 		}
 
-		$alter = array();
+		$alter = [];
 
 		if (isset($this->stats['article_title']))
 		{
@@ -798,9 +802,9 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 			$this->get_stats();
 		}
 
-		return array(
+		return [
 			$this->language->lang('FULLTEXT_MYSQL_TOTAL_POSTS') => ($this->index_created()) ? $this->stats['total_posts'] : 0,
-		);
+		];
 	}
 
 	/**
@@ -810,7 +814,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	{
 		if (strpos($this->db->get_sql_layer(), 'mysql') === false)
 		{
-			$this->stats = array();
+			$this->stats = [];
 			return;
 		}
 
@@ -851,6 +855,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 
 	/**
 	 * Turns text into an array of words
+	 *
 	 * @param string $text contains post text/subject
 	 *
 	 * @return array
@@ -859,7 +864,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	{
 		// Split words
 		$text = preg_replace('#([^\p{L}\p{N}\'*])#u', '$1$1', str_replace('\'\'', '\' \'', trim($text)));
-		$matches = array();
+		$matches = [];
 		preg_match_all('#(?:[^\p{L}\p{N}*]|^)([+\-|]?(?:[\p{L}\p{N}*]+\'?)*[\p{L}\p{N}*])(?:[^\p{L}\p{N}*]|$)#u', $text, $matches);
 		$text = $matches[1];
 

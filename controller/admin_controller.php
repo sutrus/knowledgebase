@@ -12,24 +12,24 @@
 namespace sheer\knowledgebase\controller;
 
 use Exception;
-use phpbb\auth\auth as auth;
+use phpbb\auth\auth;
 use phpbb\cache\driver\driver_interface as cache_interface;
-use phpbb\config\config as config;
-use phpbb\config\db_text as db_text;
-use phpbb\controller\helper as helper;
-use phpbb\db\driver\driver_interface as driver_interface;
-use phpbb\di\service_collection as service_collection;
-use phpbb\extension\manager as manager;
+use phpbb\config\config;
+use phpbb\config\db_text;
+use phpbb\controller\helper;
+use phpbb\db\driver\driver_interface;
+use phpbb\di\service_collection;
+use phpbb\extension\manager;
 use phpbb\group\helper as group_helper;
-use phpbb\language\language as language;
-use phpbb\log\log as log;
-use phpbb\pagination as pagination;
-use phpbb\request\request_interface as request_interface;
-use phpbb\template\template as template;
-use phpbb\user as user;
+use phpbb\language\language;
+use phpbb\log\log;
+use phpbb\pagination;
+use phpbb\request\request_interface;
+use phpbb\template\template;
+use phpbb\user;
 use RuntimeException;
-use sheer\knowledgebase\inc\functions_kb as functions_kb;
-use sheer\knowledgebase\search\kb_search_backend_factory as kb_search_backend_factory;
+use sheer\knowledgebase\inc\functions_kb;
+use sheer\knowledgebase\search\kb_search_backend_factory;
 
 class admin_controller
 {
@@ -152,31 +152,12 @@ class admin_controller
 	 * @param string                    $kb_groups_table
 	 */
 	public function __construct(
-		driver_interface $db,
-		config $config,
-		db_text $config_text,
-		helper $helper,
-		manager $ext_manager,
-		language $language,
-		auth $auth,
-		request_interface $request,
-		template $template,
-		user $user,
-		cache_interface $cache,
-		group_helper $group_helper,
-		pagination $pagination,
-		log $log,
-		functions_kb $kb,
-		service_collection $search_collection,
-		kb_search_backend_factory $search_factory,
-		string $phpbb_root_path,
-		string $php_ext,
-		string $articles_table,
-		string $categories_table,
-		string $logs_table,
-		string $attachments_table,
-		string $options_table,
-		string $kb_users_table,
+		driver_interface $db, config $config, db_text $config_text, helper $helper, manager $ext_manager,
+		language $language, auth $auth, request_interface $request, template $template, user $user,
+		cache_interface $cache, group_helper $group_helper, pagination $pagination, log $log, functions_kb $kb,
+		service_collection $search_collection, kb_search_backend_factory $search_factory,
+		string $phpbb_root_path, string $php_ext, string $articles_table, string $categories_table,
+		string $logs_table, string $attachments_table, string $options_table, string $kb_users_table,
 		string $kb_groups_table
 	)
 	{
@@ -216,7 +197,7 @@ class admin_controller
 	 * @return void
 	 * @access public
 	 */
-	public function settings()
+	public function settings(): void
 	{
 		$form_key = 'sheer/knowledgebase';
 		add_form_key($form_key);
@@ -250,7 +231,7 @@ class admin_controller
 				{
 					$res = file_put_contents($tempFile, 'test');
 					$dirIsWritable = $res !== false;
-					@unlink($tempFile);
+					unlink($tempFile);
 				}
 			}
 		}
@@ -325,7 +306,7 @@ class admin_controller
 	 * @return void
 	 * @access protected
 	 */
-	protected function set_settings()
+	protected function set_settings(): void
 	{
 		// Create extension array
 		$extension_list = $this->request->variable('extensions', ['' => ['']]);
@@ -367,7 +348,7 @@ class admin_controller
 	 * @return void
 	 * @access public
 	 */
-	public function main()
+	public function main(): void
 	{
 		$submit = $this->request->is_set_post('submit');
 
@@ -397,8 +378,8 @@ class admin_controller
 
 				foreach ($attachments_list as $attachments)
 				{
-					@unlink($this->upload_dir . $attachments);
-					@unlink($this->upload_dir . 'thumb_' . $attachments);
+					unlink($this->upload_dir . $attachments);
+					unlink($this->upload_dir . 'thumb_' . $attachments);
 				}
 				$sql = 'DELETE FROM  ' . $this->attachments_table . '
 					WHERE ' . $this->db->sql_in_set('attach_id', $attachments_ids);
@@ -448,7 +429,7 @@ class admin_controller
 		gen_sort_selects($limit_days, $sort_by_text, $sort_days, $sort_key, $sort_dir, $s_limit_days, $s_sort_key, $s_sort_dir, $u_sort_param);
 
 		$min_filetime = ($sort_days) ? (time() - ($sort_days * 86400)) : '';
-		$limit_filetime = ($min_filetime) ? " AND a.filetime >= $min_filetime " : '';
+		$limit_filetime = ($min_filetime) ? ' AND a.filetime >= ' . $min_filetime : '';
 		$start = ($sort_days && $this->request->is_set_post('sort')) ? 0 : $start;
 
 		$attachments_per_page = (int) $this->config['topics_per_page'];
@@ -484,10 +465,9 @@ class admin_controller
 		$sql = 'SELECT a.*, u.username, u.user_colour, t.article_title
 			FROM ' . $this->attachments_table . ' a
 			LEFT JOIN ' . USERS_TABLE . ' u ON (u.user_id = a.poster_id)
-			LEFT JOIN ' . $this->articles_table . " t ON (a.article_id = t.article_id)
-			WHERE a.is_orphan = 0
-				$limit_filetime
-			ORDER BY $sql_sort_order";
+			LEFT JOIN ' . $this->articles_table . ' t ON (a.article_id = t.article_id)
+			WHERE a.is_orphan = 0 ' . $limit_filetime . '
+			ORDER BY ' . $sql_sort_order;
 
 		$result = $this->db->sql_query_limit($sql, $sql_limit, $sql_start);
 
@@ -502,9 +482,9 @@ class admin_controller
 		}
 		$this->db->sql_freeresult($result);
 
-		$base_url = $this->u_action . "&amp;$u_sort_param";
+		$base_url = $this->u_action . '&amp;' . $u_sort_param;
 
-		for ($i = 0, $end = count($attachments_list); $i < $end; ++$i)
+		for ($i = 0, $end = count($attachments_list); $i < $end; $i++)
 		{
 			$row = $attachments_list[$i];
 			$img_src = ($this->kb->check_is_img($row['extension'])) ? '<span class="kb_preview"><img alt="" src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $row['attach_id']]) . '"></span>' : '';
@@ -548,9 +528,8 @@ class admin_controller
 	protected function get_kb_attachment_stats(string $limit = ''): array
 	{
 		$sql = 'SELECT COUNT(a.attach_id) AS num_files, SUM(a.filesize) AS upload_dir_size
-			FROM ' . $this->attachments_table . " a
-			WHERE a.is_orphan = 0
-				$limit";
+			FROM ' . $this->attachments_table . ' a
+			WHERE a.is_orphan = 0 ' . $limit;
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
@@ -565,7 +544,7 @@ class admin_controller
 	 * @return void
 	 * @access public
 	 */
-	public function orphan()
+	public function orphan(): void
 	{
 		$submit = $this->request->is_set_post('submit');
 
@@ -592,8 +571,8 @@ class admin_controller
 
 				foreach ($attachments_list as $attachments)
 				{
-					@unlink($this->upload_dir . $attachments);
-					@unlink($this->upload_dir . 'thumb_' . $attachments);
+					unlink($this->upload_dir . $attachments);
+					unlink($this->upload_dir . 'thumb_' . $attachments);
 				}
 				$sql = 'DELETE FROM  ' . $this->attachments_table . '
 					WHERE ' . $this->db->sql_in_set('attach_id', $attachments_ids);
@@ -703,7 +682,7 @@ class admin_controller
 	 * @return void
 	 * @access public
 	 */
-	public function extra_files()
+	public function extra_files(): void
 	{
 		$submit = $this->request->variable('submit', false);
 
@@ -745,7 +724,7 @@ class admin_controller
 			{
 				if (file_exists($del_file) && !is_dir($del_file))
 				{
-					if (@unlink($del_file))
+					if (unlink($del_file))
 					{
 						$delete_list[] = $del_file;
 					}
@@ -812,10 +791,12 @@ class admin_controller
 	}
 
 	/**
-	 * @return void
+	 * @param $path
+	 * @param $res
+	 * @return array
 	 * @access public
 	 */
-	public function scan($path, &$res)
+	public function scan($path, &$res): array
 	{
 		$mass = scandir($path);
 		for ($i = 0; $i <= count($mass) - 1; $i++)
@@ -824,12 +805,9 @@ class admin_controller
 			{
 				$res[] = $path . $mass[$i];
 			}
-			if (!strstr($mass[$i], '.'))
+			if (!str_contains($mass[$i], '.') && is_dir($path . $mass[$i]))
 			{
-				if (is_dir($path . $mass[$i]))
-				{
-					$this->scan($path . $mass[$i], $res);
-				}
+				$this->scan($path . $mass[$i], $res);
 			}
 		}
 		return $res;
@@ -839,7 +817,7 @@ class admin_controller
 	 * @return void
 	 * @access public
 	 */
-	public function lost_files()
+	public function lost_files(): void
 	{
 		$submit = $this->request->variable('submit', false);
 		$step = $this->request->variable('step', 0);
@@ -866,7 +844,7 @@ class admin_controller
 			foreach ($batch as $row)
 			{
 				// Does the file still exists?
-				$path = $this->upload_dir . "{$row['physical_filename']}";
+				$path = $this->upload_dir . $row['physical_filename'];
 
 				if (file_exists($path))
 				{
@@ -902,8 +880,10 @@ class admin_controller
 
 	/**
 	 * Article management functions
+	 *
+	 * @return void
 	 */
-	public function show_articles()
+	public function show_articles(): void
 	{
 		$per_page = $this->config['kb_articles_per_page'];
 
@@ -984,15 +964,17 @@ class admin_controller
 				'S_SORT_KEY'  => $s_sort_key,
 				'S_SORT_DIR'  => $s_sort_dir,
 				'S_ARTICLES'  => true,
-				'S_ACTION'    => $this->u_action . "&amp;$u_sort_param$keywords_param&amp;start=$start",
+				'S_ACTION'    => $this->u_action . '&amp;' . $u_sort_param . $keywords_param . '&amp;start=' . $start,
 				'TOTAL_ITEMS' => $this->language->lang('TOTAL_ITEMS', (int) $article_count),
 				'PAGE_NUMBER' => $this->pagination->on_page($article_count, $per_page, $start),
 			]
 		);
 	}
 
-
-	public function move_article()
+	/**
+	 * @return void
+	 */
+	public function move_article(): void
 	{
 		$article_id = $this->request->variable('aid', 0);
 		$submit = $this->request->is_set_post('submit');
@@ -1017,7 +999,10 @@ class admin_controller
 		);
 	}
 
-	public function delete_article()
+	/**
+	 * @return void
+	 */
+	public function delete_article(): void
 	{
 		$article_id = $this->request->variable('aid', 0);
 		$article = $this->kb->get_kb_article_info($article_id);
@@ -1037,7 +1022,7 @@ class admin_controller
 			}
 			catch (RuntimeException $e)
 			{
-				if (strpos($e->getMessage(), 'No service found') === 0)
+				if (str_starts_with($e->getMessage(), 'No service found'))
 				{
 					trigger_error('NO_SUCH_SEARCH_MODULE');
 				}
@@ -1067,13 +1052,18 @@ class admin_controller
 
 	/**
 	 * Log management functions
+	 * /**
+	 *
+	 * @param $id
+	 * @param $mode
+	 * @return void
 	 */
-	public function log($id, $mode)
+	public function log($id, $mode): void
 	{
 		$start = $this->request->variable('start', 0);
 		$deletemark = $this->request->variable('delmarked', false, false, request_interface::POST);
 		$deleteall = $this->request->variable('delall', false, false, request_interface::POST);
-		$marked = $this->request->variable('mark', array(0));
+		$marked = $this->request->variable('mark', [0]);
 
 		// Sort keys
 		$sort_days = $this->request->variable('st', 0);
@@ -1087,8 +1077,7 @@ class admin_controller
 			{
 				if ($deletemark && count($marked))
 				{
-					$sql = 'DELETE FROM ' . $this->logs_table . '
-						WHERE ' . $this->db->sql_in_set('log_id', $marked);
+					$sql = 'DELETE FROM ' . $this->logs_table . ' WHERE ' . $this->db->sql_in_set('log_id', $marked);
 				}
 				if ($deleteall)
 				{
@@ -1145,7 +1134,7 @@ class admin_controller
 		$log_count = 0;
 		$start = view_log('admin', $log_data, $log_count, $this->config['topics_per_page'], $start, 0, 0, 0, $sql_where, $sql_sort);
 
-		$base_url = $this->u_action . "&amp;$u_sort_param";
+		$base_url = $this->u_action . '&amp;' . $u_sort_param;
 		$this->pagination->generate_template_pagination($base_url, 'pagination', 'start', $log_count, $this->config['topics_per_page'], $start);
 
 		foreach ($log_data as $row)
@@ -1161,7 +1150,7 @@ class admin_controller
 		}
 
 		$this->template->assign_vars([
-				'U_ACTION'     => $this->u_action . "&amp;start=$start",
+				'U_ACTION'     => $this->u_action . '&amp;start=' . $start,
 				'S_LIMIT_DAYS' => $s_limit_days,
 				'S_SORT_KEY'   => $s_sort_key,
 				'S_SORT_DIR'   => $s_sort_dir,
@@ -1242,7 +1231,7 @@ class admin_controller
 			$sql = 'INSERT INTO ' . $this->categories_table . ' ' . $this->db->sql_build_array('INSERT', $category_data_sql);
 			$this->db->sql_query($sql);
 			$new_category_id = $category_data['category_id'] = $this->db->sql_nextid();
-			$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_ADD', time(), array($category_data['category_name']));
+			$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_CATS_ADD', time(), [$category_data['category_name']]);
 		}
 		else
 		{
@@ -1343,21 +1332,21 @@ class admin_controller
 		$from_data = $moved_cats[0];
 		$diff = count($moved_cats) * 2;
 
-		for ($i = 0; $i < count($moved_cats); ++$i)
+		for ($i = 0; $i < count($moved_cats); $i++)
 		{
 			$moved_ids[] = $moved_cats[$i]['category_id'];
 		}
 
 		// Resync parents
-		$sql = 'UPDATE ' . $this->categories_table . "
-			SET right_id = right_id - $diff, category_parents = ''
+		$sql = 'UPDATE ' . $this->categories_table . '
+			SET right_id = right_id - ' . $diff . ", category_parents = ''
 			WHERE left_id < " . (int) $from_data['right_id'] . '
 				AND right_id > ' . (int) $from_data['right_id'];
 		$this->db->sql_query($sql);
 
 		// Resync righthand side of tree
-		$sql = 'UPDATE ' . $this->categories_table . "
-			SET left_id = left_id - $diff, right_id = right_id - $diff, category_parents = ''
+		$sql = 'UPDATE ' . $this->categories_table . '
+			SET left_id = left_id - ' . $diff . ', right_id = right_id - ' . $diff . ", category_parents = ''
 			WHERE left_id > " . (int) $from_data['right_id'];
 		$this->db->sql_query($sql);
 
@@ -1367,15 +1356,15 @@ class admin_controller
 			$to_data = $this->kb->get_cat_info($to_id);
 
 			// Resync new parents
-			$sql = 'UPDATE ' . $this->categories_table . "
-				SET right_id = right_id + $diff, category_parents = ''
+			$sql = 'UPDATE ' . $this->categories_table . '
+				SET right_id = right_id + ' . $diff . ", category_parents = ''
 				WHERE " . $to_data['right_id'] . ' BETWEEN left_id AND right_id
 					AND ' . $this->db->sql_in_set('category_id', $moved_ids, true);
 			$this->db->sql_query($sql);
 
 			// Resync the righthand side of the tree
-			$sql = 'UPDATE ' . $this->categories_table . "
-				SET left_id = left_id + $diff, right_id = right_id + $diff, category_parents = ''
+			$sql = 'UPDATE ' . $this->categories_table . '
+				SET left_id = left_id + ' . $diff . ', right_id = right_id + ' . $diff . ", category_parents = ''
 				WHERE left_id > " . (int) $to_data['right_id'] . '
 					AND ' . $this->db->sql_in_set('category_id', $moved_ids, true);
 			$this->db->sql_query($sql);
@@ -1404,8 +1393,8 @@ class admin_controller
 			$diff = '+ ' . ($row['right_id'] - $from_data['left_id'] + 1);
 		}
 
-		$sql = 'UPDATE ' . $this->categories_table . "
-			SET left_id = left_id $diff, right_id = right_id $diff, category_parents = ''
+		$sql = 'UPDATE ' . $this->categories_table . '
+			SET left_id = left_id ' . $diff . ', right_id = right_id ' . $diff . ", category_parents = ''
 			WHERE " . $this->db->sql_in_set('category_id', $moved_ids);
 		$this->db->sql_query($sql);
 
@@ -1455,19 +1444,19 @@ class admin_controller
 			$move_up_right = $target['right_id'];
 		}
 
-		$sql = 'UPDATE ' . $this->categories_table . "
+		$sql = 'UPDATE ' . $this->categories_table . '
 			SET left_id = left_id + CASE
-				WHEN left_id BETWEEN $move_up_left AND $move_up_right THEN -$diff_up
-				ELSE $diff_down
+				WHEN left_id BETWEEN ' . $move_up_left . ' AND ' . $move_up_right . ' THEN -' . $diff_up . '
+				ELSE ' . $diff_down . '
 			END,
 			right_id = right_id + CASE
-				WHEN right_id BETWEEN $move_up_left AND $move_up_right THEN -$diff_up
-				ELSE $diff_down
+				WHEN right_id BETWEEN ' . $move_up_left . ' AND ' . $move_up_right . ' THEN -' . $diff_up . '
+				ELSE ' . $diff_down . "
 			END,
 			category_parents = ''
 			WHERE
-				left_id BETWEEN $left_id AND $right_id
-				AND right_id BETWEEN $left_id AND $right_id";
+				left_id BETWEEN " . $left_id . ' AND ' . $right_id . '
+				AND right_id BETWEEN ' . $left_id . ' AND ' . $right_id;
 		$this->db->sql_query($sql);
 		return $target['category_name'];
 	}
@@ -1501,7 +1490,7 @@ class admin_controller
 		$errors = [];
 		$diff = 0;
 		$log_action_posts = $log_action_cats = $posts_to_name = $sub_cats_to_name = '';
-		$category_ids = array($category_id);
+		$category_ids = [$category_id];
 
 		if ($action_posts == 'delete')
 		{
@@ -1589,9 +1578,8 @@ class admin_controller
 				{
 					$sub_cats_to_name = $row['category_name'];
 
-					$sql = 'SELECT category_id
-						FROM ' . $this->categories_table . "
-						WHERE parent_id = $category_id";
+					$sql = 'SELECT category_id FROM ' . $this->categories_table . '
+						WHERE parent_id = ' . $category_id;
 					$result = $this->db->sql_query($sql);
 
 					while ($row = $this->db->sql_fetchrow($result))
@@ -1602,14 +1590,13 @@ class admin_controller
 
 					$category_data = $this->kb->get_cat_info($category_id);
 
-					$sql = 'UPDATE ' . $this->categories_table . "
-						SET parent_id = $sub_cats_to_id
-						WHERE parent_id = $category_id";
+					$sql = 'UPDATE ' . $this->categories_table . '
+						SET parent_id = ' . $sub_cats_to_id . '
+						WHERE parent_id = ' . $category_id;
 					$this->db->sql_query($sql);
 
 					$diff = 2;
-					$sql = 'DELETE FROM ' . $this->categories_table . "
-						WHERE category_id = $category_id";
+					$sql = 'DELETE FROM ' . $this->categories_table . ' WHERE category_id = ' . $category_id;
 					$this->db->sql_query($sql);
 				}
 			}
@@ -1622,23 +1609,22 @@ class admin_controller
 		else
 		{
 			$diff = 2;
-			$sql = 'DELETE FROM ' . $this->categories_table . "
-				WHERE category_id = $category_id";
+			$sql = 'DELETE FROM ' . $this->categories_table . ' WHERE category_id = ' . $category_id;
 			$this->db->sql_query($sql);
 		}
 
 		// Resync tree
-		$sql = 'UPDATE ' . $this->categories_table . "
-			SET right_id = right_id - $diff
-			WHERE left_id < {$category_data['right_id']} AND right_id > {$category_data['right_id']}";
+		$sql = 'UPDATE ' . $this->categories_table . '
+			SET right_id = right_id - ' . $diff . '
+			WHERE left_id < ' . $category_data['right_id'] . ' AND right_id > ' . $category_data['right_id'];
 		$this->db->sql_query($sql);
 
-		$sql = 'UPDATE ' . $this->categories_table . "
-			SET left_id = left_id - $diff, right_id = right_id - $diff
-			WHERE left_id > {$category_data['right_id']}";
+		$sql = 'UPDATE ' . $this->categories_table . '
+			SET left_id = left_id - ' . $diff . ', right_id = right_id - ' . $diff . '
+			WHERE left_id > ' . $category_data['right_id'];
 		$this->db->sql_query($sql);
 
-		$log_action = implode('_', array($log_action_posts, $log_action_cats));
+		$log_action = implode('_', [$log_action_posts, $log_action_cats]);
 
 		switch ($log_action)
 		{
@@ -1734,7 +1720,7 @@ class admin_controller
 			}
 			catch (RuntimeException $e)
 			{
-				if (strpos($e->getMessage(), 'No service found') === 0)
+				if (str_starts_with($e->getMessage(), 'No service found'))
 				{
 					trigger_error('NO_SUCH_SEARCH_MODULE');
 				}
@@ -1828,8 +1814,15 @@ class admin_controller
 		return $category_id;
 	}
 
-
-	public function get_mask($mode, $user_mode, $group_id, $category_id, $user_id)
+	/**
+	 * @param $mode
+	 * @param $user_mode
+	 * @param $group_id
+	 * @param $category_id
+	 * @param $user_id
+	 * @return void
+	 */
+	public function get_mask($mode, $user_mode, $group_id, $category_id, $user_id): void
 	{
 		$groups = [];
 
@@ -1914,13 +1907,13 @@ class admin_controller
 					]
 				);
 
+				$options = [];
 				foreach ($types as $key => $value)
 				{
 					$submit = $this->request->variable('submit', [[0]]);
 					$inherit = $this->request->variable('inherit', [[0]]);
 
-					$sql = 'SELECT *
-						FROM ' . $this->options_table . '
+					$sql = 'SELECT * FROM ' . $this->options_table . '
 						WHERE auth_option_id <> 0
 							AND auth_option LIKE \'%' . $key . '%\'';
 					$res = $this->db->sql_query($sql);
@@ -1956,7 +1949,7 @@ class admin_controller
 						}
 					}
 
-					$option_settings = $this->request->variable('setting', [0 => [0 => ['' => 0]]]);
+					$option_settings = $this->request->variable('setting', [[['' => 0]]]);
 
 					$res = array_diff(array_count_values($_options), ['1']);
 					$index = key($res);
@@ -2079,10 +2072,7 @@ class admin_controller
 
 		$s_defined_group_options = $items['group_ids_options'];
 		$s_defined_user_options = $items['user_ids_options'];
-		$s_hidden_fields = [
-			'category_id' => $category_id,
-			'user_id'     => $user_id,
-		];
+		$s_hidden_fields = compact('category_id', 'user_id');
 
 		$this->template->assign_vars([
 				'S_SELECT'                    => true,
@@ -2126,16 +2116,16 @@ class admin_controller
 
 		if (count($option_ids))
 		{
-			$sql_where = 'AND ' . $this->db->sql_in_set('a.auth_option_id', $option_ids);
+			$sql_where = 'AND ' . $this->db->sql_in_set('a.auth_option_id', $option_ids) . ' ';
 		}
 
 		// Not ideal, due to the filesort, non-use of indexes, etc.
 		$sql = 'SELECT DISTINCT u.user_id, u.username, u.username_clean, u.user_regdate
-			FROM ' . USERS_TABLE . ' u, ' . $this->kb_users_table . " a
-			WHERE u.user_id = a.user_id
-				$sql_where
-				$sql_category_id
-			ORDER BY u.username_clean, u.user_regdate ASC";
+			FROM ' . USERS_TABLE . ' u, ' . $this->kb_users_table . ' a
+			WHERE u.user_id = a.user_id ' .
+			$sql_where .
+			$sql_category_id . '
+			ORDER BY u.username_clean, u.user_regdate ASC';
 		$result = $this->db->sql_query($sql);
 
 		$s_defined_user_options = '';
@@ -2148,11 +2138,11 @@ class admin_controller
 		$this->db->sql_freeresult($result);
 
 		$sql = 'SELECT DISTINCT g.group_type, g.group_name, g.group_id
-			FROM ' . GROUPS_TABLE . ' g, ' . $this->kb_groups_table . " a
-			WHERE g.group_id = a.group_id
-				$sql_where
-				$sql_category_id
-			ORDER BY g.group_type DESC, g.group_name ASC";
+			FROM ' . GROUPS_TABLE . ' g, ' . $this->kb_groups_table . ' a
+			WHERE g.group_id = a.group_id ' .
+			$sql_where .
+			$sql_category_id . '
+			ORDER BY g.group_type DESC, g.group_name ASC';
 		$result = $this->db->sql_query($sql);
 
 		$s_defined_group_options = '';
@@ -2193,9 +2183,7 @@ class admin_controller
 
 		if ($category_id)
 		{
-			$sql = 'SELECT category_name
-				FROM ' . $this->categories_table . "
-				WHERE category_id = $category_id";
+			$sql = 'SELECT category_name FROM ' . $this->categories_table . ' WHERE category_id = ' . $category_id;
 			$result = $this->db->sql_query($sql, 3600);
 			$cat_name = $this->db->sql_fetchfield('category_name');
 			$this->db->sql_freeresult($result);
@@ -2204,7 +2192,7 @@ class admin_controller
 		$this->template->assign_vars([
 				'PERMISSION'          => $this->language->lang($permission),
 				'PERMISSION_USERNAME' => $userdata['username'],
-				'FORUM_NAME'          => $cat_name,
+				'FORUM_NAME'          => $cat_name ?? '',
 			]
 		);
 
@@ -2212,7 +2200,8 @@ class admin_controller
 				'WHO'          => $this->language->lang('DEFAULT'),
 				'INFORMATION'  => $this->language->lang('TRACE_DEFAULT'),
 				'S_SETTING_NO' => true,
-				'S_TOTAL_NO'   => true]
+				'S_TOTAL_NO'   => true,
+			]
 		);
 
 		$sql = 'SELECT DISTINCT g.group_name, g.group_id, g.group_type
@@ -2364,10 +2353,10 @@ class admin_controller
 		$sql_ary[] = 'SELECT a.group_id, a.category_id, a.auth_setting, a.auth_option_id, ao.auth_option
 			FROM ' . $this->kb_groups_table . ' a, ' . $this->options_table . ' ao
 			WHERE a.auth_option_id = ao.auth_option_id ' .
-			(($sql_group) ? 'AND a.' . $sql_group : '') . "
-				$sql_category
-				$sql_opts
-			ORDER BY a.category_id, ao.auth_option";
+			(($sql_group) ? 'AND a.' . $sql_group : '') .
+			$sql_category . ' ' .
+			$sql_opts . '
+			ORDER BY a.category_id, ao.auth_option';
 
 		foreach ($sql_ary as $sql)
 		{
@@ -2383,20 +2372,24 @@ class admin_controller
 		return $hold_ary;
 	}
 
-	/**
-	 * Fill auth_option statement for later querying based on the supplied options
+	/** Fill auth_option statement for later querying based on the supplied options
+	 *
+	 * @param $key
+	 * @param $auth_options
+	 * @param $sql_opts
+	 * @return void
 	 */
-	protected function build_auth_option_statement($key, $auth_options, &$sql_opts)
+	protected function build_auth_option_statement($key, $auth_options, &$sql_opts): void
 	{
 		if (!is_array($auth_options))
 		{
-			if (strpos($auth_options, '%') !== false)
+			if (str_contains($auth_options, '%'))
 			{
-				$sql_opts = "AND $key " . $this->db->sql_like_expression(str_replace('%', $this->db->get_any_char(), $auth_options));
+				$sql_opts = "AND {$key} " . $this->db->sql_like_expression(str_replace('%', $this->db->get_any_char(), $auth_options));
 			}
 			else
 			{
-				$sql_opts = "AND $key = '" . $this->db->sql_escape($auth_options) . "'";
+				$sql_opts = "AND {$key} = '" . $this->db->sql_escape($auth_options) . "'";
 			}
 		}
 		else
@@ -2405,7 +2398,7 @@ class admin_controller
 
 			foreach ($auth_options as $option)
 			{
-				if (strpos($option, '%') !== false)
+				if (str_contains($option, '%'))
 				{
 					$is_like_expression = true;
 				}
@@ -2456,10 +2449,9 @@ class admin_controller
 		$sql_ary[] = 'SELECT a.user_id, a.category_id, a.auth_setting, a.auth_option_id, ao.auth_option
 			FROM ' . $this->kb_users_table . ' a, ' . $this->options_table . ' ao
 			WHERE a.auth_option_id = ao.auth_option_id ' .
-			(($sql_user) ? 'AND a.' . $sql_user : '') . "
-				$sql_category
-				$sql_opts
-			ORDER BY a.category_id, ao.auth_option";
+			(($sql_user) ? 'AND a.' . $sql_user : '') .
+			$sql_category . ' ' . $sql_opts . '
+			ORDER BY a.category_id, ao.auth_option';
 
 		foreach ($sql_ary as $sql)
 		{
@@ -2475,7 +2467,12 @@ class admin_controller
 		return $hold_ary;
 	}
 
-	protected function apply_all_permissions($hold_ary, $user_mode)
+	/**
+	 * @param $hold_ary
+	 * @param $user_mode
+	 * @return void
+	 */
+	protected function apply_all_permissions($hold_ary, $user_mode): void
 	{
 		$sql = 'SELECT auth_option, auth_option_id
 			FROM ' . $this->options_table;
@@ -2548,7 +2545,14 @@ class admin_controller
 		trigger_error($this->language->lang('AUTH_UPDATED') . adm_back_link($url));
 	}
 
-	protected function add_kb_log($group_id, $user_id, $category_id, $log_type)
+	/**
+	 * @param $group_id
+	 * @param $user_id
+	 * @param $category_id
+	 * @param $log_type
+	 * @return void
+	 */
+	protected function add_kb_log($group_id, $user_id, $category_id, $log_type): void
 	{
 		$this->log->set_log_table($this->logs_table);
 
@@ -2567,7 +2571,7 @@ class admin_controller
 		}
 		$this->db->sql_freeresult($result);
 
-		if ($user_mode == 'user')
+		if ($user_mode === 'user')
 		{
 			$gr_name = 'username';
 			$tbl = USERS_TABLE;
@@ -2585,7 +2589,7 @@ class admin_controller
 		$result = $this->db->sql_query($sql);
 		while ($row = $this->db->sql_fetchrow($result))
 		{
-			$names[] = ($user_mode == 'user') ? $row['username'] : $this->group_helper->get_name($row['group_name']);
+			$names[] = ($user_mode === 'user') ? $row['username'] : $this->group_helper->get_name($row['group_name']);
 		}
 
 		$this->db->sql_freeresult($result);
@@ -2599,7 +2603,13 @@ class admin_controller
 		}
 	}
 
-	public function delete_permissions($group_id, $user_id, $category_id)
+	/**
+	 * @param $group_id
+	 * @param $user_id
+	 * @param $category_id
+	 * @return void
+	 */
+	public function delete_permissions($group_id, $user_id, $category_id): void
 	{
 		if (empty($group_id) && empty($user_id))
 		{
@@ -2607,9 +2617,9 @@ class admin_controller
 		}
 //		$phpbb_log->set_log_table($this->logs_table);
 		(empty($group_id)) ? $user_mode = 'user' : $user_mode = 'group';
-		$table = ($user_mode == 'user') ? $this->kb_users_table : $this->kb_groups_table;
+		$table = ($user_mode === 'user') ? $this->kb_users_table : $this->kb_groups_table;
 		$id_field = $user_mode . '_id';
-		$where = ($user_mode == 'user') ? $user_id : $group_id;
+		$where = ($user_mode === 'user') ? $user_id : $group_id;
 
 		$sql = 'DELETE FROM ' . $table . '
 			WHERE ' . $id_field . ' IN (' . implode(',', $where) . ')
@@ -2666,7 +2676,7 @@ class admin_controller
 
 				$selected = ($this->config['kb_search_type'] === $type) ? ' selected="selected"' : '';
 				$identifier = substr($type, strrpos($type, '\\') + 1);
-				$search_options .= "<option value=\"$type\"$selected data-toggle-setting=\"#search_{$identifier}_settings\">$name</option>";
+				$search_options .= "<option value=\"{$type}\"{$selected} data-toggle-setting=\"#search_{$identifier}_settings\">{$name}</option>";
 			}
 		}
 
@@ -2864,7 +2874,7 @@ class admin_controller
 	private function index_action(int $id, string $mode, string $action, array $state): void
 	{
 		// For some this may be of help...
-		@ini_set('memory_limit', '128M');
+		ini_set('memory_limit', '128M');
 
 //		if (!check_link_hash($this->request->variable('hash', ''), 'kb_acp_search'))
 //		{
@@ -2904,7 +2914,7 @@ class admin_controller
 			{
 				$this->save_state($state); // update $post_counter in $state in the database
 
-				$u_action = append_sid($this->u_action, "i=$id&mode=$mode&action=$action");
+				$u_action = append_sid($this->u_action, 'i=' . $id . '&mode=' . $mode . '&action=' . $action);
 				meta_refresh(1, $u_action);
 
 				$message_redirect = $this->language->lang(($action == 'create') ? 'SEARCH_INDEX_CREATE_REDIRECT' : 'SEARCH_INDEX_DELETE_REDIRECT', (int) $status['row_count'], $status['post_counter']);
@@ -2986,7 +2996,7 @@ class admin_controller
 	 * @return void
 	 * @access public
 	 */
-	public function set_page_url(string $u_action)
+	public function set_page_url(string $u_action): void
 	{
 		$this->u_action = $u_action;
 	}

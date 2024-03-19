@@ -14,10 +14,10 @@ if (!defined('IN_PHPBB'))
 
 if (empty($lang) || !is_array($lang))
 {
-	$lang = array();
+	$lang = [];
 }
 
-$lang = array_merge($lang, array(
+$lang = array_merge($lang, [
 	'ALPHABET'                             => 'A-B-C-D-E-F-G-H-I-J-K-L-M-N-O-P-Q-R-S-T-U-V-W-X-Y-Z',
 	'ALPHABET_NAV'                         => 'Filtrovat dle abecedy:',
 	'ADD_ARTICLE'                          => 'Přidat článek',
@@ -116,4 +116,4 @@ $lang = array_merge($lang, array(
 	'SORT_ARTICLE_TITLE'                   => 'Nadpis článku',
 	'TOTAL_ITEMS'                          => 'Článků: <strong>%d</strong>',
 	'WARNING_DEFAULT_CONFIG'               => 'Znalostní báze je nainstalována s výchozím nastavením nastavením konfigurace, což může vést k nesprávnému fungování modulu. <br> Přejděte do části <strong>Konfigurace</strong> a nastavte požadované hodnoty.',
-));
+]);

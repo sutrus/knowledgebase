@@ -1,4 +1,4 @@
-{% include 'overall_header.html' %}
+{% INCLUDE 'overall_header.html' %}
 <h2><a href="{{ U_LIBRARY }}" class="nav">{{ lang('LIBRARY') }}</a></h2>
 <h2>{{ CATEGORY }}</h2>
 {% if loops.cat_row|length %}{% INCLUDE '@sheer_knowledgebase/kb_cat_list.html' %}{% endif %}
@@ -152,4 +152,4 @@
 	<h3>{{ lang('KB_PERMISSIONS') }}</h3>
 	<p>{% for rules in loops.rules %}{{ rules.RULE }}<br>{% endfor %}</p>
 </div>
-{% include 'overall_footer.html' %}
+{% INCLUDE 'overall_footer.html' %}

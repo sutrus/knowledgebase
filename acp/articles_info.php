@@ -13,7 +13,7 @@ namespace sheer\knowledgebase\acp;
 
 class articles_info
 {
-	public function module()
+	public function module(): array
 	{
 		return [
 			'filename' => '\sheer\knowledgebase\acp\articles_module',

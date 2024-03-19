@@ -11,34 +11,44 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\auth\auth;
+use phpbb\config\config;
+use phpbb\controller\helper;
+use phpbb\db\driver\driver_interface;
+use phpbb\language\language;
+use phpbb\request\request_interface;
+use phpbb\template\template;
+use phpbb\user;
+use sheer\knowledgebase\inc\functions_kb;
+
 class article
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	protected config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	protected language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected \phpbb\auth\auth $auth;
+	protected auth $auth;
 
 	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	protected request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected \phpbb\template\template $template;
+	protected template $template;
 
 	/** @var \phpbb\user */
-	protected \phpbb\user $user;
+	protected user $user;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected \sheer\knowledgebase\inc\functions_kb $kb;
+	protected functions_kb $kb;
 
 	/** @var string */
 	protected string $phpbb_root_path;
@@ -55,34 +65,24 @@ class article
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface     $db
-	 * @param \phpbb\config\config                  $config
-	 * @param \phpbb\controller\helper              $helper
-	 * @param \phpbb\language\language              $language
-	 * @param \phpbb\auth\auth                      $auth
-	 * @param \phpbb\request\request_interface      $request
-	 * @param \phpbb\template\template              $template
-	 * @param \phpbb\user                           $user
-	 * @param \sheer\knowledgebase\inc\functions_kb $kb
-	 * @param string                                $phpbb_root_path
-	 * @param string                                $php_ext
-	 * @param string                                $articles_table
-	 * @param string                                $attachments_table
+	 * @param driver_interface  $db
+	 * @param config            $config
+	 * @param helper            $helper
+	 * @param language          $language
+	 * @param auth              $auth
+	 * @param request_interface $request
+	 * @param template          $template
+	 * @param user              $user
+	 * @param functions_kb      $kb
+	 * @param string            $phpbb_root_path
+	 * @param string            $php_ext
+	 * @param string            $articles_table
+	 * @param string            $attachments_table
 	 */
 	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\config\config $config,
-		\phpbb\controller\helper $helper,
-		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
-		\phpbb\request\request_interface $request,
-		\phpbb\template\template $template,
-		\phpbb\user $user,
-		\sheer\knowledgebase\inc\functions_kb $kb,
-		string $phpbb_root_path,
-		string $php_ext,
-		string $articles_table,
-		string $attachments_table
+		driver_interface $db, config $config, helper $helper, language $language, auth $auth,
+		request_interface $request, template $template, user $user, functions_kb $kb,
+		string $phpbb_root_path, string $php_ext, string $articles_table, string $attachments_table
 	)
 	{
 		$this->db = $db;
@@ -136,7 +136,7 @@ class article
 
 		if (!$row['approved'] && !($this->auth->acl_get('a_manage_kb') || $this->kb->acl_kb_get($cat_id, 'kb_m_approve')))
 		{
-			redirect($this->helper->route('sheer_knowledgebase_category', array('id' => $cat_id)));
+			redirect($this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id]));
 		}
 
 		$catrow = $this->kb->get_cat_info($row['article_category_id']);
@@ -145,12 +145,11 @@ class article
 			trigger_error($this->language->lang('CAT_NO_EXISTS'));
 		}
 
-		$this->template->assign_vars(array(
-				'ARTICLE_CATEGORY' => '<a href="' . $this->helper->route('sheer_knowledgebase_category', array('id' => $catrow['category_id'])) . '">' . $catrow['category_name'] . '</a>',
-				'CATS_DROPBOX'     => $this->kb->make_category_dropbox(),
-				'S_ACTION'         => $this->helper->route('sheer_knowledgebase_category', array('id' => $cat_id)),
-			)
-		);
+		$this->template->assign_vars([
+			'ARTICLE_CATEGORY' => '<a href="' . $this->helper->route('sheer_knowledgebase_category', ['id' => $catrow['category_id']]) . '">' . $catrow['category_name'] . '</a>',
+			'CATS_DROPBOX'     => $this->kb->make_category_dropbox(),
+			'S_ACTION'         => $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id]),
+		]);
 
 		$comment_topic_id = $row['topic_id'];
 
@@ -169,13 +168,12 @@ class article
 				$count++;
 				if ($count > 0)
 				{
-					$this->template->assign_block_vars('postrow', array(
-							'POSTER_NAME'  => $postrow['username'],
-							'POST_DATE'    => $this->user->format_date($postrow['post_time']),
-							'POST_SUBJECT' => $postrow['post_subject'],
-							'MESSAGE'      => generate_text_for_display($postrow['post_text'], $postrow['bbcode_uid'], $postrow['bbcode_bitfield'], 3, true),
-						)
-					);
+					$this->template->assign_block_vars('postrow', [
+						'POSTER_NAME'  => $postrow['username'],
+						'POST_DATE'    => $this->user->format_date($postrow['post_time']),
+						'POST_SUBJECT' => $postrow['post_subject'],
+						'MESSAGE'      => generate_text_for_display($postrow['post_text'], $postrow['bbcode_uid'], $postrow['bbcode_bitfield'], 3, true),
+					]);
 				}
 			}
 			$this->db->sql_freeresult($res);
@@ -207,57 +205,54 @@ class article
 		include_once($this->phpbb_root_path . 'includes/functions_display.' . $this->php_ext);
 		$rank = phpbb_get_user_rank($this->user->data, false);
 
-		$this->template->assign_vars(array(
-				'ARTICLE_AUTHOR'      => get_username_string('full', $row['author_id'], $row['username'], $row['user_colour']),
-				'ARTICLE_DESCRIPTION' => $row['article_description'],
-				'ARTICLE_DATE'        => $this->user->format_date($row['article_date']),
-				'ART_VIEWS'           => $row['views'],
-				'ARTICLE_TITLE'       => $row['article_title'],
-				'ARTICLE_TEXT'        => $text,
-				'VIEWS'               => $views,
-				'RANK'                => $rank['title'],
-				'U_EDIT_ART'          => $this->helper->route('sheer_knowledgebase_posting', array('mode' => 'edit', 'id' => $cat_id, 'k' => $art_id)),
-				'U_DELETE_ART'        => $this->helper->route('sheer_knowledgebase_posting', array('mode' => 'delete', 'id' => $cat_id, 'k' => $art_id)),
-				'U_APPROVE_ART'       => $this->helper->route('sheer_knowledgebase_approve', array('id' => $art_id)),
-				'U_PRINT'             => $this->helper->route('sheer_knowledgebase_article', array('mode' => 'print', 'k' => $art_id)),
-				'U_ARTICLE'           => '[url=' . generate_board_url() . '/knowledgebase/article?k=' . $art_id . ']' . $row['article_title'] . '[/url]',
-				'U_DIRECT_LINK'       => generate_board_url() . '/knowledgebase/article?k=' . $art_id,
-				'COMMENTS'            => ($comment_topic_id) ? $this->language->lang('COMMENTS') . $this->language->lang('COLON') . ' ' . $count : '',
-				'U_COMMENTS'          => ($comment_topic_id) ? $temp_url : '',
-				'S_CAN_EDIT'          => $this->kb->acl_kb_get($cat_id, 'kb_m_edit') || ($this->user->data['user_id'] == $row['author_id'] && $this->kb->acl_kb_get($cat_id, 'kb_u_edit') || $this->auth->acl_get('a_manage_kb')),
-				'S_CAN_DELETE'        => $this->kb->acl_kb_get($cat_id, 'kb_m_delete') || ($this->user->data['user_id'] == $row['author_id'] && $this->kb->acl_kb_get($cat_id, 'kb_u_delete') || $this->auth->acl_get('a_manage_kb')),
-				'S_CAN_APPROVE'       => $this->auth->acl_get('a_manage_kb') || $this->kb->acl_kb_get($cat_id, 'kb_m_approve'),
-				'COUNT_COMMENTS'      => ($comment_topic_id) ? '[' . $this->language->lang('LEAVE_COMMENTS') . ']' : '',
-				'U_FORUM'             => generate_board_url() . '/',
-				'S_APPROVED'          => $row['approved'],
-				'S_KNOWLEDGEBASE'     => true,
-				'LIBRARY'             => $this->language->lang('LIBRARY'),
-			)
-		);
+		$this->template->assign_vars([
+			'ARTICLE_AUTHOR'      => get_username_string('full', $row['author_id'], $row['username'], $row['user_colour']),
+			'ARTICLE_DESCRIPTION' => $row['article_description'],
+			'ARTICLE_DATE'        => $this->user->format_date($row['article_date']),
+			'ART_VIEWS'           => $row['views'],
+			'ARTICLE_TITLE'       => $row['article_title'],
+			'ARTICLE_TEXT'        => $text,
+			'VIEWS'               => $views,
+			'RANK'                => $rank['title'],
+			'U_EDIT_ART'          => $this->helper->route('sheer_knowledgebase_posting', ['mode' => 'edit', 'id' => $cat_id, 'k' => $art_id]),
+			'U_DELETE_ART'        => $this->helper->route('sheer_knowledgebase_posting', ['mode' => 'delete', 'id' => $cat_id, 'k' => $art_id]),
+			'U_APPROVE_ART'       => $this->helper->route('sheer_knowledgebase_approve', ['id' => $art_id]),
+			'U_PRINT'             => $this->helper->route('sheer_knowledgebase_article', ['mode' => 'print', 'k' => $art_id]),
+			'U_ARTICLE'           => '[url=' . generate_board_url() . '/knowledgebase/article?k=' . $art_id . ']' . $row['article_title'] . '[/url]',
+			'U_DIRECT_LINK'       => generate_board_url() . '/knowledgebase/article?k=' . $art_id,
+			'COMMENTS'            => ($comment_topic_id) ? $this->language->lang('COMMENTS') . $this->language->lang('COLON') . ' ' . $count : '',
+			'U_COMMENTS'          => ($comment_topic_id) ? $temp_url : '',
+			'S_CAN_EDIT'          => $this->kb->acl_kb_get($cat_id, 'kb_m_edit') || ($this->user->data['user_id'] == $row['author_id'] && $this->kb->acl_kb_get($cat_id, 'kb_u_edit') || $this->auth->acl_get('a_manage_kb')),
+			'S_CAN_DELETE'        => $this->kb->acl_kb_get($cat_id, 'kb_m_delete') || ($this->user->data['user_id'] == $row['author_id'] && $this->kb->acl_kb_get($cat_id, 'kb_u_delete') || $this->auth->acl_get('a_manage_kb')),
+			'S_CAN_APPROVE'       => $this->auth->acl_get('a_manage_kb') || $this->kb->acl_kb_get($cat_id, 'kb_m_approve'),
+			'COUNT_COMMENTS'      => ($comment_topic_id) ? '[' . $this->language->lang('LEAVE_COMMENTS') . ']' : '',
+			'U_FORUM'             => generate_board_url() . '/',
+			'S_APPROVED'          => $row['approved'],
+			'S_KNOWLEDGEBASE'     => true,
+			'LIBRARY'             => $this->language->lang('LIBRARY'),
+		]);
 
 		if ($mode != 'print' && $row['approved'])
 		{
 			// Increase the number of views
-			++$views;
+			$views++;
 			$sql = 'UPDATE ' . $this->articles_table . '
 				SET views = ' . $views . '
 				WHERE article_id = ' . (int) $article;
 			$this->db->sql_query($sql);
 		}
 
-		$this->template->assign_block_vars('navlinks', array(
-				'FORUM_NAME'   => $this->language->lang('LIBRARY'),
-				'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_index'),
-			)
-		);
+		$this->template->assign_block_vars('navlinks', [
+			'FORUM_NAME'   => $this->language->lang('LIBRARY'),
+			'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_index'),
+		]);
 
 		foreach ($this->kb->get_category_branch($cat_id, 'parents') as $row)
 		{
-			$this->template->assign_block_vars('navlinks', array(
-					'FORUM_NAME'   => $row['category_name'],
-					'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_category', array('id' => $row['category_id'])),
-				)
-			);
+			$this->template->assign_block_vars('navlinks', [
+				'FORUM_NAME'   => $row['category_name'],
+				'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_category', ['id' => $row['category_id']]),
+			]);
 		}
 
 		$html_template = (($mode != 'print')) ? 'kb_article_body.html' : 'kb_article_body_print.html';

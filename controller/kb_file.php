@@ -11,22 +11,26 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\db\driver\driver_interface;
+use phpbb\extension\manager;
+use phpbb\language\language;
+use phpbb\request\request_interface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class kb_file
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	protected language $language;
 
 	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	protected request_interface $request;
 
 	/** @var \phpbb\extension\manager */
-	protected \phpbb\extension\manager $ext_manager;
+	protected manager $ext_manager;
 
 	/** @var string */
 	protected string $attachments_table;
@@ -34,18 +38,14 @@ class kb_file
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface $db
-	 * @param \phpbb\language\language          $language
-	 * @param \phpbb\request\request_interface  $request
-	 * @param \phpbb\extension\manager          $ext_manager
-	 * @param string                            $attachments_table
+	 * @param driver_interface  $db
+	 * @param language          $language
+	 * @param request_interface $request
+	 * @param manager           $ext_manager
+	 * @param string            $attachments_table
 	 */
 	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\language\language $language,
-		\phpbb\request\request_interface $request,
-		\phpbb\extension\manager $ext_manager,
-		string $attachments_table
+		driver_interface $db, language $language, request_interface $request, manager $ext_manager, string $attachments_table
 	)
 	{
 		$this->db = $db;
@@ -72,8 +72,8 @@ class kb_file
 		}
 
 		$sql = 'SELECT attach_id, is_orphan, physical_filename, real_filename, extension, mimetype, filesize, filetime
-			FROM ' . $this->attachments_table . "
-			WHERE attach_id = $attach_id";
+			FROM ' . $this->attachments_table . '
+			WHERE attach_id = ' . $attach_id;
 		$result = $this->db->sql_query($sql);
 		$attachment = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
@@ -95,7 +95,7 @@ class kb_file
 		// Content-type header
 		$response->headers->set('Content-Type', $attachment['mimetype']);
 		// Display file types in browser and force download for others
-		if (strpos($attachment['mimetype'], 'image') !== false)
+		if (str_contains($attachment['mimetype'], 'image'))
 		{
 			$disposition = $response->headers->makeDisposition(
 				ResponseHeaderBag::DISPOSITION_INLINE,
@@ -127,7 +127,11 @@ class kb_file
 	 * Remove non valid characters
 	 * https://github.com/symfony/http-foundation/commit/c7df9082ee7205548a97031683bc6550b5dc9551
 	 */
-	protected function filenameFallback($filename)
+	/**
+	 * @param $filename
+	 * @return bool|string
+	 */
+	protected function filenameFallback($filename): bool|string
 	{
 		$filename = preg_replace(['/[^\x20-\x7e]/', '/%/', '/\//', '/\\\/'], '', $filename);
 		return (!empty($filename)) ?: 'File';

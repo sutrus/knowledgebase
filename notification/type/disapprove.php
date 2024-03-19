@@ -11,6 +11,9 @@
 
 namespace sheer\knowledgebase\notification\type;
 
+use phpbb\controller\helper;
+use phpbb\user_loader;
+
 class disapprove extends \phpbb\notification\type\base
 {
 	/**
@@ -19,14 +22,14 @@ class disapprove extends \phpbb\notification\type\base
 	 * @var bool|array False if the service should use its default data
 	 *                    Array of data (including keys 'id', 'lang', and 'group')
 	 */
-	public static $notification_option = array(
+	public static $notification_option = [
 		'lang'  => 'NOTIFICATION_TYPE_ARTICLE_DISAPPROVE',
 		'group' => 'NOTIFICATION_GROUP_MISCELLANEOUS',
-	);
+	];
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 	/** @var \phpbb\user_loader */
-	protected \phpbb\user_loader $user_loader;
+	protected user_loader $user_loader;
 
 	/**
 	 * Get the id of the item
@@ -56,7 +59,7 @@ class disapprove extends \phpbb\notification\type\base
 	 * @param \phpbb\controller\helper $helper
 	 * @return void
 	 */
-	public function set_controller_helper(\phpbb\controller\helper $helper)
+	public function set_controller_helper(helper $helper): void
 	{
 		$this->helper = $helper;
 	}
@@ -64,7 +67,7 @@ class disapprove extends \phpbb\notification\type\base
 	/* Is available
 	*/
 
-	public function set_user_loader(\phpbb\user_loader $user_loader)
+	public function set_user_loader(user_loader $user_loader): void
 	{
 		$this->user_loader = $user_loader;
 	}
@@ -118,13 +121,11 @@ class disapprove extends \phpbb\notification\type\base
 	 *
 	 * @return array
 	 */
-	public function find_users_for_notification($type_data, $options = array()): array
+	public function find_users_for_notification($type_data, $options = []): array
 	{
-		$options = array_merge(array(
-			'ignore_users' => array(),
-		), $options);
+		$options = array_merge(['ignore_users' => [],], $options);
 
-		$users = array((int) $type_data['author_id']);
+		$users = [(int) $type_data['author_id']];
 		return $this->check_user_notification_options($users, $options);
 	}
 
@@ -135,7 +136,7 @@ class disapprove extends \phpbb\notification\type\base
 	 */
 	public function users_to_query(): array
 	{
-		return array($this->get_data('moderator'));
+		return [$this->get_data('moderator')];
 	}
 
 	/**
@@ -164,7 +165,7 @@ class disapprove extends \phpbb\notification\type\base
 	 */
 	public function get_url(): string
 	{
-		return $this->helper->route('sheer_knowledgebase_index', array());
+		return $this->helper->route('sheer_knowledgebase_index', []);
 	}
 
 	/**
@@ -185,11 +186,11 @@ class disapprove extends \phpbb\notification\type\base
 	public function get_email_template_variables(): array
 	{
 		$username = $this->user_loader->get_username($this->get_data('user'), 'username');
-		return array(
+		return [
 			'USERNAME'      => htmlspecialchars_decode($username),
 			'MODERATOR'     => htmlspecialchars_decode($this->user_loader->get_username($this->get_data('author_id'), 'username')),
 			'ARTICLE_TITLE' => htmlspecialchars_decode(censor_text($this->get_data('title'))),
-		);
+		];
 	}
 
 	/**
@@ -252,21 +253,18 @@ class disapprove extends \phpbb\notification\type\base
 
 		$sql_where = ($category_id) ? ' AND category_id = ' . $category_id : '';
 
-		$moderators = $groups = $exclude = array();
+		$moderators = $groups = $exclude = [];
 
-		$sql = 'SELECT auth_option_id
-			FROM ' . $kb_options_table . '
-			WHERE auth_option LIKE \'' . $auth . '\'
-			AND is_local = 1';
+		$sql = 'SELECT auth_option_id FROM ' . $kb_options_table .
+			' WHERE auth_option LIKE \'' . $auth . '\' AND is_local = 1';
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$auth_option_id = $row['auth_option_id'];
 		$this->db->sql_freeresult($result);
 
-		$sql = 'SELECT user_id FROM ' . $kb_users_table . '
-			WHERE auth_option_id = ' . (int) $auth_option_id . '
-				AND auth_setting = 1
-				' . $sql_where;
+		$sql = 'SELECT user_id FROM ' . $kb_users_table .
+			' WHERE auth_option_id = ' . (int) $auth_option_id .
+			' AND auth_setting = 1' . $sql_where;
 		$result = $this->db->sql_query($sql);
 		while ($row = $this->db->sql_fetchrow($result))
 		{

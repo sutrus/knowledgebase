@@ -11,6 +11,9 @@
 
 namespace sheer\knowledgebase\notification\type;
 
+use phpbb\controller\helper;
+use phpbb\user_loader;
+
 class need_approval extends \phpbb\notification\type\base
 {
 	/**
@@ -19,14 +22,14 @@ class need_approval extends \phpbb\notification\type\base
 	 * @var bool|array False if the service should use its default data
 	 *                 Array of data (including keys 'id', 'lang', and 'group')
 	 */
-	public static $notification_option = array(
+	public static $notification_option = [
 		'lang'  => 'NOTIFICATION_TYPE_NEED_APPROVAL',
 		'group' => 'NOTIFICATION_GROUP_MODERATION',
-	);
+	];
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 	/** @var \phpbb\user_loader */
-	protected \phpbb\user_loader $user_loader;
+	protected user_loader $user_loader;
 
 	/**
 	 * Get the id of the item
@@ -94,7 +97,7 @@ class need_approval extends \phpbb\notification\type\base
 			$auth_approve = $this->auth->acl_get_list(false, 'a_manage_kb');
 			if (empty($auth_approve))
 			{
-				$auth_approve[0]['a_manage_kb'] = array();
+				$auth_approve[0]['a_manage_kb'] = [];
 			}
 
 			$has_permission = $this->check_permission('kb_m_approve', 0);
@@ -123,7 +126,7 @@ class need_approval extends \phpbb\notification\type\base
 
 		$sql_where = ($category_id) ? ' AND category_id = ' . $category_id : '';
 
-		$moderators = $groups = $exclude = array();
+		$moderators = $groups = $exclude = [];
 
 		$sql = 'SELECT auth_option_id
 			FROM ' . $table_prefix . 'kb_options' . '
@@ -196,7 +199,7 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return array
 	 */
-	public function find_users_for_notification($type_data, $options = array()): array
+	public function find_users_for_notification($type_data, $options = []): array
 	{
 		$options = array_merge([
 			'ignore_users' => [],
@@ -205,7 +208,7 @@ class need_approval extends \phpbb\notification\type\base
 		$auth_approve = $this->auth->acl_get_list(false, 'a_manage_kb');
 		if (empty($auth_approve))
 		{
-			$auth_approve[0]['a_manage_kb'] = array();
+			$auth_approve[0]['a_manage_kb'] = [];
 		}
 		$auth = 'kb_m_approve';
 
@@ -223,7 +226,7 @@ class need_approval extends \phpbb\notification\type\base
 	 */
 	public function users_to_query(): array
 	{
-		return array($this->get_data('author_id'));
+		return [$this->get_data('author_id')];
 	}
 
 	/**
@@ -251,7 +254,7 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return array|string
 	 */
-	public function get_title()
+	public function get_title(): array|string
 	{
 		$username = $this->user_loader->get_username($this->get_data('author_id'), 'no_profile');
 		return $this->language->lang('NOTIFICATION_NEED_APPROVAL', $username);
@@ -264,9 +267,9 @@ class need_approval extends \phpbb\notification\type\base
 	 */
 	public function get_url(): string
 	{
-		return $this->helper->route('sheer_knowledgebase_article', array(
+		return $this->helper->route('sheer_knowledgebase_article', [
 			'k' => $this->get_data('item_id'),
-		));
+		]);
 	}
 
 	/**
@@ -287,12 +290,12 @@ class need_approval extends \phpbb\notification\type\base
 	public function get_email_template_variables(): array
 	{
 		$username = $this->user_loader->get_username($this->get_data('author_id'), 'username');
-		return array(
+		return [
 			//'USERNAME'			=> htmlspecialchars_decode($this->user->data['username']),
 			'ARTICLE_TITLE'  => htmlspecialchars_decode(censor_text($this->get_data('title'))),
 			'POSTER_NAME'    => htmlspecialchars_decode($username),
 			'U_VIEW_ARTICLE' => generate_board_url() . '/knowledgebase/article?k=' . $this->get_data('item_id'),
-		);
+		];
 	}
 
 	/**
@@ -330,7 +333,7 @@ class need_approval extends \phpbb\notification\type\base
 	 *
 	 * @return void Array of data ready to be inserted into the database
 	 */
-	public function create_insert_array($type_data, $pre_create_data = array())
+	public function create_insert_array($type_data, $pre_create_data = []): void
 	{
 		$this->set_data('author_id', $type_data['author_id']);
 		$this->set_data('title', $type_data['title']);

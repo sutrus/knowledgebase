@@ -11,57 +11,74 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\auth\auth;
+use phpbb\cache\driver\driver_interface as cache;
+use phpbb\config\config;
+use phpbb\controller\helper;
+use phpbb\db\driver\driver_interface;
+use phpbb\extension\manager;
+use phpbb\files\factory;
+use phpbb\language\language;
+use phpbb\log\log;
+use phpbb\notification\manager as notification_manager;
+use phpbb\plupload\plupload;
+use phpbb\request\request_interface;
+use phpbb\template\template;
+use phpbb\user;
 use RuntimeException;
+use sheer\knowledgebase\inc\functions_kb;
+use sheer\knowledgebase\search\kb_search_backend_factory;
+use Symfony\Component\HttpFoundation\Response;
 
 class posting
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	protected config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 
 	/** @var \phpbb\extension\manager */
-	protected \phpbb\extension\manager $ext_manager;
+	protected manager $ext_manager;
 
 	/** @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	protected language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected \phpbb\auth\auth $auth;
+	protected auth $auth;
 
 	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	protected request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected \phpbb\template\template $template;
+	protected template $template;
 
 	/** @var \phpbb\user */
-	protected \phpbb\user $user;
+	protected user $user;
 
 	/** @var \phpbb\cache\driver\driver_interface */
-	protected \phpbb\cache\driver\driver_interface $cache;
+	protected cache $cache;
 
 	/** @var \phpbb\log\log */
-	protected $log;
+	protected log $log;
 
 	/** @var \phpbb\files\factory */
-	protected \phpbb\files\factory $files_factory;
+	protected factory $files_factory;
 
 	/* @var \phpbb\plupload\plupload */
-	protected \phpbb\plupload\plupload $plupload;
+	protected plupload $plupload;
 
 	/** @var \phpbb\notification\manager */
-	protected \phpbb\notification\manager $notification_manager;
+	protected notification_manager $notification_manager;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected \sheer\knowledgebase\inc\functions_kb $kb;
+	protected functions_kb $kb;
 
 	/** @var \sheer\knowledgebase\search\kb_search_backend_factory */
-	protected \sheer\knowledgebase\search\kb_search_backend_factory $search_factory;
+	protected kb_search_backend_factory $search_factory;
 
 	/** @var string */
 	protected string $phpbb_root_path;
@@ -87,52 +104,36 @@ class posting
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface                     $db
-	 * @param \phpbb\config\config                                  $config
-	 * @param \phpbb\controller\helper                              $helper
-	 * @param \phpbb\extension\manager                              $ext_manager
-	 * @param \phpbb\language\language                              $language
-	 * @param \phpbb\auth\auth                                      $auth
-	 * @param \phpbb\request\request_interface                      $request
-	 * @param \phpbb\template\template                              $template
-	 * @param \phpbb\user                                           $user
-	 * @param \phpbb\cache\driver\driver_interface                  $cache
-	 * @param \phpbb\log\log_interface                              $log
-	 * @param \phpbb\files\factory                                  $files_factory
-	 * @param \phpbb\plupload\plupload                              $plupload
-	 * @param \phpbb\notification\manager                           $notification_manager
-	 * @param \sheer\knowledgebase\inc\functions_kb                 $kb
-	 * @param \sheer\knowledgebase\search\kb_search_backend_factory $search_factory
-	 * @param string                                                $phpbb_root_path
-	 * @param string                                                $php_ext
-	 * @param string                                                $logs_table
-	 * @param string                                                $articles_table
-	 * @param string                                                $categories_table
-	 * @param string                                                $attachments_table
+	 * @param driver_interface          $db
+	 * @param config                    $config
+	 * @param helper                    $helper
+	 * @param manager                   $ext_manager
+	 * @param language                  $language
+	 * @param auth                      $auth
+	 * @param request_interface         $request
+	 * @param template                  $template
+	 * @param user                      $user
+	 * @param cache                     $cache
+	 * @param log                       $log
+	 * @param factory                   $files_factory
+	 * @param plupload                  $plupload
+	 * @param notification_manager      $notification_manager
+	 * @param functions_kb              $kb
+	 * @param kb_search_backend_factory $search_factory
+	 * @param string                    $phpbb_root_path
+	 * @param string                    $php_ext
+	 * @param string                    $logs_table
+	 * @param string                    $articles_table
+	 * @param string                    $categories_table
+	 * @param string                    $attachments_table
 	 */
 	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\config\config $config,
-		\phpbb\controller\helper $helper,
-		\phpbb\extension\manager $ext_manager,
-		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
-		\phpbb\request\request_interface $request,
-		\phpbb\template\template $template,
-		\phpbb\user $user,
-		\phpbb\cache\driver\driver_interface $cache,
-		\phpbb\log\log_interface $log,
-		\phpbb\files\factory $files_factory,
-		\phpbb\plupload\plupload $plupload,
-		\phpbb\notification\manager $notification_manager,
-		\sheer\knowledgebase\inc\functions_kb $kb,
-		\sheer\knowledgebase\search\kb_search_backend_factory $search_factory,
-		string $phpbb_root_path,
-		string $php_ext,
-		string $logs_table,
-		string $articles_table,
-		string $categories_table,
-		string $attachments_table
+		driver_interface $db, config $config, helper $helper, manager $ext_manager, language $language, auth $auth,
+		request_interface $request, template $template, user $user, cache $cache, log $log, factory $files_factory,
+		plupload $plupload, notification_manager $notification_manager, functions_kb $kb,
+		kb_search_backend_factory $search_factory,
+		string $phpbb_root_path, string $php_ext, string $logs_table, string $articles_table,
+		string $categories_table, string $attachments_table
 	)
 	{
 		$this->db = $db;
@@ -161,14 +162,14 @@ class posting
 		$this->upload_dir = $this->ext_manager->get_extension_path('sheer/knowledgebase', true) . 'files/';
 	}
 
-	public function post_article(): \Symfony\Component\HttpFoundation\Response
+	public function post_article(): Response
 	{
 		if (!$this->auth->acl_get('u_kb_view') && !$this->auth->acl_get('a_manage_kb'))
 		{
 			trigger_error($this->language->lang('NOT_AUTHORISED'));
 		}
 
-		$this->language->add_lang(array('plupload', 'posting'));
+		$this->language->add_lang(['plupload', 'posting']);
 		$this->log->set_log_table($this->logs_table);
 
 		$fid = $this->config['kb_forum_id'];
@@ -178,8 +179,8 @@ class posting
 			trigger_error('WARNING_DEFAULT_CONFIG');
 		}
 
-		$cat_id = $this->request->variable('id', 0);
-		$art_id = $this->request->variable('k', 0);
+		$cat_id = (int) $this->request->variable('id', 0);
+		$art_id = (int) $this->request->variable('k', 0);
 		$mode = $this->request->variable('mode', '');
 
 		if (!$this->kb->acl_kb_get($cat_id, 'kb_u_add'))
@@ -193,7 +194,7 @@ class posting
 		{
 			$sql = 'SELECT DISTINCT a.*, c.category_name, c.category_id
 				FROM ' . $this->articles_table . ' a, ' . $this->categories_table . ' c
-				WHERE article_id = ' . (int) $art_id . '
+				WHERE article_id = ' . $art_id . '
 					AND (c.category_id = a.article_category_id)';
 			$result = $this->db->sql_query($sql);
 			$row = $this->db->sql_fetchrow($result);
@@ -225,7 +226,7 @@ class posting
 		catch (RuntimeException $e)
 		{
 			$kb_search = false;
-			if (strpos($e->getMessage(), 'No service found') === 0)
+			if (str_starts_with($e->getMessage(), 'No service found'))
 			{
 				trigger_error('NO_SUCH_SEARCH_MODULE');
 			}
@@ -235,14 +236,14 @@ class posting
 			}
 		}
 
-		$error = array();
+		$error = [];
 		$submit = $this->request->is_set_post('submit');
 		$preview = $this->request->is_set_post('preview');
 		$cancel = $this->request->is_set_post('cancel');
 		$delete = $this->request->is_set_post('delete');
 		$edit = $mode == 'edit';
 
-		$action = $this->helper->route('sheer_knowledgebase_posting', array('id' => $cat_id));
+		$action = $this->helper->route('sheer_knowledgebase_posting', ['id' => $cat_id]);
 
 		if ($mode == 'delete' || $delete)
 		{
@@ -251,9 +252,10 @@ class posting
 				trigger_error('RULES_KB_MOD_DELETE_CANNOT');
 			}
 
-			$s_hidden_fields = build_hidden_fields(array(
+			$s_hidden_fields = build_hidden_fields([
 					'mode' => 'delete',
-					'k'    => $art_id)
+					'k'    => $art_id,
+				]
 			);
 
 			if (confirm_box(true))
@@ -267,7 +269,7 @@ class posting
 					$kb_search->index_remove($art_ids, $author_ids);
 				}
 				$msg = $this->language->lang('ARTICLE_DELETED');
-				$root = $this->helper->route('sheer_knowledgebase_category', array('id' => $cat_id));
+				$root = $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id]);
 				$msg .= '<br><br>' . sprintf($this->language->lang('RETURN_CAT'), '<a href="' . $root . '">', '</a>');
 				$this->cache->destroy('sql', $this->categories_table);
 				$this->cache->destroy('sql', $this->articles_table);
@@ -282,23 +284,23 @@ class posting
 
 		if ($mode == 'edit')
 		{
-			$to_id = $this->request->variable('to_id', 0);
+			$to_id = (int) $this->request->variable('to_id', 0);
 			if (empty($art_id))
 			{
 				trigger_error($this->language->lang('NO_ID_SPECIFIED'));
 			}
 
-			$action = $this->helper->route('sheer_knowledgebase_posting', array('mode' => 'edit', 'k' => $art_id, 'id' => $cat_id));
+			$action = $this->helper->route('sheer_knowledgebase_posting', ['mode' => 'edit', 'k' => $art_id, 'id' => $cat_id]);
 
 			$uid = $bitfield = $options = '';
 
-			$article_title = $row['article_title'];
-			$article_text = $row['article_body'];
-			$article_description = $row['article_description'];
-			$article_author = $row['author'];
-			$views = $row['views'];
-			$article_date = $row['article_date'];
-			$order = $row['display_order'];
+			$article_title = (string) $row['article_title'];
+			$article_text = (string) $row['article_body'];
+			$article_description = (string) $row['article_description'];
+			$article_author = (string) $row['author'];
+			$views = (int) $row['views'];
+			$article_date = (int) $row['article_date'];
+			$order = (int) $row['display_order'];
 
 			$article_text = $this->decode_message($article_text, $row['bbcode_uid']);
 
@@ -346,7 +348,7 @@ class posting
 				// generate_text_for_storage function
 				generate_text_for_storage($article_text, $bbcode_uid, $bbcode_bitfield, $options, true, true, true);
 
-				$sql_data = array(
+				$sql_data = [
 					'article_category_id' => $cat_id,
 					'article_title'       => $article_title,
 					'article_description' => $article_description,
@@ -357,9 +359,9 @@ class posting
 					'views'               => 0,
 					'author'              => $this->user->data['username'],
 					'approved'            => ($this->kb->acl_kb_get($cat_id, 'kb_u_add_noapprove')) ? 1 : 0,
-				);
+				];
 
-				$root = $this->helper->route('sheer_knowledgebase_category', array('id' => $cat_id));
+				$root = $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id]);
 
 				if ($mode == 'edit')
 				{
@@ -368,45 +370,45 @@ class posting
 					$sql_data['views'] = $views;
 					$sql_data['article_date'] = $article_date;
 					$sql_data['edit_date'] = time();
-					$redirect = $this->helper->route('sheer_knowledgebase_article', array('k' => $art_id));
+					$redirect = $this->helper->route('sheer_knowledgebase_article', ['k' => $art_id]);
 
-					if ($cat_id != $to_id) // Move article to another category
+					if ($cat_id !== $to_id) // Move article to another category
 					{
 						$sql_data['article_category_id'] = $to_id;
 						$sql_data['display_order'] = 0;
 					}
 
 					$sql = 'UPDATE ' . $this->articles_table . '
-						SET ' . $this->db->sql_build_array('UPDATE', $sql_data) . "
-						WHERE article_id = $art_id";
+						SET ' . $this->db->sql_build_array('UPDATE', $sql_data) . '
+						WHERE article_id = ' . $art_id;
 					$this->db->sql_query($sql);
 
 					if ($cat_id != $to_id) // Move article to another category
 					{
 						$sql = 'UPDATE ' . $this->categories_table . '
 							SET number_articles = number_articles - 1
-							WHERE category_id = ' . (int) $cat_id;
+							WHERE category_id = ' . $cat_id;
 						$this->db->sql_query($sql);
 
 						$sql = 'UPDATE ' . $this->categories_table . '
 							SET number_articles = number_articles + 1
-							WHERE category_id = ' . (int) $to_id;
+							WHERE category_id = ' . $to_id;
 						$this->db->sql_query($sql);
 
 						$sql = 'UPDATE ' . $this->articles_table . ' SET display_order = display_order + 1
-							WHERE article_category_id = ' . (int) $to_id;
+							WHERE article_category_id = ' . $to_id;
 						$this->db->sql_query($sql);
 
 						$sql = 'UPDATE ' . $this->articles_table . ' SET display_order = display_order - 1
-							WHERE article_category_id = ' . (int) $cat_id . '
-							AND display_order > ' . (int) $order;
+							WHERE article_category_id = ' . $cat_id . '
+							AND display_order > ' . $order;
 						$this->db->sql_query($sql);
 					}
 
 					// Upd search index
 					if ($kb_search)
 					{
-						$kb_search->index('edit', (int) $art_id, $article_text, $article_title, $article_description, (int) $article_author_id);
+						$kb_search->index('edit', $art_id, $article_text, $article_title, $article_description, (int) $article_author_id);
 					}
 
 					$this->insert_attachments($attachment_data, $art_id);
@@ -414,15 +416,15 @@ class posting
 					$msg = $this->language->lang('ARTICLE_EDITED');
 					$msg .= '<br><br>' . sprintf($this->language->lang('RETURN_ARTICLE'), '<a href="' . $redirect . '">', '</a>');
 					$msg .= '<br><br>' . sprintf($this->language->lang('RETURN_CAT'), '<a href="' . $root . '">', '</a>');
-					$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_EDIT_ARTICLE', time(), array($article_title, $category_name));
+					$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_EDIT_ARTICLE', time(), [$article_title, $category_name]);
 				}
 				else
 				{
 					$sql = 'UPDATE ' . $this->articles_table . ' SET display_order = display_order + 1
-						WHERE article_category_id = ' . (int) $cat_id;
+						WHERE article_category_id = ' . $cat_id;
 					$this->db->sql_query($sql);
 
-					$sql_data = array_merge($sql_data, array('display_order' => 1));
+					$sql_data = array_merge($sql_data, ['display_order' => 1]);
 					$sql = 'INSERT INTO ' . $this->articles_table . '
 						' . $this->db->sql_build_array('INSERT', $sql_data);
 					$this->db->sql_query($sql);
@@ -433,12 +435,12 @@ class posting
 					$this->config->increment('kb_num_articles', 1);
 					$sql = 'UPDATE ' . $this->categories_table . '
 						SET number_articles = ' . $articles_count . '
-						WHERE category_id = ' . (int) $cat_id;
+						WHERE category_id = ' . $cat_id;
 					$this->db->sql_query($sql);
 
 					if ($this->kb->acl_kb_get($cat_id, 'kb_u_add_noapprove'))
 					{
-						$redirect = $this->helper->route('sheer_knowledgebase_article', array('k' => $new));
+						$redirect = $this->helper->route('sheer_knowledgebase_article', ['k' => $new]);
 
 						if (isset($kb_search))
 						{
@@ -457,15 +459,15 @@ class posting
 					else
 					{
 						$msg = $this->language->lang('ARTICLE_NEED_APPROVE');
-						$redirect = $this->helper->route('sheer_knowledgebase_category', array('id' => $cat_id));
+						$redirect = $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id]);
 
 						// Add notification
-						$notification_data = array(
+						$notification_data = [
 							'author_id'           => $this->user->data['user_id'],
 							'title'               => $article_title,
 							'article_category_id' => $cat_id,
 							'item_id'             => $new,
-						);
+						];
 						$this->notification_manager->add_notifications('sheer.knowledgebase.notification.type.need_approval', $notification_data);
 					}
 
@@ -473,7 +475,7 @@ class posting
 					$this->cache->destroy('sql', $this->articles_table);
 
 					$msg .= '<br><br>' . sprintf($this->language->lang('RETURN_CAT'), '<a href="' . $root . '">', '</a>');
-					$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_ADD_ARTICLE', time(), array($article_title, $category_name));
+					$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_ADD_ARTICLE', time(), [$article_title, $category_name]);
 				}
 				meta_refresh(2, $redirect);
 				trigger_error($msg);
@@ -493,7 +495,7 @@ class posting
 		}
 		if ($cancel)
 		{
-			redirect($this->helper->route('sheer_knowledgebase_category', array('id' => $cat_id)));
+			redirect($this->helper->route('sheer_knowledgebase_category', ['id' => $cat_id]));
 		}
 
 		if ($preview)
@@ -521,14 +523,14 @@ class posting
 				$this->kb->parse_att($preview_text, $attachment_data);
 			}
 
-			$this->template->assign_vars(array(
+			$this->template->assign_vars([
 					'PREVIEW_MESSAGE' => $preview_text,
 					'PREVIEW_SUBJECT' => $article_title,
-				)
+				]
 			);
 		}
 
-		$this->template->assign_vars(array(
+		$this->template->assign_vars([
 				'L_POST_A'          => ($mode == 'edit') ? $this->language->lang('EDIT_ARTICLE') : $this->language->lang('ADD_ARTICLE'),
 				'CATEGORY_NAME'     => $category_name,
 				'DESCR'             => $article_description,
@@ -566,54 +568,67 @@ class posting
 				'S_ATTACH_DATA'           => (count($attachment_data)) ? json_encode($attachment_data) : '[]',
 				'MAX_ATTACHMENT_FILESIZE' => $this->config['kb_max_filesize'] > 0 ? $this->language->lang('MAX_ATTACHMENT_FILESIZE', get_formatted_filesize($this->config['kb_max_filesize'])) : '',
 
-				'CATS_BOX' => '<option value="0" disabled="disabled">' . $this->language->lang('CATEGORIES_LIST') . '</option>' . $this->kb->make_category_select($cat_id, false, false),
+				'CATS_BOX' => '<option value="0" disabled="disabled">' . $this->language->lang('CATEGORIES_LIST') . '</option>' . $this->kb->make_category_select($cat_id, [], false),
 
 				'U_KB'           => $this->helper->route('sheer_knowledgebase_index'),
 				'S_POST_ACTION'  => $action,
 				'S_POST_ARTICLE' => true,
-			)
+			]
 		);
 
-		$this->template->assign_block_vars('navlinks', array(
+		$this->template->assign_block_vars('navlinks', [
 				'FORUM_NAME'   => $this->language->lang('LIBRARY'),
 				'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_index'),
-			)
+			]
 		);
 
 		foreach ($this->kb->get_category_branch($cat_id, 'parents') as $row)
 		{
-			$this->template->assign_block_vars('navlinks', array(
+			$this->template->assign_block_vars('navlinks', [
 					'FORUM_NAME'   => $row['category_name'],
-					'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_category', array('id' => $row['category_id'])),
-				)
+					'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_category', ['id' => $row['category_id']]),
+				]
 			);
 		}
 
-		$title = ($mode == 'edit') ? $this->language->lang('EDIT_ARTICLE') : $this->language->lang('ADD_ARTICLE');
+		$title = $mode == 'edit' ? $this->language->lang('EDIT_ARTICLE') : $this->language->lang('ADD_ARTICLE');
 
 		return $this->helper->render('@sheer_knowledgebase/kb_post_body.html', ($this->language->lang('LIBRARY') . ' &raquo; ' . $title));
 	}
 
-	public function decode_message($message, $bbcode_uid = '')
+	/**
+	 * @param        $message
+	 * @param string $bbcode_uid
+	 * @return array|string|null
+	 */
+	public function decode_message($message, string $bbcode_uid = ''): array|string|null
 	{
 		if ($bbcode_uid)
 		{
-			$match = array('<br>', "[/*:m:$bbcode_uid]", ":u:$bbcode_uid", ":o:$bbcode_uid", ":$bbcode_uid");
-			$replace = array("\n", '', '', '', '');
+			$match = ['<br>', '[/*:m:' . $bbcode_uid . ']', ':u:' . $bbcode_uid, ':o:' . $bbcode_uid, ':' . $bbcode_uid];
+			$replace = ["\n", '', '', '', ''];
 		}
 		else
 		{
-			$match = array('<br>');
-			$replace = array("\n");
+			$match = ['<br>'];
+			$replace = ["\n"];
 		}
 
 		$message = str_replace($match, $replace, $message);
 		$match = get_preg_expression('bbcode_htm');
-		$replace = array('\1', '\1', '\2', '\1', '', '');
+		$replace = ['\1', '\1', '\2', '\1', '', ''];
 		return preg_replace($match, $replace, $message);
 	}
 
-	public function kb_parse_attachments($art_id, &$attachment_data, $preview, $edit, $submit)
+	/**
+	 * @param $art_id
+	 * @param $attachment_data
+	 * @param $preview
+	 * @param $edit
+	 * @param $submit
+	 * @return void
+	 */
+	public function kb_parse_attachments($art_id, &$attachment_data, $preview, $edit, $submit): void
 	{
 		$delete_file = $this->request->is_set_post('delete_file');
 		$add_file = $this->request->is_set_post('add_file');
@@ -623,10 +638,10 @@ class posting
 
 		$this->plupload->set_upload_directories($this->upload_dir, $this->upload_dir . '/plupload');
 
-		$attachment_data = $this->request->variable('attachment_data', array(0 => array('' => '')), true, \phpbb\request\request_interface::POST);
+		$attachment_data = $this->request->variable('attachment_data', [['' => '']], true, \phpbb\request\request_interface::POST);
 
 		// First of all adjust comments if changed
-		$actual_comment_list = $this->request->variable('comment_list', array(''), true);
+		$actual_comment_list = $this->request->variable('comment_list', [''], true);
 
 		foreach ($actual_comment_list as $comment_key => $comment)
 		{
@@ -643,7 +658,7 @@ class posting
 
 		if ($delete_file)
 		{
-			$index = array_keys($this->request->variable('delete_file', array(0 => 0)));
+			$index = array_keys($this->request->variable('delete_file', [0]));
 			$index = (!empty($index)) ? $index[0] : false;
 
 			if ($index !== false && !empty($attachment_data[$index]))
@@ -655,8 +670,8 @@ class posting
 				$filename = $this->db->sql_fetchfield('physical_filename');
 				$this->db->sql_freeresult($result);
 
-				@unlink($this->upload_dir . $filename);
-				@unlink($this->upload_dir . 'thumb_' . $filename);
+				unlink($this->upload_dir . $filename);
+				unlink($this->upload_dir . 'thumb_' . $filename);
 
 				$sql = 'DELETE FROM ' . $this->attachments_table . ' WHERE attach_id = ' . (int) $attachment_data[$index]['attach_id'];
 				$this->db->sql_query($sql);
@@ -669,7 +684,7 @@ class posting
 		}
 		else if ($add_file)
 		{
-			$error = array();
+			$error = [];
 
 			if ((empty($filename) || $filename['name'] === 'none'))
 			{
@@ -719,7 +734,7 @@ class posting
 							$thumbnail = create_thumbnail($this->upload_dir . $upload_file->get('realname'), $this->upload_dir . 'thumb_' . $upload_file->get('realname'), $upload_file->get('mimetype'));
 						}
 
-						$sql_ary = array(
+						$sql_ary = [
 							'poster_id'         => $this->user->data['user_id'],
 							'physical_filename' => $upload_file->get('realname'),
 							'real_filename'     => $upload_file->get('uploadname'),
@@ -729,11 +744,11 @@ class posting
 							'mimetype'          => $upload_file->get('mimetype'),
 							'attach_comment'    => '',
 							'thumbnail'         => ($thumbnail) ? 1 : 0,
-						);
+						];
 
 						$this->db->sql_query('INSERT INTO ' . $this->attachments_table . ' ' . $this->db->sql_build_array('INSERT', $sql_ary));
 						$new = $this->db->sql_nextid();
-						$new_entry = array(
+						$new_entry = [
 							'attach_id'         => $new,
 							'is_orphan'         => 1,
 							'real_filename'     => $upload_file->get('uploadname'),
@@ -744,31 +759,39 @@ class posting
 							'mimetype'          => $upload_file->get('mimetype'),
 							'attach_comment'    => '',
 							'thumbnail'         => ($thumbnail) ? 1 : 0,
-						);
-						$attachment_data = array_merge(array(0 => $new_entry), $attachment_data);
+						];
+						$attachment_data = array_merge([$new_entry], $attachment_data);
 						$download_url = 'kb_file?id=' . $new;
-						$json_response->send(array('data' => $attachment_data, 'download_url' => $download_url));
+						$json_response->send(['data' => $attachment_data, 'download_url' => $download_url]);
 					}
 				}
 			}
 
 			if (count($error))
 			{
-				$json_response->send(array(
+				$json_response->send([
 					'jsonrpc' => '2.0',
 					'id'      => 'id',
-					'error'   => array(
+					'error'   => [
 						'code'    => 105,
 						'message' => current($error),
-					),
-				));
+					],
+				]);
 			}
 		}
 		$this->get_kb_submitted_attachments($art_id, $attachment_data, $preview, $edit, $submit);
 		$this->plupload->set_upload_directories($this->config['upload_path'], $this->config['upload_path'] . '/plupload');
 	}
 
-	public function get_kb_submitted_attachments($art_id, &$attachment_data, $preview, $edit, $submit)
+	/**
+	 * @param $art_id
+	 * @param $attachment_data
+	 * @param $preview
+	 * @param $edit
+	 * @param $submit
+	 * @return void
+	 */
+	public function get_kb_submitted_attachments($art_id, &$attachment_data, $preview, $edit, $submit): void
 	{
 		if ($art_id && !$preview && !($edit && $submit))
 		{
@@ -804,7 +827,7 @@ class posting
 					$hidden .= '<input type="hidden" name="attachment_data[' . $count . '][' . $key . ']" value="' . $value . '" />';
 				}
 
-				$this->template->assign_block_vars('attach_row', array(
+				$this->template->assign_block_vars('attach_row', [
 						'FILENAME'     => utf8_basename($attach_row['real_filename']),
 						'A_FILENAME'   => addslashes(utf8_basename($attach_row['real_filename'])),
 						'FILE_COMMENT' => $attach_row['attach_comment'],
@@ -815,7 +838,7 @@ class posting
 
 						'U_VIEW_ATTACHMENT' => 'kb_file?id=' . $attach_row['attach_id'],
 						'S_HIDDEN'          => $hidden,
-					)
+					]
 				);
 
 				$s_inline_attachment_options .= '<option value="' . $i . '">' . utf8_basename($attach_row['real_filename']) . '</option>';
@@ -825,17 +848,22 @@ class posting
 		}
 	}
 
-	public function insert_attachments($attachment_data, $id)
+	/**
+	 * @param $attachment_data
+	 * @param $id
+	 * @return void
+	 */
+	public function insert_attachments($attachment_data, $id): void
 	{
 		if (count($attachment_data))
 		{
 			foreach ($attachment_data as $attach_row)
 			{
-				$attach_sql = array(
+				$attach_sql = [
 					'is_orphan'      => 0,
 					'attach_comment' => $attach_row['attach_comment'],
 					'article_id'     => $id,
-				);
+				];
 				$sql = 'UPDATE ' . $this->attachments_table . ' SET ' . $this->db->sql_build_array('UPDATE', $attach_sql) . '
 					WHERE attach_id = ' . (int) $attach_row['attach_id'] . '
 						AND poster_id = ' . (int) $this->user->data['user_id'];

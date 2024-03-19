@@ -13,9 +13,9 @@ namespace sheer\knowledgebase\acp;
 
 class search_module
 {
-	public $page_title;
-	public $tpl_name;
-	public $u_action;
+	public string $page_title;
+	public string $tpl_name;
+	public string $u_action;
 
 	/**
 	 * Search ACP module
@@ -24,7 +24,7 @@ class search_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main($id, $mode)
+	public function main(int $id, string $mode): void
 	{
 		global $phpbb_container;
 
@@ -47,7 +47,6 @@ class search_module
 
 		add_form_key('kb_acp_search');
 
-		$id = (int) $id;
 		$admin_controller->search_settings($id, $mode);
 		$admin_controller->search_index($id, $mode);
 	}

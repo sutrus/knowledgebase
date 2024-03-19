@@ -52,11 +52,11 @@ abstract class kb_base
 	/**
 	 * Constructor.
 	 *
-	 * @param \phpbb\cache\service              $cache
-	 * @param \phpbb\config\config              $config
-	 * @param \phpbb\db\driver\driver_interface $db
-	 * @param \phpbb\user                       $user
-	 * @param string                            $search_results_table
+	 * @param service          $cache
+	 * @param config           $config
+	 * @param driver_interface $db
+	 * @param user             $user
+	 * @param string           $search_results_table
 	 */
 	public function __construct(service $cache, config $config, driver_interface $db, user $user, string $search_results_table)
 	{
@@ -188,12 +188,12 @@ abstract class kb_base
 
 				if (!$this->db->sql_fetchrow($result))
 				{
-					$sql_ary = array(
+					$sql_ary = [
 						'search_key'      => $search_key,
 						'search_time'     => time(),
 						'search_keywords' => $keywords,
 						'search_authors'  => ' ' . implode(' ', $author_ary) . ' ',
-					);
+					];
 
 					$sql = 'INSERT INTO ' . $this->search_results_table . ' ' . $this->db->sql_build_array('INSERT', $sql_ary);
 					$this->db->sql_query($sql);
@@ -206,7 +206,7 @@ abstract class kb_base
 				WHERE user_id = ' . (int) $this->user->data['user_id'];
 			$this->db->sql_query($sql);
 
-			$store = array(-1 => $result_count, -2 => $sort_dir);
+			$store = [-1 => $result_count, -2 => $sort_dir];
 			$id_range = range($start, $start + $length - 1);
 		}
 		else
@@ -281,7 +281,7 @@ abstract class kb_base
 
 			$sql = 'SELECT search_key
 				FROM ' . $this->search_results_table . "
-				WHERE search_keywords LIKE '%*%' $sql_where";
+				WHERE search_keywords LIKE '%*%' " . $sql_where;
 			$result = $this->db->sql_query($sql);
 
 			while ($row = $this->db->sql_fetchrow($result))
@@ -300,9 +300,7 @@ abstract class kb_base
 				$sql_where .= (($sql_where) ? ' OR ' : '') . 'search_authors ' . $this->db->sql_like_expression($this->db->get_any_char() . ' ' . (int) $author . ' ' . $this->db->get_any_char());
 			}
 
-			$sql = 'SELECT search_key
-				FROM ' . $this->search_results_table . "
-				WHERE $sql_where";
+			$sql = 'SELECT search_key FROM ' . $this->search_results_table . ' WHERE ' . $sql_where;
 			$result = $this->db->sql_query($sql);
 
 			while ($row = $this->db->sql_fetchrow($result))
@@ -373,7 +371,7 @@ abstract class kb_base
 	 * @param int|null $article_counter
 	 * @return array|null
 	 */
-	public function delete_index(int &$article_counter = null): ?array
+	public function delete_index(?int &$article_counter = null): ?array
 	{
 		$max_article_id = $this->get_max_article_id();
 
@@ -382,7 +380,7 @@ abstract class kb_base
 		while (still_on_time() && $article_counter <= $max_article_id)
 		{
 			$rows = $this->get_articles_batch_after($article_counter);
-			$ids = $authors = $category_ids = array();
+			$ids = $authors = $category_ids = [];
 			foreach ($rows as $row)
 			{
 				$ids[] = $row['article_id'];

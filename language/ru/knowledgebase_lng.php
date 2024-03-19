@@ -15,10 +15,10 @@ if (!defined('IN_PHPBB'))
 
 if (empty($lang) || !is_array($lang))
 {
-	$lang = array();
+	$lang = [];
 }
 
-$lang = array_merge($lang, array(
+$lang = array_merge($lang, [
 	'ALPHABET'                             => 'А-Б-В-Г-Д-Е-Ж-З-И-Й-К-Л-М-Н-О-П-Р-С-Т-У-Ф-Х-Ц-Ч-Ш-Щ-Э-Ю-Я',
 	'ALPHABET_NAV'                         => 'Навигация по алфавиту:',
 	'ADD_ARTICLE'                          => 'Добавить статью',
@@ -117,4 +117,4 @@ $lang = array_merge($lang, array(
 	'SORT_ARTICLE_TITLE'                   => 'Заголовок статьи',
 	'TOTAL_ITEMS'                          => 'Статей: <strong>%d</strong>',
 	'WARNING_DEFAULT_CONFIG'               => 'Конфигурационные настройки библиотеки установлены по умолчанию, это может привести к некорректной работе модуля.<br>Пожалуйста, перейдите в <strong>Конфигурация</strong> и задайте необходимые значения.',
-));
+]);

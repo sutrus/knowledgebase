@@ -15,27 +15,36 @@ namespace sheer\knowledgebase\event;
  * @ignore
  */
 
+use phpbb\auth\auth;
+use phpbb\config\config;
+use phpbb\config\db_text;
+use phpbb\controller\helper;
+use phpbb\language\language;
+use phpbb\template\template;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * Event listener
+ */
 class listener implements EventSubscriberInterface
 {
 	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	protected config $config;
 
 	/** @var \phpbb\config\db_text */
-	protected \phpbb\config\db_text $config_text;
+	protected db_text $config_text;
 
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 
 	/* @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	protected language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected \phpbb\auth\auth $auth;
+	protected auth $auth;
 
 	/** @var \phpbb\template\template */
-	protected \phpbb\template\template $template;
+	protected template $template;
 
 	/* @var string */
 	protected string $php_ext;
@@ -43,21 +52,16 @@ class listener implements EventSubscriberInterface
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\config\config     $config
-	 * @param \phpbb\config\db_text    $config_text
-	 * @param \phpbb\controller\helper $helper
-	 * @param \phpbb\language\language $language
-	 * @param \phpbb\auth\auth         $auth
-	 * @param \phpbb\template\template $template
-	 * @param string                   $php_ext
+	 * @param config   $config
+	 * @param db_text  $config_text
+	 * @param helper   $helper
+	 * @param language $language
+	 * @param auth     $auth
+	 * @param template $template
+	 * @param string   $php_ext
 	 */
 	public function __construct(
-		\phpbb\config\config $config,
-		\phpbb\config\db_text $config_text,
-		\phpbb\controller\helper $helper,
-		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
-		\phpbb\template\template $template,
+		config $config, db_text $config_text, helper $helper, language $language, auth $auth, template $template,
 		string $php_ext
 	)
 	{
@@ -73,7 +77,7 @@ class listener implements EventSubscriberInterface
 	/**
 	 * @return string[]
 	 */
-	public static function getSubscribedEvents()
+	public static function getSubscribedEvents(): array
 	{
 		return [
 			'core.user_setup'                          => 'load_language_on_setup',
@@ -90,20 +94,20 @@ class listener implements EventSubscriberInterface
 	 *
 	 * @param \phpbb\event\data $event Event object
 	 */
-	public function load_language_on_setup(\phpbb\event\data $event)
+	public function load_language_on_setup(\phpbb\event\data $event): void
 	{
 		$lang_set_ext = $event['lang_set_ext'];
-		$lang_set_ext[] = array(
+		$lang_set_ext[] = [
 			'ext_name' => 'sheer/knowledgebase',
 			'lang_set' => 'knowledgebase_lng',
-		);
+		];
 		$event['lang_set_ext'] = $lang_set_ext;
 	}
 
 	/**
 	 * Add a link to the controller in the forum navbar
 	 */
-	public function add_page_header_link($event)
+	public function add_page_header_link($event): void
 	{
 		$this->template->assign_vars([
 			'KB_FONT_ICON' => $this->config['kb_font_icon'],
@@ -118,7 +122,7 @@ class listener implements EventSubscriberInterface
 	 *
 	 * @param \phpbb\event\data $event Event object
 	 */
-	public function viewonline_page(\phpbb\event\data $event)
+	public function viewonline_page(\phpbb\event\data $event): void
 	{
 		if ($event['on_page'][1] === 'app' && strrpos($event['row']['session_page'], 'app.' . $this->php_ext . '/knowledgebase') === 0)
 		{
@@ -132,7 +136,7 @@ class listener implements EventSubscriberInterface
 	 *
 	 * @param \phpbb\event\data $event Event object
 	 */
-	public function display_forums_modify_template_vars(\phpbb\event\data $event)
+	public function display_forums_modify_template_vars(\phpbb\event\data $event): void
 	{
 		$forum_row = $event['forum_row'];
 		if (($this->config['kb_anounce']) &&
@@ -149,12 +153,11 @@ class listener implements EventSubscriberInterface
 	 *
 	 * @param \phpbb\event\data $event Event object
 	 */
-	public function viewforum_modify_topicrow(\phpbb\event\data $event)
+	public function viewforum_modify_topicrow(\phpbb\event\data $event): void
 	{
 		$topic_row = $event['topic_row'];
-		if (($this->config['kb_anounce']) &&
-			($topic_row['FORUM_ID'] == $this->config['kb_forum_id']) &&
-			(!empty($this->config_text->get('kb_topic_prefix'))))
+		if ($this->config['kb_anounce'] && $topic_row['FORUM_ID'] == $this->config['kb_forum_id'] &&
+			!empty($this->config_text->get('kb_topic_prefix')))
 		{
 			$topic_row['TOPIC_TITLE'] = htmlspecialchars_decode($this->config_text->get('kb_topic_prefix'), ENT_HTML5) . ' ' . $topic_row['TOPIC_TITLE'];
 		}
@@ -176,13 +179,13 @@ class listener implements EventSubscriberInterface
 	 *
 	 * @param \phpbb\event\data $event Event object
 	 */
-	public function add_permission(\phpbb\event\data $event)
+	public function add_permission(\phpbb\event\data $event): void
 	{
 		$permissions = $event['permissions'];
 		$categories = $event['categories'];
-		$permissions['a_manage_kb'] = array('lang' => 'ACL_A_MANAGE_KB', 'cat' => 'knowledgebase');
-		$permissions['u_kb_view'] = array('lang' => 'ACL_U_KB_VIEW', 'cat' => 'knowledgebase');
+		$permissions['a_manage_kb'] = ['lang' => 'ACL_A_MANAGE_KB', 'cat' => 'knowledgebase'];
+		$permissions['u_kb_view'] = ['lang' => 'ACL_U_KB_VIEW', 'cat' => 'knowledgebase'];
 		$event['permissions'] = $permissions;
-		$event['categories'] = array_merge($categories, array('knowledgebase' => 'KNOWLEDGEBASE'));
+		$event['categories'] = array_merge($categories, ['knowledgebase' => 'KNOWLEDGEBASE']);
 	}
 }

@@ -11,37 +11,48 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\auth\auth;
+use phpbb\config\config;
+use phpbb\controller\helper;
+use phpbb\db\driver\driver_interface;
+use phpbb\language\language;
+use phpbb\pagination;
+use phpbb\request\request_interface;
+use phpbb\template\template;
+use phpbb\user;
+use sheer\knowledgebase\inc\functions_kb;
+
 class category
 {
 	/** @var \phpbb\db\driver\driver_interface */
-	protected \phpbb\db\driver\driver_interface $db;
+	protected driver_interface $db;
 
 	/** @var \phpbb\config\config */
-	protected \phpbb\config\config $config;
+	protected config $config;
 
 	/** @var \phpbb\controller\helper */
-	protected \phpbb\controller\helper $helper;
+	protected helper $helper;
 
 	/** @var \phpbb\language\language */
-	protected \phpbb\language\language $language;
+	protected language $language;
 
 	/** @var \phpbb\auth\auth */
-	protected \phpbb\auth\auth $auth;
+	protected auth $auth;
 
 	/** @var \phpbb\request\request_interface */
-	protected \phpbb\request\request_interface $request;
+	protected request_interface $request;
 
 	/** @var \phpbb\template\template */
-	protected \phpbb\template\template $template;
+	protected template $template;
 
 	/** @var \phpbb\user */
-	protected \phpbb\user $user;
+	protected user $user;
 
 	/** @var \phpbb\pagination */
-	protected \phpbb\pagination $pagination;
+	protected pagination $pagination;
 
 	/** @var \sheer\knowledgebase\inc\functions_kb */
-	protected \sheer\knowledgebase\inc\functions_kb $kb;
+	protected functions_kb $kb;
 
 	/** @var string */
 	protected string $articles_table;
@@ -52,32 +63,23 @@ class category
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface     $db
-	 * @param \phpbb\config\config                  $config
-	 * @param \phpbb\controller\helper              $helper
-	 * @param \phpbb\language\language              $language
-	 * @param \phpbb\auth\auth                      $auth
-	 * @param \phpbb\request\request_interface      $request
-	 * @param \phpbb\template\template              $template
-	 * @param \phpbb\user                           $user
-	 * @param \phpbb\pagination                     $pagination
-	 * @param \sheer\knowledgebase\inc\functions_kb $kb
-	 * @param string                                $articles_table
-	 * @param string                                $categories_table
+	 * @param driver_interface  $db
+	 * @param config            $config
+	 * @param helper            $helper
+	 * @param language          $language
+	 * @param auth              $auth
+	 * @param request_interface $request
+	 * @param template          $template
+	 * @param user              $user
+	 * @param pagination        $pagination
+	 * @param functions_kb      $kb
+	 * @param string            $articles_table
+	 * @param string            $categories_table
 	 */
 	public function __construct(
-		\phpbb\db\driver\driver_interface $db,
-		\phpbb\config\config $config,
-		\phpbb\controller\helper $helper,
-		\phpbb\language\language $language,
-		\phpbb\auth\auth $auth,
-		\phpbb\request\request_interface $request,
-		\phpbb\template\template $template,
-		\phpbb\user $user,
-		\phpbb\pagination $pagination,
-		\sheer\knowledgebase\inc\functions_kb $kb,
-		string $articles_table,
-		string $categories_table
+		driver_interface $db, config $config, helper $helper, language $language, auth $auth,
+		request_interface $request, template $template, user $user, pagination $pagination, functions_kb $kb,
+		string $articles_table, string $categories_table
 	)
 	{
 		$this->db = $db;
@@ -134,19 +136,19 @@ class category
 		$s_can_move = !$sort_type && $this->kb->acl_kb_get($cat_id, 'kb_m_edit');
 
 		$sql_where = ($this->kb->acl_kb_get($cat_id, 'kb_m_approve')) ? '' : 'AND a.approved = 1';
-		$pagination_ary = array('id' => $cat_id);
+		$pagination_ary = ['id' => $cat_id];
 
 		if ($sort_type == 1)
 		{
 			$sort_dir = $this->request->variable('sd', 'a');
 			$sort_key = $this->request->variable('sk', 't');
 
-			$sort_key_text = array('a' => $this->language->lang('AUTHOR'),
-								   't' => $this->language->lang('POST_TIME'),
-								   's' => $this->language->lang('SUBJECT'),
-								   'v' => $this->language->lang('VIEWS'));
-			$sort_by_sql = array('a' => 'a.author', 't' => 'a.article_date', 's' => 'LOWER(a.article_title)', 'v' => 'a.views');
-			$sort_dir_text = array('a' => $this->language->lang('ASCENDING'), 'd' => $this->language->lang('DESCENDING'));
+			$sort_key_text = ['a' => $this->language->lang('AUTHOR'),
+							  't' => $this->language->lang('POST_TIME'),
+							  's' => $this->language->lang('SUBJECT'),
+							  'v' => $this->language->lang('VIEWS')];
+			$sort_by_sql = ['a' => 'a.author', 't' => 'a.article_date', 's' => 'LOWER(a.article_title)', 'v' => 'a.views'];
+			$sort_dir_text = ['a' => $this->language->lang('ASCENDING'), 'd' => $this->language->lang('DESCENDING')];
 
 			foreach ($sort_key_text as $key => $value)
 			{
@@ -163,7 +165,7 @@ class category
 			$direction = (($sort_dir == 'd') ? 'ASC' : 'DESC');
 			$order_by = ' ORDER BY ' . $sort_by_sql[$sort_key] . ' ';
 			$order_by .= $direction;
-			$pagination_ary = array('id' => $cat_id, 'sd' => $sort_dir, 'sk' => $sort_key);
+			$pagination_ary = ['id' => $cat_id, 'sd' => $sort_dir, 'sk' => $sort_key];
 		}
 		else if ($sort_type == -1)
 		{
@@ -203,19 +205,17 @@ class category
 		}
 		$current_page_number = $this->pagination->get_on_page($per_page, $start);
 
-		$this->template->assign_block_vars('navlinks', array(
-				'FORUM_NAME'   => $this->language->lang('LIBRARY'),
-				'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_index'),
-			)
-		);
+		$this->template->assign_block_vars('navlinks', [
+			'FORUM_NAME'   => $this->language->lang('LIBRARY'),
+			'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_index'),
+		]);
 
 		foreach ($this->kb->get_category_branch($cat_id, 'parents') as $row)
 		{
-			$this->template->assign_block_vars('navlinks', array(
-					'FORUM_NAME'   => $row['category_name'],
-					'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_category', ['id' => $row['category_id']]),
-				)
-			);
+			$this->template->assign_block_vars('navlinks', [
+				'FORUM_NAME'   => $row['category_name'],
+				'U_VIEW_FORUM' => $this->helper->route('sheer_knowledgebase_category', ['id' => $row['category_id']]),
+			]);
 		}
 
 		$sql = 'SELECT *
@@ -226,7 +226,7 @@ class category
 
 		while ($cat_row = $this->db->sql_fetchrow($result))
 		{
-			$exclude_cats = array();
+			$exclude_cats = [];
 			foreach ($this->kb->get_category_branch($cat_row['category_id'], 'children') as $row)
 			{
 				$exclude_cats[] = $row['category_id'];
@@ -252,20 +252,19 @@ class category
 			$res = $this->db->sql_query($sql);
 			$art_row = $this->db->sql_fetchrow($res);
 			$this->db->sql_freeresult($res);
-			$this->template->assign_block_vars('cat_row', array(
-					'CAT_ID'          => $cat_row['category_id'],
-					'CAT_NAME'        => $cat_row['category_name'],
-					'CAT_DESCRIPTION' => $cat_row['category_details'],
-					'U_CAT'           => $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_row['category_id']]),
-					'ARTICLES'        => $art_count,
-					'SUBCATS'         => $this->kb->get_cat_list($exclude_cats),
-					'ARTICLE_TITLE'   => $art_row['article_title'] ?? '',
-					'U_ARTICLE'       => (isset($art_row['article_id'])) ? $this->helper->route('sheer_knowledgebase_article', ['k' => $art_row['article_id']]) : '',
-					'ARTICLE_TIME'    => (isset($art_row['article_date'])) ? $this->user->format_date($art_row['article_date']) : '',
-					'ARTICLE_AUTHOR'  => (isset($art_row['author_id'])) ? get_username_string('full', $art_row['author_id'], $art_row['author'], $art_row['user_colour']) : '',
-					'NEED_APPROVE'    => !($art_row['approved'] ?? false),
-				)
-			);
+			$this->template->assign_block_vars('cat_row', [
+				'CAT_ID'          => $cat_row['category_id'],
+				'CAT_NAME'        => $cat_row['category_name'],
+				'CAT_DESCRIPTION' => $cat_row['category_details'],
+				'U_CAT'           => $this->helper->route('sheer_knowledgebase_category', ['id' => $cat_row['category_id']]),
+				'ARTICLES'        => $art_count,
+				'SUBCATS'         => $this->kb->get_cat_list($exclude_cats),
+				'ARTICLE_TITLE'   => $art_row['article_title'] ?? '',
+				'U_ARTICLE'       => (isset($art_row['article_id'])) ? $this->helper->route('sheer_knowledgebase_article', ['k' => $art_row['article_id']]) : '',
+				'ARTICLE_TIME'    => (isset($art_row['article_date'])) ? $this->user->format_date($art_row['article_date']) : '',
+				'ARTICLE_AUTHOR'  => (isset($art_row['author_id'])) ? get_username_string('full', $art_row['author_id'], $art_row['author'], $art_row['user_colour']) : '',
+				'NEED_APPROVE'    => !($art_row['approved'] ?? false),
+			]);
 		}
 
 		if (!isset($per_page))
@@ -285,22 +284,21 @@ class category
 		{
 			$art_id = $art_row['article_id'];
 			$author_id = $art_row['author_id'] ?? ANONYMOUS;
-			$this->template->assign_block_vars('art_row', array(
-					'ID'                  => $art_id,
-					'ORDER_ID'            => $art_row['display_order'],
-					'U_ARTICLE'           => $this->helper->route('sheer_knowledgebase_article', ['k' => $art_row['article_id']]),
-					'ARTICLE_TITLE'       => $art_row['article_title'],
-					'ARTICLE_AUTHOR'      => get_username_string('full', $art_row['author_id'], $art_row['username'], $art_row['user_colour']),
-					'ARTICLE_DESCRIPTION' => $art_row['article_description'],
-					'ARTICLE_DATE'        => $this->user->format_date($art_row['article_date']),
-					'ART_VIEWS'           => $art_row['views'],
-					'U_DELETE'            => $this->helper->route('sheer_knowledgebase_posting', ['id' => $cat_id, 'mode' => 'delete', 'k' => $art_id]),
-					'U_EDIT_ART'          => $this->helper->route('sheer_knowledgebase_posting', ['id' => $cat_id, 'mode' => 'edit', 'k' => $art_id]),
-					'S_CAN_DELETE'        => $this->kb->acl_kb_get($cat_id, 'kb_m_delete') || ($this->kb->acl_kb_get($cat_id, 'kb_u_delete') && $this->user->data['user_id'] == $author_id),
-					'S_CAN_EDIT'          => $this->kb->acl_kb_get($cat_id, 'kb_m_edit') || ($this->kb->acl_kb_get($cat_id, 'kb_u_edit') && $this->user->data['user_id'] == $author_id),
-					'S_APPROVED'          => (bool) $art_row['approved'],
-				)
-			);
+			$this->template->assign_block_vars('art_row', [
+				'ID'                  => $art_id,
+				'ORDER_ID'            => $art_row['display_order'],
+				'U_ARTICLE'           => $this->helper->route('sheer_knowledgebase_article', ['k' => $art_row['article_id']]),
+				'ARTICLE_TITLE'       => $art_row['article_title'],
+				'ARTICLE_AUTHOR'      => get_username_string('full', $art_row['author_id'], $art_row['username'], $art_row['user_colour']),
+				'ARTICLE_DESCRIPTION' => $art_row['article_description'],
+				'ARTICLE_DATE'        => $this->user->format_date($art_row['article_date']),
+				'ART_VIEWS'           => $art_row['views'],
+				'U_DELETE'            => $this->helper->route('sheer_knowledgebase_posting', ['id' => $cat_id, 'mode' => 'delete', 'k' => $art_id]),
+				'U_EDIT_ART'          => $this->helper->route('sheer_knowledgebase_posting', ['id' => $cat_id, 'mode' => 'edit', 'k' => $art_id]),
+				'S_CAN_DELETE'        => $this->kb->acl_kb_get($cat_id, 'kb_m_delete') || ($this->kb->acl_kb_get($cat_id, 'kb_u_delete') && $this->user->data['user_id'] == $author_id),
+				'S_CAN_EDIT'          => $this->kb->acl_kb_get($cat_id, 'kb_m_edit') || ($this->kb->acl_kb_get($cat_id, 'kb_u_edit') && $this->user->data['user_id'] == $author_id),
+				'S_APPROVED'          => (bool) $art_row['approved'],
+			]);
 		}
 		$this->db->sql_freeresult($result);
 

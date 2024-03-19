@@ -36,7 +36,7 @@ class ext extends \phpbb\extension\base
 		}
 
 		// Return the boolean result of the test, either true (or false for phpBB 3.2 and 3.1)
-		return $enableable;
+		return true;
 	}
 
 	/**
@@ -44,7 +44,7 @@ class ext extends \phpbb\extension\base
 	 *
 	 * @param mixed $old_state        The return value of the previous call
 	 *                                of this method, or false on the first call
-	 * @return    mixed                Returns false after last step, otherwise
+	 * @return    bool|string         Returns false after last step, otherwise
 	 *                                temporary state which is passed as an
 	 *                                argument to the next step
 	 */
@@ -69,7 +69,7 @@ class ext extends \phpbb\extension\base
 	 *
 	 * @param mixed $old_state        The return value of the previous call
 	 *                                of this method, or false on the first call
-	 * @return    mixed                Returns false after last step, otherwise
+	 * @return    false|string        Returns false after last step, otherwise
 	 *                                temporary state which is passed as an
 	 *                                argument to the next step
 	 */
@@ -94,7 +94,7 @@ class ext extends \phpbb\extension\base
 	 *
 	 * @param mixed $old_state        The return value of the previous call
 	 *                                of this method, or false on the first call
-	 * @return    mixed                Returns false after last step, otherwise
+	 * @return    bool|string         Returns false after last step, otherwise
 	 *                                temporary state which is passed as an
 	 *                                argument to the next step
 	 */

@@ -19,7 +19,7 @@ if (!defined('IN_PHPBB'))
 
 if (empty($lang) || !is_array($lang))
 {
-	$lang = array();
+	$lang = [];
 }
 
 // DEVELOPERS PLEASE NOTE
@@ -38,7 +38,7 @@ if (empty($lang) || !is_array($lang))
 // ’ « » “ ” …
 //
 
-$lang = array_merge($lang, array(
+$lang = array_merge($lang, [
 	'ALPHABET'                             => 'A-B-C-D-E-F-G-H-I-J-K-L-M-N-O-P-Q-R-S-T-U-V-W-X-Y-Z',
 	'ALPHABET_NAV'                         => 'Alphabetical order navigation:',
 	'ADD_ARTICLE'                          => 'Nouvel article',
@@ -136,4 +136,4 @@ $lang = array_merge($lang, array(
 	'SORT_ARTICLE_TITLE'                   => 'Titre de l’article',
 	'TOTAL_ITEMS'                          => 'Articles : <strong>%d</strong>',
 	'WARNING_DEFAULT_CONFIG'               => 'Les options par défaut de la configuration de la base de connaissances ont été définis, il peut être intéressant de les ajuster.<br>Se rendre sur la page « <strong>Paramètres</strong> » pour modifier les options.',
-));
+]);

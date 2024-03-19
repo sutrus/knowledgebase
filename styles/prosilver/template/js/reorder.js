@@ -11,9 +11,9 @@ $(function() {
 			$.ajax({
 				url: 'set_order',
 				type: 'POST',
-				data: {list_order:list_sortable, page:page},
+				data: {list_order: list_sortable, page: page},
 				success: function(data) {
-				//finished
+					//finished
 				}
 			});
 		}

@@ -15,7 +15,7 @@ class version_1_0_2 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\sheer\knowledgebase\migrations\version_1_0_1');
+		return ['\sheer\knowledgebase\migrations\version_1_0_1'];
 	}
 
 	public function effectively_installed()
@@ -29,33 +29,33 @@ class version_1_0_2 extends \phpbb\db\migration\migration
 
 	public function update_schema()
 	{
-		return array(
-			'add_columns' => array(
-				$this->table_prefix . 'kb_articles' => array(
-					'display_order' => array('UINT', 0),
-				),
-			),
-		);
+		return [
+			'add_columns' => [
+				$this->table_prefix . 'kb_articles' => [
+					'display_order' => ['UINT', 0],
+				],
+			],
+		];
 	}
 
 	public function revert_schema()
 	{
-		return array(
-			'drop_columns' => array(
-				$this->table_prefix . 'kb_articles' => array(
+		return [
+			'drop_columns' => [
+				$this->table_prefix . 'kb_articles' => [
 					'display_order',
-				),
-			),
-		);
+				],
+			],
+		];
 	}
 
 	public function update_data()
 	{
-		return array(
+		return [
 			// Update configs
-			array('config.update', array('knowledge_base_version', '1.0.2')),
-			array('custom', array(array($this, 'set_display_order'))),
-		);
+			['config.update', ['knowledge_base_version', '1.0.2']],
+			['custom', [[$this, 'set_display_order']]],
+		];
 	}
 
 	public function set_display_order()

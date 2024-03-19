@@ -13,9 +13,9 @@ namespace sheer\knowledgebase\acp;
 
 class articles_module
 {
-	public $page_title;
-	public $tpl_name;
-	public $u_action;
+	public string $page_title;
+	public string $tpl_name;
+	public string $u_action;
 
 	/**
 	 * Articles ACP module
@@ -24,7 +24,7 @@ class articles_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main($id, $mode)
+	public function main(int $id, string $mode): void
 	{
 		global $phpbb_container;
 
@@ -64,6 +64,5 @@ class articles_module
 				$admin_controller->show_articles();
 			break;
 		}
-
 	}
 }

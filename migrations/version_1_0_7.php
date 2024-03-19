@@ -15,7 +15,7 @@ class version_1_0_7 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\sheer\knowledgebase\migrations\version_1_0_6');
+		return ['\sheer\knowledgebase\migrations\version_1_0_6'];
 	}
 
 	public function effectively_installed()
@@ -29,22 +29,22 @@ class version_1_0_7 extends \phpbb\db\migration\migration
 
 	public function update_schema()
 	{
-		return array();
+		return [];
 	}
 
 
 	public function revert_schema()
 	{
-		return array();
+		return [];
 	}
 
 	public function update_data()
 	{
-		return array(
+		return [
 			// Update configs
-			array('config.update', array('knowledge_base_version', '1.0.7')),
+			['config.update', ['knowledge_base_version', '1.0.7']],
 			// Add permissions
-			array('permission.add', array('u_kb_view', true)),
-		);
+			['permission.add', ['u_kb_view', true]],
+		];
 	}
 }

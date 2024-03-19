@@ -13,7 +13,7 @@ namespace sheer\knowledgebase\acp;
 
 class config_info
 {
-	public function module()
+	public function module(): array
 	{
 		return [
 			'filename' => '\sheer\knowledgebase\acp\config_module',

@@ -4,7 +4,7 @@
  * This file is part of the phpBB Forum Software package.
  *
  * @copyright (c) phpBB Limited <https://www.phpbb.com>
- * @license GNU General Public License, version 2 (GPL-2.0)
+ * @license       GNU General Public License, version 2 (GPL-2.0)
  *
  * For full copyright and license information, please see
  * the docs/CREDITS.txt file.
@@ -32,19 +32,22 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 
 	/**
 	 * Associative array holding index stats
+	 *
 	 * @var array
 	 */
-	protected $stats = array();
+	protected $stats = [];
 
 	/**
 	 * Associative array stores the min and max word length to be searched
+	 *
 	 * @var array
 	 */
-	protected $word_length = array();
+	protected $word_length = [];
 
 	/**
 	 * Contains tidied search query.
 	 * Operators are prefixed in search query and common words excluded
+	 *
 	 * @var string
 	 */
 	protected $search_query = '';
@@ -52,36 +55,42 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	/**
 	 * Contains common words.
 	 * Common words are words with length less/more than min/max length
+	 *
 	 * @var array
 	 */
-	protected $common_words = array();
+	protected $common_words = [];
 
 	/**
 	 * Post ids of posts containing words that are to be included
+	 *
 	 * @var array
 	 */
-	protected $must_contain_ids = array();
+	protected $must_contain_ids = [];
 
 	/**
 	 * Post ids of posts containing words that should not be included
+	 *
 	 * @var array
 	 */
-	protected $must_not_contain_ids = array();
+	protected $must_not_contain_ids = [];
 
 	/**
 	 * Post ids of posts containing at least one word that needs to be excluded
+	 *
 	 * @var array
 	 */
-	protected $must_exclude_one_ids = array();
+	protected $must_exclude_one_ids = [];
 
 	/**
 	 * Relative path to board root
+	 *
 	 * @var string
 	 */
 	protected $phpbb_root_path;
 
 	/**
 	 * PHP Extension
+	 *
 	 * @var string
 	 */
 	protected $php_ext;
@@ -104,16 +113,16 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	/**
 	 * Initialises the fulltext_native search backend with min/max word length
 	 *
-	 * @param config $config Config object
-	 * @param driver_interface $db Database object
-	 * @param language $language
-	 * @param user $user User object
-	 * @param string $articles_table Articles_table
-	 * @param string $search_results_table Search_results_table
-	 * @param string $wordmatch_table Wordmatch_table
-	 * @param string $wordlist_table Wordlist_table
-	 * @param string $phpbb_root_path phpBB root path
-	 * @param string $phpEx PHP file extension
+	 * @param config           $config               Config object
+	 * @param driver_interface $db                   Database object
+	 * @param language         $language
+	 * @param user             $user                 User object
+	 * @param string           $articles_table       Articles_table
+	 * @param string           $search_results_table Search_results_table
+	 * @param string           $wordmatch_table      Wordmatch_table
+	 * @param string           $wordlist_table       Wordlist_table
+	 * @param string           $phpbb_root_path      phpBB root path
+	 * @param string           $phpEx                PHP file extension
 	 */
 	public function __construct(
 		config $config,
@@ -140,7 +149,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		$this->phpbb_root_path = $phpbb_root_path;
 		$this->php_ext = $phpEx;
 
-		$this->word_length = array('min' => (int) $this->config['fulltext_native_min_chars'], 'max' => (int) $this->config['fulltext_native_max_chars']);
+		$this->word_length = ['min' => (int) $this->config['fulltext_native_min_chars'], 'max' => (int) $this->config['fulltext_native_max_chars']];
 
 		/**
 		 * Load the UTF tools
@@ -291,20 +300,20 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			$keywords .= ')';
 		}
 
-		$match = array(
+		$match = [
 			'#  +#',
 			'#\|\|+#',
 			'#(\+|\-)(?:\+|\-)+#',
 			'#\(\|#',
 			'#\|\)#',
-		);
-		$replace = array(
+		];
+		$replace = [
 			' ',
 			'|',
 			'$1',
 			'(',
 			')',
-		);
+		];
 
 		$keywords = preg_replace($match, $replace, $keywords);
 		$num_keywords = count(explode(' ', $keywords));
@@ -320,7 +329,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		// the user wants to search for any word, convert the search query
 		if ($terms == 'any')
 		{
-			$words = array();
+			$words = [];
 
 			preg_match_all('#([^\\s+\\-|()]+)(?:$|[\\s+\\-|()])#u', $keywords, $words);
 			if (count($words[1]))
@@ -336,7 +345,6 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 
 		// Only allow one wildcard in the search query to limit the database load
 		$match = '#\*#';
-		$replace = '$1';
 		$count_wildcards = substr_count($keywords, '*');
 
 		// Reverse the string to remove all wildcards except the first one
@@ -346,11 +354,11 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		// set the search_query which is shown to the user
 		$this->search_query = $keywords;
 
-		$exact_words = array();
+		$exact_words = [];
 		preg_match_all('#([^\\s+\\-|()]+)(?:$|[\\s+\\-|()])#u', $keywords, $exact_words);
 		$exact_words = $exact_words[1];
 
-		$common_ids = $words = array();
+		$common_ids = $words = [];
 
 		if (count($exact_words))
 		{
@@ -376,17 +384,17 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		}
 
 		// Handle +, - without preceding whitespace character
-		$match		= array('#(\S)\+#', '#(\S)-#');
-		$replace	= array('$1 +', '$1 +');
+		$match = ['#(\S)\+#', '#(\S)-#'];
+		$replace = ['$1 +', '$1 +'];
 
 		$keywords = preg_replace($match, $replace, $keywords);
 
 		// now analyse the search query, first split it using the spaces
 		$query = explode(' ', $keywords);
 
-		$this->must_contain_ids = array();
-		$this->must_not_contain_ids = array();
-		$this->must_exclude_one_ids = array();
+		$this->must_contain_ids = [];
+		$this->must_not_contain_ids = [];
+		$this->must_exclude_one_ids = [];
 
 		foreach ($query as $word)
 		{
@@ -439,8 +447,8 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			// if this is an array of words then retrieve an id for each
 			if (is_array($word))
 			{
-				$non_common_words = array();
-				$id_words = array();
+				$non_common_words = [];
+				$id_words = [];
 				foreach ($word as $i => $word_part)
 				{
 					if (strpos($word_part, '*') !== false)
@@ -479,7 +487,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 					}
 					else
 					{
-						$mode = ($mode == 'must_exclude_one') ? 'must_not_contain' : $mode;
+						$mode = ($mode === 'must_exclude_one') ? 'must_not_contain' : $mode;
 						$this->{$mode . '_ids'}[] = $id_words[0];
 					}
 				}
@@ -538,13 +546,8 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	public function keyword_search(string $type, string $fields, string $terms, array $sort_by_sql, string $sort_key, string $sort_dir, string $sort_days, array $ex_fid_ary, int $category_id, array $author_ary, string $author_name, array &$id_ary, int &$start, int $per_page)
 	{
 		// No keywords? No posts.
-		if (empty($this->search_query))
-		{
-			return false;
-		}
-
 		// we can't search for negatives only
-		if (empty($this->must_contain_ids))
+		if (empty($this->search_query) || empty($this->must_contain_ids))
 		{
 			return false;
 		}
@@ -558,7 +561,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		sort($must_exclude_one_ids);
 
 		// generate a search_key from all the options to identify the results
-		$search_key_array = array(
+		$search_key_array = [
 			serialize($must_contain_ids),
 			serialize($must_not_contain_ids),
 			serialize($must_exclude_one_ids),
@@ -572,7 +575,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			'',
 			implode(',', $author_ary),
 			$author_name,
-		);
+		];
 		$search_key = md5(implode('#', $search_key_array));
 
 		// try reading the results from cache
@@ -582,23 +585,23 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			return $total_results;
 		}
 
-		$id_ary = array();
+		$id_ary = [];
 
-		$sql_where = array();
+		$sql_where = [];
 		$m_num = 0;
 		$w_num = 0;
 
-		$sql_array = array(
+		$sql_array = [
 			'SELECT'    => 'p.article_id',
-			'FROM'      => array(
-				$this->wordmatch_table => array(),
-				$this->wordlist_table  => array(),
-			),
-			'LEFT_JOIN' => array(array(
-				'FROM' => array($this->articles_table => 'p'),
-				'ON'   => 'm0.article_id = p.article_id',
-			)),
-		);
+			'FROM'      => [
+				$this->wordmatch_table => [],
+				$this->wordlist_table  => [],
+			],
+			'LEFT_JOIN' => [[
+								'FROM' => [$this->articles_table => 'p'],
+								'ON'   => 'm0.article_id = p.article_id',
+							]],
+		];
 
 		$title_match = '';
 		$group_by = true;
@@ -627,16 +630,16 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			{
 				$group_by = true;
 
-				$word_id_sql = array();
-				$word_ids = array();
+				$word_id_sql = [];
+				$word_ids = [];
 				foreach ($subquery as $id)
 				{
 					if (is_string($id))
 					{
-						$sql_array['LEFT_JOIN'][] = array(
-							'FROM' => array($this->wordlist_table => 'w' . $w_num),
+						$sql_array['LEFT_JOIN'][] = [
+							'FROM' => [$this->wordlist_table => 'w' . $w_num],
 							'ON'   => "w$w_num.word_text LIKE $id",
-						);
+						];
 						$word_ids[] = "w$w_num.word_id";
 
 						$w_num++;
@@ -674,7 +677,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 				$sql_where[] = "m$m_num.$title_match";
 			}
 
-			if ($m_num != 0)
+			if ($m_num !== 0)
 			{
 				$sql_where[] = "m$m_num.article_id = m0.article_id";
 			}
@@ -685,10 +688,10 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		{
 			if (is_string($subquery))
 			{
-				$sql_array['LEFT_JOIN'][] = array(
-					'FROM' => array($this->wordlist_table => 'w' . $w_num),
+				$sql_array['LEFT_JOIN'][] = [
+					'FROM' => [$this->wordlist_table => 'w' . $w_num],
 					'ON'   => "w$w_num.word_text LIKE $subquery",
-				);
+				];
 
 				$this->must_not_contain_ids[$key] = "w$w_num.word_id";
 
@@ -699,10 +702,10 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 
 		if (count($this->must_not_contain_ids))
 		{
-			$sql_array['LEFT_JOIN'][] = array(
-				'FROM' => array($this->wordmatch_table => 'm' . $m_num),
+			$sql_array['LEFT_JOIN'][] = [
+				'FROM' => [$this->wordmatch_table => 'm' . $m_num],
 				'ON'   => $this->db->sql_in_set("m$m_num.word_id", $this->must_not_contain_ids) . (($title_match) ? " AND m$m_num.$title_match" : '') . " AND m$m_num.article_id = m0.article_id",
-			);
+			];
 
 			$sql_where[] = "m$m_num.word_id IS NULL";
 			$m_num++;
@@ -710,25 +713,25 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 
 		foreach ($this->must_exclude_one_ids as $ids)
 		{
-			$is_null_joins = array();
+			$is_null_joins = [];
 			foreach ($ids as $id)
 			{
 				if (is_string($id))
 				{
-					$sql_array['LEFT_JOIN'][] = array(
-						'FROM' => array($this->wordlist_table => 'w' . $w_num),
+					$sql_array['LEFT_JOIN'][] = [
+						'FROM' => [$this->wordlist_table => 'w' . $w_num],
 						'ON'   => "w$w_num.word_text LIKE $id",
-					);
+					];
 					$id = "w$w_num.word_id";
 
 					$group_by = true;
 					$w_num++;
 				}
 
-				$sql_array['LEFT_JOIN'][] = array(
-					'FROM' => array($this->wordmatch_table => 'm' . $m_num),
+				$sql_array['LEFT_JOIN'][] = [
+					'FROM' => [$this->wordmatch_table => 'm' . $m_num],
 					'ON'   => "m$m_num.word_id = $id AND m$m_num.article_id = m0.article_id" . (($title_match) ? " AND m$m_num.$title_match" : ''),
-				);
+				];
 				$is_null_joins[] = "m$m_num.word_id IS NULL";
 
 				$m_num++;
@@ -813,7 +816,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		$sql_array['WHERE'] = implode(' AND ', $sql_where);
 		$sql_array['GROUP_BY'] = ($group_by) ? 'p.article_id, ' . $sort_by_sql[$sort_key] : '';
 		$sql_array['ORDER_BY'] = $sql_sort;
-		$sql_array['SELECT'] .= $sort_by_sql[$sort_key] ? ", {$sort_by_sql[$sort_key]}" : '';
+		$sql_array['SELECT'] .= $sort_by_sql[$sort_key] ? ", $sort_by_sql[$sort_key]" : '';
 
 		unset($sql_where, $sql_sort, $group_by);
 
@@ -856,7 +859,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 
 		// store the ids, from start on then delete anything that isn't on the current page because we only need ids for one page
 		$this->save_ids($search_key, $this->search_query, $author_ary, $total_results, $id_ary, $start, $sort_dir);
-		$id_ary = array_slice($id_ary, 0, (int) $per_page);
+		$id_ary = array_slice($id_ary, 0, $per_page);
 
 		return $total_results;
 	}
@@ -873,7 +876,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		}
 
 		// generate a search_key from all the options to identify the results
-		$search_key_array = array(
+		$search_key_array = [
 			'',
 			$type,
 			'',
@@ -886,7 +889,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			'',
 			implode(',', $author_ary),
 			$author_name,
-		);
+		];
 		$search_key = md5(implode('#', $search_key_array));
 
 		// try reading the results from cache
@@ -896,20 +899,20 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			return $total_results;
 		}
 
-		$id_ary = array();
+		$id_ary = [];
 
 		// Create some display specific sql strings
-		$sql_author = $this->db->sql_in_set('p.author_id', $author_ary) ;
+		$sql_author = $this->db->sql_in_set('p.author_id', $author_ary);
 		$sql_fora = (count($ex_fid_ary)) ? ' AND ' . $this->db->sql_in_set('p.article_category_id', $ex_fid_ary, true) : '';
 		$sql_time = ($sort_days) ? ' AND p.article_date >= ' . (time() - ($sort_days * 86400)) : '';
-		$sql_category_id = ($category_id) ? ' AND p.article_category_id = ' . (int) $category_id : '';
+		$sql_category_id = ($category_id) ? ' AND p.article_category_id = ' . $category_id : '';
 		$post_visibility = ' AND p.approved = 1 ';
 
 		// Build sql strings for sorting
 		$sql_sort = $sort_by_sql[$sort_key] . (($sort_dir == 'a') ? ' ASC' : ' DESC');
 
 		$select = 'p.article_id';
-		$select .= $sort_by_sql[$sort_key] ? ", {$sort_by_sql[$sort_key]}" : '';
+		$select .= $sort_by_sql[$sort_key] ? ", $sort_by_sql[$sort_key]" : '';
 		$is_mysql = false;
 
 		// If the cache was completely empty count the results
@@ -925,10 +928,10 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 					$sql = 'SELECT COUNT(p.article_id) as total_results
 						FROM ' . $this->articles_table . ' p
 						WHERE ' . $sql_author .
-							$sql_category_id .
-							$sql_fora .
-							$sql_time .
-							$post_visibility;
+						$sql_category_id .
+						$sql_fora .
+						$sql_time .
+						$post_visibility;
 					$result = $this->db->sql_query($sql);
 
 					$total_results = (int) $this->db->sql_fetchfield('total_results');
@@ -963,7 +966,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 
 		if (!$total_results && $is_mysql)
 		{
-			$sql_count = str_replace("SELECT $select", "SELECT COUNT(*) as total_results", $sql);
+			$sql_count = str_replace("SELECT $select", 'SELECT COUNT(*) as total_results', $sql);
 			$result = $this->db->sql_query($sql_count);
 			$total_results = (int) $this->db->sql_fetchfield('total_results');
 			$this->db->sql_freeresult($result);
@@ -1013,8 +1016,8 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		if (!$this->config['kb_search'])
 		{
 			/**
-			* The search indexer is disabled, return
-			*/
+			 * The search indexer is disabled, return
+			 */
 			return;
 		}
 
@@ -1023,18 +1026,11 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		$split_title = $this->split_message($subject);
 		$split_descr = $this->split_message($description);
 
-		$cur_words = array('post' => array(), 'title' => array(), 'descr' => array());
+		$cur_words = ['post' => [], 'title' => [], 'descr' => []];
 
-		$words = array();
+		$words = [];
 		if ($mode == 'edit')
 		{
-			$words['add']['post'] = array();
-			$words['add']['title'] = array();
-			$words['add']['descr'] = array();
-			$words['del']['post'] = array();
-			$words['del']['title'] = array();
-			$words['del']['descr'] = array();
-
 			$sql = 'SELECT w.word_id, w.word_text, m.title_match, m.descr_match
 				FROM ' . $this->wordlist_table . ' w, ' . $this->wordmatch_table . ' m
 				WHERE m.article_id = ' . $article_id . '
@@ -1061,9 +1057,9 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			$words['add']['post'] = $split_text;
 			$words['add']['title'] = $split_title;
 			$words['add']['descr'] = $split_descr;
-			$words['del']['post'] = array();
-			$words['del']['title'] = array();
-			$words['del']['descr'] = array();
+			$words['del']['post'] = [];
+			$words['del']['title'] = [];
+			$words['del']['descr'] = [];
 		}
 		unset($split_text);
 		unset($split_title);
@@ -1083,7 +1079,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 				WHERE ' . $this->db->sql_in_set('word_text', $unique_add_words);
 			$result = $this->db->sql_query($sql);
 
-			$word_ids = array();
+			$word_ids = [];
 			while ($row = $this->db->sql_fetchrow($result))
 			{
 				$word_ids[$row['word_text']] = $row['word_id'];
@@ -1094,11 +1090,11 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			$this->db->sql_transaction('begin');
 			if (count($new_words))
 			{
-				$sql_ary = array();
+				$sql_ary = [];
 
 				foreach ($new_words as $word)
 				{
-					$sql_ary[] = array('word_text' => (string) $word, 'word_count' => 0);
+					$sql_ary[] = ['word_text' => (string) $word, 'word_count' => 0];
 				}
 				$this->db->sql_return_on_error(true);
 				$this->db->sql_multi_insert($this->wordlist_table, $sql_ary);
@@ -1119,7 +1115,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 
 			if (count($word_ary))
 			{
-				$sql_in = array();
+				$sql_in = [];
 				foreach ($word_ary as $word)
 				{
 					$sql_in[] = $cur_words[$word_in][$word];
@@ -1151,7 +1147,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			if (count($word_ary))
 			{
 				$sql = 'INSERT INTO ' . $this->wordmatch_table . ' (article_id, word_id, title_match, descr_match)
-					SELECT ' . (int) $article_id . ', word_id, ' . (int) $title_match . ', ' . (int) $descr_match . '
+					SELECT ' . $article_id . ', word_id, ' . $title_match . ', ' . $descr_match . '
 					FROM ' . $this->wordlist_table . '
 					WHERE ' . $this->db->sql_in_set('word_text', $word_ary);
 				$this->db->sql_query($sql);
@@ -1167,7 +1163,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		$this->db->sql_transaction('commit');
 
 		// destroy cached search results containing any of the words removed or added
-		$this->destroy_cache(array_unique(array_merge($words['add']['post'], $words['add']['title'], $words['add']['descr'], $words['del']['post'], $words['del']['title'], $words['del']['descr'])), array($poster_id));
+		$this->destroy_cache(array_unique(array_merge($words['add']['post'], $words['add']['title'], $words['add']['descr'], $words['del']['post'], $words['del']['title'], $words['del']['descr'])), [$poster_id]);
 
 		unset($unique_add_words);
 		unset($words);
@@ -1179,7 +1175,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	 */
 	public function index_remove(array $article_ids, array $author_ids): void
 	{
-		if (count(array($article_ids)))
+		if (count([$article_ids]))
 		{
 			$sql = 'SELECT w.word_id, w.word_text, m.title_match, m.descr_match
 				FROM ' . $this->wordmatch_table . ' m, ' . $this->wordlist_table . ' w
@@ -1187,7 +1183,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 					AND w.word_id = m.word_id';
 			$result = $this->db->sql_query($sql);
 
-			$message_word_ids = $title_word_ids = $descr_word_ids = $word_texts = array();
+			$message_word_ids = $title_word_ids = $descr_word_ids = $word_texts = [];
 			while ($row = $this->db->sql_fetchrow($result))
 			{
 				if ($row['title_match'])
@@ -1258,12 +1254,12 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			return;
 		}
 
-		$destroy_cache_words = array();
+		$destroy_cache_words = [];
 
 		// Remove common words
 		if ($this->config['kb_num_articles'] >= 100 && $this->config['fulltext_native_common_thres'])
 		{
-			$common_threshold = ((double) $this->config['fulltext_native_common_thres']) / 100.0;
+			$common_threshold = ((float) $this->config['fulltext_native_common_thres']) / 100.0;
 			// First, get the IDs of common words
 			$sql = 'SELECT word_id, word_text
 				FROM ' . $this->wordlist_table . '
@@ -1271,7 +1267,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 					OR word_common = 1';
 			$result = $this->db->sql_query($sql);
 
-			$sql_in = array();
+			$sql_in = [];
 			while ($row = $this->db->sql_fetchrow($result))
 			{
 				$sql_in[] = $row['word_id'];
@@ -1313,7 +1309,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	/**
 	 * {@inheritdoc}
 	 */
-	public function delete_index(int &$post_counter = null): ?array
+	public function delete_index(?int &$post_counter = null): ?array
 	{
 		$sql_queries = [];
 
@@ -1363,9 +1359,9 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			$this->get_stats();
 		}
 
-		return array(
+		return [
 			$this->language->lang('TOTAL_WORDS')   => $this->stats['total_words'],
-			$this->language->lang('TOTAL_MATCHES') => $this->stats['total_matches']);
+			$this->language->lang('TOTAL_MATCHES') => $this->stats['total_matches']];
 	}
 
 	/**
@@ -1373,7 +1369,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	 */
 	protected function get_stats()
 	{
-		$this->stats['total_words']  = $this->db->get_estimated_row_count($this->wordlist_table);
+		$this->stats['total_words'] = $this->db->get_estimated_row_count($this->wordlist_table);
 		$this->stats['total_matches'] = $this->db->get_estimated_row_count($this->wordmatch_table);
 	}
 
@@ -1385,12 +1381,12 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	 *
 	 * NOTE: duplicates are NOT removed from the return array
 	 *
-	 * @param	string	$text	Text to split, encoded in UTF-8
-	 * @return	array			Array of UTF-8 words
+	 * @param string $text Text to split, encoded in UTF-8
+	 * @return    array            Array of UTF-8 words
 	 */
 	public function split_message($text)
 	{
-		$match = $words = array();
+		$match = $words = [];
 
 		/**
 		 * Taken from the original code
@@ -1453,22 +1449,22 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	}
 
 	/**
-	* Clean up a text to remove non-alphanumeric characters
-	*
-	* This method receives a UTF-8 string, normalizes and validates it, replaces all
-	* non-alphanumeric characters with strings then returns the result.
-	*
-	* Any number of "allowed chars" can be passed as a UTF-8 string in NFC.
-	*
-	* @param	string	$text			Text to split, in UTF-8 (not normalized or sanitized)
-	* @param	string	$allowed_chars	String of special chars to allow
-	* @param	string	$encoding		Text encoding
-	* @return	string					Cleaned up text, only alphanumeric chars are left
-	*/
+	 * Clean up a text to remove non-alphanumeric characters
+	 *
+	 * This method receives a UTF-8 string, normalizes and validates it, replaces all
+	 * non-alphanumeric characters with strings then returns the result.
+	 *
+	 * Any number of "allowed chars" can be passed as a UTF-8 string in NFC.
+	 *
+	 * @param string $text          Text to split, in UTF-8 (not normalized or sanitized)
+	 * @param string $allowed_chars String of special chars to allow
+	 * @param string $encoding      Text encoding
+	 * @return    string                    Cleaned up text, only alphanumeric chars are left
+	 */
 	protected function cleanup($text, $allowed_chars = null, $encoding = 'utf-8')
 	{
-		static $conv = array(), $conv_loaded = array();
-		$allow = array();
+		static $conv = [], $conv_loaded = [];
+		$allow = [];
 
 		// Convert the text to UTF-8
 		$encoding = strtolower($encoding);
@@ -1477,45 +1473,45 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			$text = utf8_recode($text, $encoding);
 		}
 
-		$utf_len_mask = array(
-			"\xC0"	=>	2,
-			"\xD0"	=>	2,
-			"\xE0"	=>	3,
-			"\xF0"	=>	4
-		);
+		$utf_len_mask = [
+			"\xC0" => 2,
+			"\xD0" => 2,
+			"\xE0" => 3,
+			"\xF0" => 4,
+		];
 
 		/**
-		* Replace HTML entities and NCRs
-		*/
+		 * Replace HTML entities and NCRs
+		 */
 		$text = htmlspecialchars_decode(utf8_decode_ncr($text), ENT_QUOTES);
 
 		/**
-		* Normalize to NFC
-		*/
+		 * Normalize to NFC
+		 */
 		$text = \Normalizer::normalize($text);
 
 		/**
-		* The first thing we do is:
-		*
-		* - convert ASCII-7 letters to lowercase
-		* - remove the ASCII-7 non-alpha characters
-		* - remove the bytes that should not appear in a valid UTF-8 string: 0xC0,
-		*   0xC1 and 0xF5-0xFF
-		*
-		* @todo in theory, the third one is already taken care of during normalization and those chars should have been replaced by Unicode replacement chars
-		*/
-		$sb_match	= "ISTCPAMELRDOJBNHFGVWUQKYXZ\r\n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0B\x0C\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\xC0\xC1\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF";
-		$sb_replace	= 'istcpamelrdojbnhfgvwuqkyxz                                                                              ';
+		 * The first thing we do is:
+		 *
+		 * - convert ASCII-7 letters to lowercase
+		 * - remove the ASCII-7 non-alpha characters
+		 * - remove the bytes that should not appear in a valid UTF-8 string: 0xC0,
+		 *   0xC1 and 0xF5-0xFF
+		 *
+		 * @todo in theory, the third one is already taken care of during normalization and those chars should have been replaced by Unicode replacement chars
+		 */
+		$sb_match = "ISTCPAMELRDOJBNHFGVWUQKYXZ\r\n\t!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~\x00\x01\x02\x03\x04\x05\x06\x07\x08\x0B\x0C\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F\xC0\xC1\xF5\xF6\xF7\xF8\xF9\xFA\xFB\xFC\xFD\xFE\xFF";
+		$sb_replace = 'istcpamelrdojbnhfgvwuqkyxz                                                                              ';
 
 		/**
-		* This is the list of legal ASCII chars, it is automatically extended
-		* with ASCII chars from $allowed_chars
-		*/
+		 * This is the list of legal ASCII chars, it is automatically extended
+		 * with ASCII chars from $allowed_chars
+		 */
 		$legal_ascii = ' eaisntroludcpmghbfvq10xy2j9kw354867z';
 
 		/**
-		* Prepare an array containing the extra chars to allow
-		*/
+		 * Prepare an array containing the extra chars to allow
+		 */
 		if (isset($allowed_chars[0]))
 		{
 			$pos = 0;
@@ -1527,33 +1523,32 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 				if ($c < "\x80")
 				{
 					/**
-					* ASCII char
-					*/
+					 * ASCII char
+					 */
 					$sb_pos = strpos($sb_match, $c);
 					if (is_int($sb_pos))
 					{
 						/**
-						* Remove the char from $sb_match and its corresponding
-						* replacement in $sb_replace
-						*/
+						 * Remove the char from $sb_match and its corresponding
+						 * replacement in $sb_replace
+						 */
 						$sb_match = substr($sb_match, 0, $sb_pos) . substr($sb_match, $sb_pos + 1);
 						$sb_replace = substr($sb_replace, 0, $sb_pos) . substr($sb_replace, $sb_pos + 1);
 						$legal_ascii .= $c;
 					}
 
-					++$pos;
+					$pos++;
 				}
 				else
 				{
 					/**
-					* UTF-8 char
-					*/
+					 * UTF-8 char
+					 */
 					$utf_len = $utf_len_mask[$c & "\xF0"];
 					$allow[substr($allowed_chars, $pos, $utf_len)] = 1;
 					$pos += $utf_len;
 				}
-			}
-			while ($pos < $len);
+			} while ($pos < $len);
 		}
 
 		$text = strtr($text, $sb_match, $sb_replace);
@@ -1565,8 +1560,8 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 		do
 		{
 			/**
-			* Do all consecutive ASCII chars at once
-			*/
+			 * Do all consecutive ASCII chars at once
+			 */
 			if ($spn = strspn($text, $legal_ascii, $pos))
 			{
 				$ret .= substr($text, $pos, $spn);
@@ -1579,8 +1574,8 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			}
 
 			/**
-			* Capture the UTF char
-			*/
+			 * Capture the UTF char
+			 */
 			$utf_len = $utf_len_mask[$text[$pos] & "\xF0"];
 			$utf_char = substr($text, $pos, $utf_len);
 			$pos += $utf_len;
@@ -1590,11 +1585,11 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 				|| ($utf_char >= self::UTF8_CJK_B_FIRST && $utf_char <= self::UTF8_CJK_B_LAST))
 			{
 				/**
-				* All characters within these ranges are valid
-				*
-				* We separate them with a space in order to index each character
-				* individually
-				*/
+				 * All characters within these ranges are valid
+				 *
+				 * We separate them with a space in order to index each character
+				 * individually
+				 */
 				$ret .= ' ' . $utf_char . ' ';
 				continue;
 			}
@@ -1602,8 +1597,8 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			if (isset($allow[$utf_char]))
 			{
 				/**
-				* The char is explicitly allowed
-				*/
+				 * The char is explicitly allowed
+				 */
 				$ret .= $utf_char;
 				continue;
 			}
@@ -1611,52 +1606,52 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			if (isset($conv[$utf_char]))
 			{
 				/**
-				* The char is mapped to something, maybe to itself actually
-				*/
+				 * The char is mapped to something, maybe to itself actually
+				 */
 				$ret .= $conv[$utf_char];
 				continue;
 			}
 
 			/**
-			* The char isn't mapped, but did we load its conversion table?
-			*
-			* The search indexer table is split into blocks. The block number of
-			* each char is equal to its codepoint right-shifted for 11 bits. It
-			* means that out of the 11, 16 or 21 meaningful bits of a 2-, 3- or
-			* 4- byte sequence we only keep the leftmost 0, 5 or 10 bits. Thus,
-			* all UTF chars encoded in 2 bytes are in the same first block.
-			*/
+			 * The char isn't mapped, but did we load its conversion table?
+			 *
+			 * The search indexer table is split into blocks. The block number of
+			 * each char is equal to its codepoint right-shifted for 11 bits. It
+			 * means that out of the 11, 16 or 21 meaningful bits of a 2-, 3- or
+			 * 4- byte sequence we only keep the leftmost 0, 5 or 10 bits. Thus,
+			 * all UTF chars encoded in 2 bytes are in the same first block.
+			 */
 			if (isset($utf_char[2]))
 			{
 				if (isset($utf_char[3]))
 				{
 					/**
-					* 1111 0nnn 10nn nnnn 10nx xxxx 10xx xxxx
-					* 0000 0111 0011 1111 0010 0000
-					*/
+					 * 1111 0nnn 10nn nnnn 10nx xxxx 10xx xxxx
+					 * 0000 0111 0011 1111 0010 0000
+					 */
 					$idx = ((ord($utf_char[0]) & 0x07) << 7) | ((ord($utf_char[1]) & 0x3F) << 1) | ((ord($utf_char[2]) & 0x20) >> 5);
 				}
 				else
 				{
 					/**
-					* 1110 nnnn 10nx xxxx 10xx xxxx
-					* 0000 0111 0010 0000
-					*/
+					 * 1110 nnnn 10nx xxxx 10xx xxxx
+					 * 0000 0111 0010 0000
+					 */
 					$idx = ((ord($utf_char[0]) & 0x07) << 1) | ((ord($utf_char[1]) & 0x20) >> 5);
 				}
 			}
 			else
 			{
 				/**
-				* 110x xxxx 10xx xxxx
-				* 0000 0000 0000 0000
-				*/
+				 * 110x xxxx 10xx xxxx
+				 * 0000 0000 0000 0000
+				 */
 				$idx = 0;
 			}
 
 			/**
-			* Check if the required conv table has been loaded already
-			*/
+			 * Check if the required conv table has been loaded already
+			 */
 			if (!isset($conv_loaded[$idx]))
 			{
 				$conv_loaded[$idx] = 1;
@@ -1675,15 +1670,14 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 			else
 			{
 				/**
-				* We add an entry to the conversion table so that we
-				* don't have to convert to codepoint and perform the checks
-				* that are above this block
-				*/
+				 * We add an entry to the conversion table so that we
+				 * don't have to convert to codepoint and perform the checks
+				 * that are above this block
+				 */
 				$conv[$utf_char] = ' ';
 				$ret .= ' ';
 			}
-		}
-		while (1);
+		} while (1);
 
 		return $ret;
 	}

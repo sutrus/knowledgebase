@@ -12,13 +12,14 @@
 namespace sheer\knowledgebase\inc;
 
 use phpbb\auth\auth;
+use phpbb\cache\driver\driver_interface as cache;
 use phpbb\config\config;
 use phpbb\config\db_text;
 use phpbb\controller\helper;
 use phpbb\db\driver\driver_interface;
 use phpbb\extension\manager;
 use phpbb\language\language;
-use phpbb\log\log_interface;
+use phpbb\log\log;
 use phpbb\template\template;
 use phpbb\user;
 
@@ -51,11 +52,11 @@ class functions_kb
 	/** @var \phpbb\user */
 	protected user $user;
 
-	/** @var \phpbb\cache\driver\driver_interface */
-	protected \phpbb\cache\driver\driver_interface $cache;
+	/** @var \phpbb\cache\driver\driver_interface $cache */
+	protected cache $cache;
 
-	/** @var \phpbb\log\log_interface */
-	protected log_interface $log;
+	/** @var \phpbb\log\log */
+	protected log $log;
 
 	/** @var string phpbb_root_path */
 	protected string $phpbb_root_path;
@@ -90,47 +91,32 @@ class functions_kb
 	/**
 	 * Constructor
 	 *
-	 * @param \phpbb\db\driver\driver_interface    $db
-	 * @param \phpbb\config\config                 $config
-	 * @param \phpbb\config\db_text                $config_text
-	 * @param \phpbb\controller\helper             $helper
-	 * @param \phpbb\extension\manager             $ext_manager
-	 * @param \phpbb\language\language             $language
-	 * @param \phpbb\auth\auth                     $auth
-	 * @param \phpbb\template\template             $template
-	 * @param \phpbb\user                          $user
-	 * @param \phpbb\cache\driver\driver_interface $cache
-	 * @param \phpbb\log\log_interface             $log
-	 * @param string                               $phpbb_root_path
-	 * @param string                               $php_ext
-	 * @param string                               $articles_table
-	 * @param string                               $categories_table
-	 * @param string                               $kb_logs_table
-	 * @param string                               $attachments_table
-	 * @param string                               $options_table
-	 * @param string                               $kb_users_table
-	 * @param string                               $kb_groups_table
+	 * @param driver_interface $db
+	 * @param config           $config
+	 * @param db_text          $config_text
+	 * @param helper           $helper
+	 * @param manager          $ext_manager
+	 * @param language         $language
+	 * @param auth             $auth
+	 * @param template         $template
+	 * @param user             $user
+	 * @param cache            $cache
+	 * @param log              $log
+	 * @param string           $phpbb_root_path
+	 * @param string           $php_ext
+	 * @param string           $articles_table
+	 * @param string           $categories_table
+	 * @param string           $kb_logs_table
+	 * @param string           $attachments_table
+	 * @param string           $options_table
+	 * @param string           $kb_users_table
+	 * @param string           $kb_groups_table
 	 */
 	public function __construct(
-		driver_interface $db,
-		config $config,
-		db_text $config_text,
-		helper $helper,
-		manager $ext_manager,
-		language $language,
-		auth $auth,
-		template $template,
-		user $user,
-		\phpbb\cache\driver\driver_interface $cache,
-		log_interface $log,
-		string $phpbb_root_path,
-		string $php_ext,
-		string $articles_table,
-		string $categories_table,
-		string $kb_logs_table,
-		string $attachments_table,
-		string $options_table,
-		string $kb_users_table,
+		driver_interface $db, config $config, db_text $config_text, helper $helper, manager $ext_manager,
+		language $language, auth $auth, template $template, user $user, cache $cache, log $log,
+		string $phpbb_root_path, string $php_ext, string $articles_table, string $categories_table,
+		string $kb_logs_table, string $attachments_table, string $options_table, string $kb_users_table,
 		string $kb_groups_table
 	)
 	{
@@ -162,36 +148,30 @@ class functions_kb
 	/**
 	 * get_category_branch
 	 *
-	 * @param int    $category_id
-	 * @param string $type
-	 * @param string $order
-	 * @param bool   $include_category
+	 * @param int         $category_id
+	 * @param string|null $type
+	 * @param string|null $order
+	 * @param bool        $include_category
 	 * @return array
 	 */
-	public function get_category_branch(int $category_id, string $type = 'all', string $order = 'descending', bool $include_category = true): array
+	public function get_category_branch(int $category_id, string|null $type = null, string|null $order = null, bool $include_category = true): array
 	{
-		switch ($type)
+		$order ??= 'descending';
+		$type ??= 'all';
+		$condition = match ($type)
 		{
-			case 'parents':
-				$condition = 'f1.left_id BETWEEN f2.left_id AND f2.right_id';
-			break;
+			'parents' => 'f1.left_id BETWEEN f2.left_id AND f2.right_id',
+			'children' => 'f2.left_id BETWEEN f1.left_id AND f1.right_id',
+			default => 'f2.left_id BETWEEN f1.left_id AND f1.right_id OR f1.left_id BETWEEN f2.left_id AND f2.right_id',
+		};
 
-			case 'children':
-				$condition = 'f2.left_id BETWEEN f1.left_id AND f1.right_id';
-			break;
-
-			default:
-				$condition = 'f2.left_id BETWEEN f1.left_id AND f1.right_id OR f1.left_id BETWEEN f2.left_id AND f2.right_id';
-			break;
-		}
-
-		$rows = array();
+		$rows = [];
 
 		$sql = 'SELECT f2.*
 			FROM ' . $this->categories_table . ' f1
-			LEFT JOIN ' . $this->categories_table . " f2 ON ($condition)
-			WHERE f1.category_id = $category_id
-			ORDER BY f2.left_id " . (($order == 'descending') ? 'ASC' : 'DESC');
+			LEFT JOIN ' . $this->categories_table . ' f2 ON (' . $condition . ')
+			WHERE f1.category_id = ' . $category_id . '
+			ORDER BY f2.left_id ' . ($order === 'descending' ? 'ASC' : 'DESC');
 		$result = $this->db->sql_query($sql);
 
 		while ($row = $this->db->sql_fetchrow($result))
@@ -213,7 +193,7 @@ class functions_kb
 	public function get_cat_list(array $ignore_id): string
 	{
 		$right = 0;
-		$padding_store = array('0' => '');
+		$padding_store = ['0' => ''];
 		$padding = $cat_list = '';
 
 		$sql = 'SELECT category_id, category_name, parent_id, left_id, right_id, number_articles
@@ -245,7 +225,7 @@ class functions_kb
 				$res = $this->db->sql_query($sql);
 				$art_row = $this->db->sql_fetchrow($res);
 				$this->db->sql_freeresult($res);
-				$cat_list .= $padding . '<a href="' . $this->helper->route('sheer_knowledgebase_category', array('id' => $row['category_id'])) . '">' . $row['category_name'] . '</a> (' . $this->language->lang('ARTICLES') . ': ' . $art_row['articles'] . ')<br>';
+				$cat_list .= $padding . '<a href="' . $this->helper->route('sheer_knowledgebase_category', ['id' => $row['category_id']]) . '">' . $row['category_name'] . '</a> (' . $this->language->lang('ARTICLES') . ': ' . $art_row['articles'] . ')<br>';
 			}
 		}
 		$this->db->sql_freeresult($result);
@@ -257,48 +237,38 @@ class functions_kb
 	 * @param $category_id
 	 * @return void
 	 */
-	public function gen_kb_auth_level($category_id)
+	public function gen_kb_auth_level($category_id): void
 	{
-		$rules = array(
+		$rules = [
 			($this->acl_kb_get($category_id, 'kb_u_add')) ? $this->language->lang('RULES_KB_ADD_CAN') : $this->language->lang('RULES_KB_ADD_CANNOT'),
-		);
+		];
 
 		if ($this->acl_kb_get($category_id, 'kb_m_delete'))
 		{
-			$rules = array_merge($rules, array(
-				$this->language->lang('RULES_KB_DELETE_MOD_CAN'),
-			));
+			$rules = [...$rules, $this->language->lang('RULES_KB_DELETE_MOD_CAN')];
 		}
 		else
 		{
-			$rules = array_merge($rules, array(
-				($this->acl_kb_get($category_id, 'kb_u_delete')) ? $this->language->lang('RULES_KB_DELETE_CAN') : $this->language->lang('RULES_KB_DELETE_CANNOT'),
-			));
+			$rules = [...$rules, ($this->acl_kb_get($category_id, 'kb_u_delete')) ? $this->language->lang('RULES_KB_DELETE_CAN') : $this->language->lang('RULES_KB_DELETE_CANNOT')];
 		}
 
 		if ($this->acl_kb_get($category_id, 'kb_m_edit'))
 		{
-			$rules = array_merge($rules, array(
-				$this->language->lang('RULES_KB_EDIT_MOD_CAN'),
-			));
+			$rules = [...$rules, $this->language->lang('RULES_KB_EDIT_MOD_CAN')];
 		}
 		else
 		{
-			$rules = array_merge($rules, array(
-				($this->acl_kb_get($category_id, 'kb_u_edit')) ? $this->language->lang('RULES_KB_EDIT_CAN') : $this->language->lang('RULES_KB_EDIT_CANNOT'),
-			));
+			$rules = [...$rules, ($this->acl_kb_get($category_id, 'kb_u_edit')) ? $this->language->lang('RULES_KB_EDIT_CAN') : $this->language->lang('RULES_KB_EDIT_CANNOT')];
 		}
 
 		if ($this->acl_kb_get($category_id, 'kb_m_approve'))
 		{
-			$rules = array_merge($rules, array(
-				$this->language->lang('RULES_KB_APPROVE_MOD_CAN'),
-			));
+			$rules = [...$rules, $this->language->lang('RULES_KB_APPROVE_MOD_CAN')];
 		}
 
 		foreach ($rules as $rule)
 		{
-			$this->template->assign_block_vars('rules', array('RULE' => $rule));
+			$this->template->assign_block_vars('rules', ['RULE' => $rule]);
 		}
 	}
 
@@ -318,12 +288,12 @@ class functions_kb
 			ORDER BY g.group_type DESC, g.group_id DESC';
 		$result = $this->db->sql_query($sql);
 
-		$groups = $user_groups = array();
+		$groups = $user_groups = [];
 		while ($row = $this->db->sql_fetchrow($result))
 		{
-			$groups[$row['group_id']] = array(
+			$groups[$row['group_id']] = [
 				'auth_setting' => ACL_NO,
-			);
+			];
 			$user_groups[] = $row['group_id'];
 		}
 		$this->db->sql_freeresult($result);
@@ -407,9 +377,7 @@ class functions_kb
 	 */
 	public function make_category_dropbox(): string
 	{
-		$sql = 'SELECT *
-			FROM ' . $this->categories_table . '
-			ORDER BY left_id ASC';
+		$sql = 'SELECT * FROM ' . $this->categories_table . ' ORDER BY left_id ASC';
 		$result = $this->db->sql_query($sql, 600);
 
 		$cats_list = '';
@@ -431,9 +399,9 @@ class functions_kb
 			$right = $row['right_id'];
 			$category_parent = $row['parent_id'] == 0;
 
-			$class = ($category_parent) ? ' class="jumpbox-cat-link"' : ' class="jumpbox-forum-link"';
+			$class = $category_parent ? ' class="jumpbox-cat-link"' : ' class="jumpbox-forum-link"';
 			$category_name = ($category_parent) ? $padding . $row['category_name'] : $padding . '&raquo;&nbsp;&nbsp;' . $row['category_name'];
-			$cats_list .= '<li><a href="' . $this->helper->route('sheer_knowledgebase_category', array('id' => $row['category_id'])) . '" ' . $class . '>' . $category_name . '</a></li>';
+			$cats_list .= '<li><a href="' . $this->helper->route('sheer_knowledgebase_category', ['id' => $row['category_id']]) . '" ' . $class . '>' . $category_name . '</a></li>';
 		}
 		$this->db->sql_freeresult($result);
 		unset($padding_store);
@@ -442,16 +410,14 @@ class functions_kb
 	}
 
 	/**
-	 * @param      $select_id
-	 * @param      $ignore_id
-	 * @param bool $ignore_acl
+	 * @param       $select_id
+	 * @param array $ignore_id
+	 * @param bool  $ignore_acl
 	 * @return string
 	 */
-	public function make_category_select($select_id = false, $ignore_id = false, bool $ignore_acl = false): string
+	public function make_category_select($select_id, array $ignore_id, bool $ignore_acl = false): string
 	{
-		$sql = 'SELECT *
-			FROM ' . $this->categories_table . '
-			ORDER BY left_id ASC';
+		$sql = 'SELECT * FROM ' . $this->categories_table . ' ORDER BY left_id ASC';
 		$result = $this->db->sql_query($sql, 600);
 
 		$cats_list = '';
@@ -473,14 +439,16 @@ class functions_kb
 			$right = $row['right_id'];
 			$disabled = false;
 
-			if (!$ignore_acl && ((is_array($ignore_id) && in_array($row['category_id'], $ignore_id)) || !$this->acl_kb_get($row['category_id'], 'kb_u_add')))
+			if (!$ignore_acl &&
+				(in_array($row['category_id'], $ignore_id) || !$this->acl_kb_get($row['category_id'], 'kb_u_add'))
+			)
 			{
 				$disabled = true;
 			}
 
 			$category_name = $padding . '&nbsp;&nbsp;' . $row['category_name'];
-			$selected = (is_array($select_id)) ? ((in_array($row['category_id'], $select_id)) ? ' selected="selected"' : '') : (($row['category_id'] == $select_id) ? ' selected="selected"' : '');
-			$cats_list .= '<option value="' . $row['category_id'] . '"' . (($disabled) ? ' disabled="disabled" class="disabled-option"' : $selected) . '>' . $category_name . '</option>';
+			$selected = is_array($select_id) ? (in_array($row['category_id'], $select_id) ? ' selected="selected"' : '') : ($row['category_id'] == $select_id ? ' selected="selected"' : '');
+			$cats_list .= '<option value="' . $row['category_id'] . '"' . ($disabled ? ' disabled="disabled" class="disabled-option"' : $selected) . '>' . $category_name . '</option>';
 		}
 		$this->db->sql_freeresult($result);
 		unset($padding_store);
@@ -549,7 +517,7 @@ class functions_kb
 			WHERE article_id = ' . (int) $id;
 		$this->db->sql_query($sql);
 
-		$ids = array();
+		$ids = [];
 		$sql = 'SELECT attach_id, physical_filename, thumbnail
 			FROM ' . $this->attachments_table . '
 			WHERE article_id = ' . (int) $id;
@@ -565,10 +533,10 @@ class functions_kb
 		{
 			foreach ($attachment_data as $attachment)
 			{
-				@unlink($this->upload_dir . $attachment['physical_filename']);
+				unlink($this->upload_dir . $attachment['physical_filename']);
 				if ($attachment['thumbnail'])
 				{
-					@unlink($this->upload_dir . 'thumb_' . $attachment['physical_filename']);
+					unlink($this->upload_dir . 'thumb_' . $attachment['physical_filename']);
 				}
 			}
 			$sql = 'DELETE FROM ' . $this->attachments_table . '
@@ -586,19 +554,17 @@ class functions_kb
 		$this->cache->destroy('sql', $this->categories_table);
 		$this->config->increment('kb_num_articles', -1);
 
-		delete_topics('topic_id', array($info['topic_id']), true, true, true);
-		$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_DEL_ARTICLE', time(), array($article_title, $cat_info['category_name']));
+		delete_topics('topic_id', [$info['topic_id']], true, true, true);
+		$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_DEL_ARTICLE', time(), [$article_title, $cat_info['category_name']]);
 	}
 
 	/**
 	 * @param $art_id
 	 * @return mixed
 	 */
-	public function get_kb_article_info($art_id)
+	public function get_kb_article_info($art_id): mixed
 	{
-		$sql = 'SELECT *
-			FROM ' . $this->articles_table . '
-			WHERE article_id = ' . (int) $art_id;
+		$sql = 'SELECT * FROM ' . $this->articles_table . ' WHERE article_id = ' . (int) $art_id;
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
@@ -611,9 +577,7 @@ class functions_kb
 
 	public function get_cat_info($category_id)
 	{
-		$sql = 'SELECT *
-			FROM ' . $this->categories_table . "
-			WHERE category_id = $category_id";
+		$sql = 'SELECT * FROM ' . $this->categories_table . ' WHERE category_id = ' . $category_id;
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
@@ -625,7 +589,15 @@ class functions_kb
 		return $row;
 	}
 
-	public function kb_move_article($k, $article_title, $cat_id, $id, $order)
+	/**
+	 * @param $k
+	 * @param $article_title
+	 * @param $cat_id
+	 * @param $id
+	 * @param $order
+	 * @return void
+	 */
+	public function kb_move_article($k, $article_title, $cat_id, $id, $order): void
 	{
 		// Change category id in the table of articles
 		$sql = 'UPDATE ' . $this->articles_table . '
@@ -662,7 +634,7 @@ class functions_kb
 			WHERE category_id = ' . (int) $id;
 		$this->db->sql_query($sql);
 		$this->cache->destroy('sql', $this->categories_table);
-		$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_MOVED_ARTICLE', time(), array($article_title, $cat_info['category_name'], $to_cat_info['category_name']));
+		$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_MOVED_ARTICLE', time(), [$article_title, $cat_info['category_name'], $to_cat_info['category_name']]);
 	}
 
 	/**
@@ -677,12 +649,9 @@ class functions_kb
 	 */
 	public function submit_article($cat_id, $fid, $article_title, $article_description, $article_author, $category_name, $new): void
 	{
-		$options = '';
-		$topic_title = '';
+		$options = $topic_title = '';
 
-		$sql = 'SELECT forum_id
-			FROM ' . FORUMS_TABLE . '
-			WHERE forum_id = ' . (int) $fid;
+		$sql = 'SELECT forum_id FROM ' . FORUMS_TABLE . ' WHERE forum_id = ' . (int) $fid;
 		$result = $this->db->sql_query($sql);
 		if ($this->db->sql_fetchrow($result))
 		{
@@ -706,7 +675,7 @@ class functions_kb
 
 		generate_text_for_storage($topic_text, $bbcode_uid, $bitfield, $options, true, true, true);
 
-		$data = array(
+		$data = [
 			'topic_title'      => $topic_title,
 			'forum_id'         => $fid,
 			'forum_name'       => '',
@@ -724,13 +693,11 @@ class functions_kb
 			'bbcode_bitfield'  => $bitfield,
 			'bbcode_uid'       => substr(md5(rand()), 0, 8),
 			'post_edit_locked' => 0,
-		);
+		];
 
 		submit_post('post', $topic_title, $this->user->data['username'], 0, $poll, $data, false);
 
-		$sql = 'SELECT MAX(topic_id) AS last_topic
-			FROM ' . TOPICS_TABLE . '
-			WHERE forum_id = ' . (int) $fid;
+		$sql = 'SELECT MAX(topic_id) AS last_topic FROM ' . TOPICS_TABLE . ' WHERE forum_id = ' . (int) $fid;
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
@@ -752,24 +719,24 @@ class functions_kb
 		krsort($attachments);
 //		preg_match_all('#<!\-\- ia([0-9]+) \-\->(.*?)<!\-\- ia\1 \-\->#', $text, $matches, PREG_PATTERN_ORDER);
 		preg_match_all('#<!-- ia([0-9]+) -->(.*?)<!-- ia\1 -->#', $text, $matches, PREG_PATTERN_ORDER);
-		$replace = array();
+		$replace = [];
 		foreach ($matches[0] as $num => $capture)
 		{
 			$index = $matches[1][$num];
 			$comment = ($attachments[$index]['attach_comment']) ? '<dd>' . $attachments[$index]['attach_comment'] . '</dd>' : '';
 			if ($attachments[$index]['thumbnail'] == 1)
 			{
-				$replacement = '<dl class="thumbnail"><dt><a href="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $attachments[$index]['attach_id'])) . '"><img src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $attachments[$index]['attach_id'])) . '&amp;t=1" class="postimage" alt="' . $attachments[$index]['real_filename'] . '" title="' . $attachments[$index]['real_filename'] . '"></a></dt>' . $comment . '</dl>';
+				$replacement = '<dl class="thumbnail"><dt><a href="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $attachments[$index]['attach_id']]) . '"><img src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $attachments[$index]['attach_id']]) . '&amp;t=1" class="postimage" alt="' . $attachments[$index]['real_filename'] . '" title="' . $attachments[$index]['real_filename'] . '"></a></dt>' . $comment . '</dl>';
 			}
 			else
 			{
 				if ($this->check_is_img($attachments[$index]['extension'], $extensions))
 				{
-					$replacement = '<dl class="file"><dt class="attach-image"><img src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $attachments[$index]['attach_id'])) . '" class="postimage" alt="' . $attachments[$index]['real_filename'] . '" onclick="viewableArea(this);"></dt><dd>' . $comment . '</dd></dl>';
+					$replacement = '<dl class="file"><dt class="attach-image"><img src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $attachments[$index]['attach_id']]) . '" class="postimage" alt="' . $attachments[$index]['real_filename'] . '" onclick="viewableArea(this);"></dt><dd>' . $comment . '</dd></dl>';
 				}
 				else if ($attachments[$index]['extension'] == 'mp3' || $attachments[$index]['extension'] == 'mp4')
 				{
-					$replacement = '<p><audio src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $attachments[$index]['attach_id'])) . '" controls preload="none"></audio>';
+					$replacement = '<p><audio src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $attachments[$index]['attach_id']]) . '" controls preload="none"></audio>';
 					if ($attachments[$index]['attach_comment'])
 					{
 						$replacement .= '<br>' . $attachments[$index]['attach_comment'];
@@ -779,7 +746,7 @@ class functions_kb
 				else
 				{
 					$icon = ($extensions[$attachments[$index]['extension']]['upload_icon']) ? '<img src="' . generate_board_url() . '/images/upload_icons/' . $extensions[$attachments[$index]['extension']]['upload_icon'] . '" alt="">' : '';
-					$replacement = '<dl class="file"><dt>' . $icon . ' <a class="postlink" href="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $attachments[$index]['attach_id'])) . '">' . $attachments[$index]['real_filename'] . '</a></dt></dl>';
+					$replacement = '<dl class="file"><dt>' . $icon . ' <a class="postlink" href="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $attachments[$index]['attach_id']]) . '">' . $attachments[$index]['real_filename'] . '</a></dt></dl>';
 				}
 			}
 			$replace['from'][] = $matches[0][$num];
@@ -811,18 +778,18 @@ class functions_kb
 				$comment = ($value['attach_comment']) ? '<dd>' . $value['attach_comment'] . '</dd>' : '';
 				if ($value['thumbnail'])
 				{
-					$text .= '<dd><dl class="thumbnail"><dt><a href="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $value['attach_id'])) . '"><img alt= "" src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $value['attach_id'])) . '&amp;t=1"></a></dt>' . $comment . '</dl></dd>';
+					$text .= '<dd><dl class="thumbnail"><dt><a href="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $value['attach_id']]) . '"><img alt= "" src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $value['attach_id']]) . '&amp;t=1"></a></dt>' . $comment . '</dl></dd>';
 				}
 				else
 				{
 					if ($this->check_is_img($value['extension'], $extensions))
 					{
 						$text .= '<dd><dl class="file">';
-						$text .= '<dt class="attach-image"><img src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $value['attach_id'])) . '" class="postimage" alt="' . $value['real_filename'] . '" onclick="viewableArea(this);"></dt>' . $comment;
+						$text .= '<dt class="attach-image"><img src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $value['attach_id']]) . '" class="postimage" alt="' . $value['real_filename'] . '" onclick="viewableArea(this);"></dt>' . $comment;
 					}
 					else if ($value['extension'] == 'mp3')
 					{
-						$text .= '<p><audio src="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $value['attach_id'])) . '" controls preload="none"></audio>';
+						$text .= '<p><audio src="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $value['attach_id']]) . '" controls preload="none"></audio>';
 						if ($value['attach_comment'])
 						{
 							$text .= '<br>' . $value['attach_comment'];
@@ -832,7 +799,7 @@ class functions_kb
 					else
 					{
 						$icon = ($extensions[$value['extension']]['upload_icon']) ? '<img src="' . generate_board_url() . '/images/upload_icons/' . $extensions[$value['extension']]['upload_icon'] . '" alt="">' : '';
-						$text .= '<dd><dl class="file"><dt>' . $icon . ' <a class="postlink" href="' . $this->helper->route('sheer_knowledgebase_kb_file', array('id' => $value['attach_id'])) . '">' . $value['real_filename'] . '</a></dt>' . $comment;
+						$text .= '<dd><dl class="file"><dt>' . $icon . ' <a class="postlink" href="' . $this->helper->route('sheer_knowledgebase_kb_file', ['id' => $value['attach_id']]) . '">' . $value['real_filename'] . '</a></dt>' . $comment;
 					}
 					$text .= '</dl></dd>';
 				}
@@ -846,7 +813,7 @@ class functions_kb
 	 * @param ?array $extensions
 	 * @return bool
 	 */
-	public function check_is_img(string $ext, ?array &$extensions = array()): bool
+	public function check_is_img(string $ext, array|null &$extensions = []): bool
 	{
 		if (($extensions = $this->cache->get('_kb_extension')) === false)
 		{
@@ -859,7 +826,7 @@ class functions_kb
 			{
 				$extension = strtolower(trim($row['extension']));
 
-				$extensions[$extension] = array(
+				$extensions[$extension] = [
 					'display_cat'   => (int) $row['cat_id'],
 					'download_mode' => $row['download_mode'] ?? 0,// phpbb 4.x
 					'upload_icon'   => trim($row['upload_icon']),
@@ -867,7 +834,7 @@ class functions_kb
 					'allow_group'   => $row['allow_group'],
 					'allow_in_pm'   => $row['allow_in_pm'],
 					'group_name'    => $row['group_name'],
-				);
+				];
 			}
 			$this->db->sql_freeresult($result);
 			$this->cache->put('_kb_extension', $extensions);
