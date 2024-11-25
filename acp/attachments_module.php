@@ -24,7 +24,7 @@ class attachments_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main(int $id, string $mode): void
+	public function main($id, string $mode): void
 	{
 		global $phpbb_container;
 

@@ -441,11 +441,10 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		$sql_where_options .= ($sort_days) ? ' AND p.article_date >= ' . (time() - ($sort_days * 86400)) : '';
 		$sql_where_options .= ' AND p.approved = 1 ';
 
-		$sql = "SELECT $sql_select
-			FROM " . $this->articles_table . " p
-			WHERE MATCH ($sql_match) AGAINST ('" . $this->db->sql_escape(htmlspecialchars_decode($this->search_query, ENT_COMPAT)) . "' IN BOOLEAN MODE)
+		$sql = 'SELECT $sql_select FROM ' . $this->articles_table . ' p
+			WHERE MATCH ($sql_match) AGAINST (' . $this->db->sql_escape(htmlspecialchars_decode($this->search_query, ENT_COMPAT)) . ' IN BOOLEAN MODE)
 				$sql_where_options
-			ORDER BY $sql_sort";
+			ORDER BY $sql_sort';
 		$this->db->sql_return_on_error(true);
 		$result = $this->db->sql_query_limit($sql, $this->config['search_block_size'], $start);
 
@@ -460,7 +459,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 		// if the total result count is not cached yet, retrieve it from the db
 		if (!$result_count && count($id_ary))
 		{
-			$sql_found_rows = str_replace("SELECT $sql_select", 'SELECT COUNT(*) as result_count', $sql);
+			$sql_found_rows = str_replace('SELECT ' . $sql_select, 'SELECT COUNT(*) as result_count', $sql);
 			$result = $this->db->sql_query($sql_found_rows);
 			$result_count = (int) $this->db->sql_fetchfield('result_count');
 			$this->db->sql_freeresult($result);
@@ -550,8 +549,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 //		$sql_select	.= $sort_by_sql[$sort_key] ? ", {$sort_by_sql[$sort_key]}" : '';
 
 		// Build the query for really selecting the post_ids
-		$sql = "SELECT $sql_select
-			FROM " . $this->articles_table . ' p' . "
+		$sql = 'SELECT ' . $sql_select . ' FROM ' . $this->articles_table . ' p' . "
 			WHERE $sql_author
 				$sql_category_id
 				$sql_fora
@@ -657,7 +655,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	/**
 	 * {@inheritdoc}
 	 */
-	public function create_index(int &$post_counter = 0): ?array
+	public function create_index(int &$post_counter = 0): array|null
 	{
 		// Make sure we can actually use MySQL with fulltext indexes
 		if ($error = $this->init())
@@ -726,7 +724,7 @@ class kb_fulltext_mysql extends kb_base implements kb_search_backend_interface
 	/**
 	 * {@inheritdoc}
 	 */
-	public function delete_index(?int &$post_counter = null): ?array
+	public function delete_index(int|null &$post_counter = null): array|null
 	{
 		// Make sure we can actually use MySQL with fulltext indexes
 		if ($error = $this->init())

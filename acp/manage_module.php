@@ -24,7 +24,7 @@ class manage_module
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main(int $id, string $mode): void
+	public function main($id, string $mode): void
 	{
 		global $phpbb_container;
 
@@ -112,7 +112,7 @@ class manage_module
 					if (!count($errors))
 					{
 						$cache->destroy('sql', $categories_table);
-						$message = ($action == 'add') ? sprintf($language->lang('CATEGORY_ADDED'), '<a href="' . append_sid("{$phpbb_admin_path}index.$phpEx", 'i=-sheer-knowledgebase-acp-permissions_module&mode=permissions&action=setting_group_local&category_id[]=' . $category_data['category_id']) . '">', '</a>') : $language->lang('CATEGORY_EDITED');
+						$message = ($action == 'add') ? sprintf($language->lang('CATEGORY_ADDED'), '<a href="' . append_sid("{$phpbb_admin_path}index.{$phpEx}", 'i=-sheer-knowledgebase-acp-permissions_module&mode=permissions&action=setting_group_local&category_id[]=' . $category_data['category_id']) . '">', '</a>') : $language->lang('CATEGORY_EDITED');
 						meta_refresh(2, $this->u_action . '&amp;parent_id=' . $parent_id);
 						trigger_error($message . adm_back_link($this->u_action . '&amp;parent_id=' . $parent_id));
 					}

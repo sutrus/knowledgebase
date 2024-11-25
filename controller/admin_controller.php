@@ -1058,7 +1058,7 @@ class admin_controller
 	 * @param $mode
 	 * @return void
 	 */
-	public function log($id, $mode): void
+	public function log($id, string $mode): void
 	{
 		$start = $this->request->variable('start', 0);
 		$deletemark = $this->request->variable('delmarked', false, false, request_interface::POST);
@@ -1071,17 +1071,17 @@ class admin_controller
 		$sort_dir = $this->request->variable('sd', 'd');
 
 		// Delete entries if requested and able
-		if (($deletemark || $deleteall))
+		if (($deletemark && count($marked) || $deleteall))
 		{
 			if (confirm_box(true))
 			{
-				if ($deletemark && count($marked))
-				{
-					$sql = 'DELETE FROM ' . $this->logs_table . ' WHERE ' . $this->db->sql_in_set('log_id', $marked);
-				}
 				if ($deleteall)
 				{
 					$sql = 'DELETE FROM ' . $this->logs_table;
+				}
+				else
+				{
+					$sql = 'DELETE FROM ' . $this->logs_table . ' WHERE ' . $this->db->sql_in_set('log_id', $marked);
 				}
 
 				$this->db->sql_query($sql);
@@ -1880,8 +1880,7 @@ class admin_controller
 		}
 		$this->db->sql_freeresult($result);
 
-		$sql = 'SELECT *
-			FROM ' . $this->categories_table . '
+		$sql = 'SELECT * FROM ' . $this->categories_table . '
 			WHERE ' . $this->db->sql_in_set('category_id', $category_id, false);
 		$result = $this->db->sql_query($sql);
 
@@ -2385,11 +2384,11 @@ class admin_controller
 		{
 			if (str_contains($auth_options, '%'))
 			{
-				$sql_opts = "AND {$key} " . $this->db->sql_like_expression(str_replace('%', $this->db->get_any_char(), $auth_options));
+				$sql_opts = 'AND ' . $key . $this->db->sql_like_expression(str_replace('%', $this->db->get_any_char(), $auth_options));
 			}
 			else
 			{
-				$sql_opts = "AND {$key} = '" . $this->db->sql_escape($auth_options) . "'";
+				$sql_opts = 'AND ' . $key . ' = ' . $this->db->sql_escape($auth_options);
 			}
 		}
 		else
@@ -2414,7 +2413,7 @@ class admin_controller
 
 				foreach ($auth_options as $option)
 				{
-					if (strpos($option, '%') !== false)
+					if (str_contains($option, '%'))
 					{
 						$sql[] = $key . ' ' . $this->db->sql_like_expression(str_replace('%', $this->db->get_any_char(), $option));
 					}
@@ -2448,8 +2447,7 @@ class admin_controller
 		// Grab user settings - non-role specific...
 		$sql_ary[] = 'SELECT a.user_id, a.category_id, a.auth_setting, a.auth_option_id, ao.auth_option
 			FROM ' . $this->kb_users_table . ' a, ' . $this->options_table . ' ao
-			WHERE a.auth_option_id = ao.auth_option_id ' .
-			(($sql_user) ? 'AND a.' . $sql_user : '') .
+			WHERE a.auth_option_id = ao.auth_option_id ' . (($sql_user) ? 'AND a.' . $sql_user : '') .
 			$sql_category . ' ' . $sql_opts . '
 			ORDER BY a.category_id, ao.auth_option';
 
@@ -2520,10 +2518,8 @@ class admin_controller
 						}
 						else
 						{
-							$sql = 'INSERT INTO ' . $table . '
-								(' . $id_field . ', category_id, auth_option_id, auth_setting)
-								VALUES
-								(' . $group . ', ' . $cat . ', ' . $auth_option_ids[$opt_name] . ', ' . $option . ')';
+							$sql = 'INSERT INTO ' . $table . '(' . $id_field . ', category_id, auth_option_id, auth_setting)
+								VALUES (' . $group . ', ' . $cat . ', ' . $auth_option_ids[$opt_name] . ', ' . $option . ')';
 						}
 						$this->db->sql_query($sql);
 					}
@@ -2640,7 +2636,7 @@ class admin_controller
 	 * @param int    $id
 	 * @param string $mode
 	 */
-	public function search_settings(int $id, string $mode): void
+	public function search_settings($id, string $mode): void
 	{
 		$submit = $this->request->is_set_post('submit');
 		if ($submit && !check_form_key('kb_acp_search'))
@@ -2776,7 +2772,7 @@ class admin_controller
 	 * @param string $mode
 	 * @throws Exception
 	 */
-	public function search_index(int $id, string $mode): void
+	public function search_index($id, string $mode): void
 	{
 		$action = $this->request->variable('action', '');
 		$state = !empty($this->config['search_indexing_state']) ? explode(',', $this->config['search_indexing_state']) : [];
@@ -2824,7 +2820,7 @@ class admin_controller
 	 *
 	 * @throws Exception
 	 */
-	private function index_overview(int $id, string $mode): void
+	private function index_overview($id, string $mode): void
 	{
 		foreach ($this->search_collection as $search)
 		{
@@ -2852,7 +2848,7 @@ class admin_controller
 	 * @param string $mode
 	 * @param string $action Action in progress: 'create' or 'delete'
 	 */
-	private function index_inprogress(int $id, string $mode, string $action): void
+	private function index_inprogress($id, string $mode, string $action): void
 	{
 		$this->template->assign_vars([
 			'U_ACTION'           => $this->u_action . '&amp;action=' . $action . '&amp;hash=' . generate_link_hash('kb_acp_search'),
@@ -2871,7 +2867,7 @@ class admin_controller
 	 * @param string $action
 	 * @param array  $state
 	 */
-	private function index_action(int $id, string $mode, string $action, array $state): void
+	private function index_action($id, string $mode, string $action, array $state): void
 	{
 		// For some this may be of help...
 		ini_set('memory_limit', '128M');

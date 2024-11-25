@@ -167,7 +167,7 @@ interface kb_search_backend_interface
 	 * @param int $post_counter
 	 * @return array|null array with current status or null if finished
 	 */
-	public function create_index(int &$post_counter = 0): ?array;
+	public function create_index(int &$post_counter = 0): array|null;
 
 	/**
 	 * Drop fulltext index
@@ -175,7 +175,7 @@ interface kb_search_backend_interface
 	 * @param int $post_counter
 	 * @return array|null array with current status or null if finished
 	 */
-	public function delete_index(int &$post_counter = 0): ?array;
+	public function delete_index(int &$post_counter = 0): array|null;
 
 	/**
 	 * Returns true if both FULLTEXT indexes exist

@@ -38,7 +38,7 @@ class version_2_0_1 extends \phpbb\db\migration\migration
 		$extensions = $row['config_value'];
 		$this->db->sql_freeresult($result);
 
-		if (substr($extensions, 0, 1) != '{')
+		if (!str_starts_with($extensions, '{'))
 		{
 			$extensions = json_encode(unserialize($extensions));
 		}

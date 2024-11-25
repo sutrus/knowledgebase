@@ -1309,7 +1309,7 @@ class kb_fulltext_native extends kb_base implements kb_search_backend_interface
 	/**
 	 * {@inheritdoc}
 	 */
-	public function delete_index(?int &$post_counter = null): ?array
+	public function delete_index(int|null &$post_counter = null): array|null
 	{
 		$sql_queries = [];
 

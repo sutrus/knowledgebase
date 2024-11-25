@@ -320,7 +320,7 @@ abstract class kb_base
 	 * @param int $article_counter
 	 * @return array|null
 	 */
-	public function create_index(int &$article_counter = 0): ?array
+	public function create_index(int &$article_counter = 0): array|null
 	{
 		$max_article_id = $this->get_max_article_id();
 
@@ -371,7 +371,7 @@ abstract class kb_base
 	 * @param int|null $article_counter
 	 * @return array|null
 	 */
-	public function delete_index(?int &$article_counter = null): ?array
+	public function delete_index(int|null &$article_counter = null): array|null
 	{
 		$max_article_id = $this->get_max_article_id();
 

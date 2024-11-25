@@ -591,7 +591,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	/**
 	 * {@inheritdoc}
 	 */
-	public function create_index(int &$post_counter = 0): ?array
+	public function create_index(int &$post_counter = 0): array|null
 	{
 		// Make sure we can actually use PostgreSQL with fulltext indexes
 		if ($error = $this->init())
@@ -641,7 +641,7 @@ class kb_fulltext_postgres extends kb_base implements kb_search_backend_interfac
 	/**
 	 * {@inheritdoc}
 	 */
-	public function delete_index(?int &$post_counter = null): ?array
+	public function delete_index(int|null &$post_counter = null): array|null
 	{
 		// Make sure we can actually use PostgreSQL with fulltext indexes
 		if ($error = $this->init())
