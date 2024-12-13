@@ -20,11 +20,11 @@ class manage_module
 	/**
 	 * Manage ACP module
 	 *
-	 * @param int    $id   The module ID
+	 * @param string $id   The module ID
 	 * @param string $mode The module mode (for example: manage or settings)
 	 * @throws \Exception
 	 */
-	public function main($id, string $mode): void
+	public function main(string $id, string $mode): void
 	{
 		global $phpbb_container;
 
@@ -57,7 +57,7 @@ class manage_module
 		$kb = $phpbb_container->get('sheer.knowledgebase.inc');
 
 		// Get an instance of the admin controller
-		$admin_controller = $phpbb_container->get('sheer.knowledgebase.admin.controller');
+		$admin_controller = $phpbb_container->get('sheer.knowledgebase.controller.acp');
 
 		// Make the $u_action url available in the admin controller
 		$admin_controller->set_page_url($this->u_action);

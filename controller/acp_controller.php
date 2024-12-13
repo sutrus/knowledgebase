@@ -31,7 +31,7 @@ use RuntimeException;
 use sheer\knowledgebase\inc\functions_kb;
 use sheer\knowledgebase\search\kb_search_backend_factory;
 
-class admin_controller
+class acp_controller
 {
 	protected const STATE_SEARCH_TYPE = 0;
 	protected const STATE_ACTION = 1;
@@ -1054,11 +1054,11 @@ class admin_controller
 	 * Log management functions
 	 * /**
 	 *
-	 * @param $id
-	 * @param $mode
+	 * @param string $id
+	 * @param string $mode
 	 * @return void
 	 */
-	public function log($id, string $mode): void
+	public function log(string $id, string $mode): void
 	{
 		$start = $this->request->variable('start', 0);
 		$deletemark = $this->request->variable('delmarked', false, false, request_interface::POST);
@@ -2498,7 +2498,6 @@ class admin_controller
 							WHERE ' . $id_field . ' = ' . $group . '
 								AND category_id = ' . $cat . '
 								AND auth_option_id = ' . $auth_option_ids[$opt_name];
-						$this->db->sql_query($sql);
 					}
 					else
 					{
@@ -2521,8 +2520,8 @@ class admin_controller
 							$sql = 'INSERT INTO ' . $table . '(' . $id_field . ', category_id, auth_option_id, auth_setting)
 								VALUES (' . $group . ', ' . $cat . ', ' . $auth_option_ids[$opt_name] . ', ' . $option . ')';
 						}
-						$this->db->sql_query($sql);
 					}
+					$this->db->sql_query($sql);
 
 					if ($user_mode == 'user')
 					{
@@ -2633,10 +2632,10 @@ class admin_controller
 	/** Search management functions
 	 * Settings page
 	 *
-	 * @param int    $id
+	 * @param string $id
 	 * @param string $mode
 	 */
-	public function search_settings($id, string $mode): void
+	public function search_settings(string $id, string $mode): void
 	{
 		$submit = $this->request->is_set_post('submit');
 		if ($submit && !check_form_key('kb_acp_search'))
@@ -2661,7 +2660,6 @@ class admin_controller
 		];
 
 		$search_options = '';
-
 		foreach ($this->search_collection as $search)
 		{
 			// Only show available search backends
@@ -2672,7 +2670,8 @@ class admin_controller
 
 				$selected = ($this->config['kb_search_type'] === $type) ? ' selected="selected"' : '';
 				$identifier = substr($type, strrpos($type, '\\') + 1);
-				$search_options .= "<option value=\"{$type}\"{$selected} data-toggle-setting=\"#search_{$identifier}_settings\">{$name}</option>";
+				$search_options .= '<option value="' . $type . '"' . $selected;
+			    $search_options .= ' data-toggle-setting="#search_' . $identifier . '_settings">' . $name . '</option>';
 			}
 		}
 
@@ -2768,11 +2767,11 @@ class admin_controller
 	/**
 	 * Execute action depending on the action and state
 	 *
-	 * @param int    $id
+	 * @param string $id
 	 * @param string $mode
 	 * @throws Exception
 	 */
-	public function search_index($id, string $mode): void
+	public function search_index(string $id, string $mode): void
 	{
 		$action = $this->request->variable('action', '');
 		$state = !empty($this->config['search_indexing_state']) ? explode(',', $this->config['search_indexing_state']) : [];
@@ -2805,22 +2804,19 @@ class admin_controller
 
 			if (!empty($state))
 			{
-				$this->index_inprogress($id, $mode, $state[self::STATE_ACTION]);
+				$this->index_inprogress($state[self::STATE_ACTION]);
 			}
 			else
 			{
-				$this->index_overview($id, $mode);
+				$this->index_overview();
 			}
 		}
 	}
 
 	/**
-	 * @param int    $id
-	 * @param string $mode
-	 *
 	 * @throws Exception
 	 */
-	private function index_overview($id, string $mode): void
+	private function index_overview(): void
 	{
 		foreach ($this->search_collection as $search)
 		{
@@ -2844,11 +2840,9 @@ class admin_controller
 	/**
 	 * Form to continue or cancel indexing process
 	 *
-	 * @param int    $id
-	 * @param string $mode
 	 * @param string $action Action in progress: 'create' or 'delete'
 	 */
-	private function index_inprogress($id, string $mode, string $action): void
+	private function index_inprogress(string $action): void
 	{
 		$this->template->assign_vars([
 			'U_ACTION'           => $this->u_action . '&amp;action=' . $action . '&amp;hash=' . generate_link_hash('kb_acp_search'),
@@ -2862,12 +2856,12 @@ class admin_controller
 	/**
 	 * Progress that do the indexing/index removal, updating the page continuously until is finished
 	 *
-	 * @param int    $id
+	 * @param string $id
 	 * @param string $mode
 	 * @param string $action
 	 * @param array  $state
 	 */
-	private function index_action($id, string $mode, string $action, array $state): void
+	private function index_action(string $id, string $mode, string $action, array $state): void
 	{
 		// For some this may be of help...
 		ini_set('memory_limit', '128M');

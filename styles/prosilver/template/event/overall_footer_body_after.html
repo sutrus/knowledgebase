@@ -1,8 +1,4 @@
 {% if S_KNOWLEDGEBASE %}
-	{% if not INCLUDED_JQUERYUIJS %}
-		{% INCLUDEJS '@sheer_knowledgebase/js/jquery-ui.min.js' %}
-		{% DEFINE INCLUDED_JQUERYUIJS = true %}
-	{% endif %}
 	{% INCLUDEJS '@sheer_knowledgebase/js/reorder.js' %}
 	{% INCLUDEJS '@sheer_knowledgebase/js/copy.js' %}
 {% endif %}

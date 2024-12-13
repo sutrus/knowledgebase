@@ -161,8 +161,8 @@ services:
             - '@ext.manager'
             - '%tables.kb_attachments_table%'
 
-    sheer.knowledgebase.admin.controller:
-        class: sheer\knowledgebase\controller\admin_controller
+    sheer.knowledgebase.controller.acp:
+        class: sheer\knowledgebase\controller\acp_controller
         arguments:
             - '@dbal.conn'
             - '@config'
