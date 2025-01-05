@@ -368,7 +368,6 @@ class functions_kb
 		{
 			$total = ACL_YES;
 		}
-
 		return $total && $total > 0;
 	}
 
@@ -405,7 +404,6 @@ class functions_kb
 		}
 		$this->db->sql_freeresult($result);
 		unset($padding_store);
-
 		return $cats_list;
 	}
 
@@ -581,11 +579,6 @@ class functions_kb
 		$result = $this->db->sql_query($sql);
 		$row = $this->db->sql_fetchrow($result);
 		$this->db->sql_freeresult($result);
-
-		if (!$row)
-		{
-			return false;
-		}
 		return $row;
 	}
 
@@ -624,14 +617,10 @@ class functions_kb
 		$to_articles_count = $to_cat_info['number_articles'];
 		$to_articles_count++;
 		// change in DB
-		$sql = 'UPDATE ' . $this->categories_table . '
-			SET number_articles = ' . $articles_count . '
-			WHERE category_id = ' . (int) $cat_id;
+		$sql = 'UPDATE ' . $this->categories_table . ' SET number_articles = ' . $articles_count . ' WHERE category_id = ' . (int) $cat_id;
 		$this->db->sql_query($sql);
 
-		$sql = 'UPDATE ' . $this->categories_table . '
-			SET number_articles = ' . $to_articles_count . '
-			WHERE category_id = ' . (int) $id;
+		$sql = 'UPDATE ' . $this->categories_table . ' SET number_articles = ' . $to_articles_count . ' WHERE category_id = ' . (int) $id;
 		$this->db->sql_query($sql);
 		$this->cache->destroy('sql', $this->categories_table);
 		$this->log->add('admin', $this->user->data['user_id'], $this->user->data['user_ip'], 'LOG_LIBRARY_MOVED_ARTICLE', time(), [$article_title, $cat_info['category_name'], $to_cat_info['category_name']]);
@@ -703,9 +692,7 @@ class functions_kb
 		$this->db->sql_freeresult($result);
 
 		$last_topic = $row['last_topic'];
-		$sql = 'UPDATE ' . $this->articles_table . '
-			SET topic_id = ' . (int) $last_topic . '
-			WHERE article_id = ' . (int) $new;
+		$sql = 'UPDATE ' . $this->articles_table . ' SET topic_id = ' . (int) $last_topic . ' WHERE article_id = ' . (int) $new;
 		$this->db->sql_query($sql);
 	}
 
