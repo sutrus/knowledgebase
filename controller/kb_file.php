@@ -11,10 +11,13 @@
 
 namespace sheer\knowledgebase\controller;
 
+use phpbb\auth\auth;
 use phpbb\db\driver\driver_interface;
 use phpbb\extension\manager;
 use phpbb\language\language;
 use phpbb\request\request_interface;
+use phpbb\user;
+use sheer\knowledgebase\inc\functions_kb;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
@@ -32,8 +35,20 @@ class kb_file
 	/** @var \phpbb\extension\manager */
 	protected manager $ext_manager;
 
+	/** @var \phpbb\auth\auth */
+	protected auth $auth;
+
+	/** @var \phpbb\user */
+	protected user $user;
+
+	/** @var \sheer\knowledgebase\inc\functions_kb */
+	protected functions_kb $kb;
+
 	/** @var string */
 	protected string $attachments_table;
+
+	/** @var string */
+	protected string $articles_table;
 
 	/**
 	 * Constructor
@@ -42,17 +57,26 @@ class kb_file
 	 * @param language          $language
 	 * @param request_interface $request
 	 * @param manager           $ext_manager
+	 * @param auth              $auth
+	 * @param user              $user
+	 * @param functions_kb      $kb
 	 * @param string            $attachments_table
+	 * @param string            $articles_table
 	 */
 	public function __construct(
-		driver_interface $db, language $language, request_interface $request, manager $ext_manager, string $attachments_table
+		driver_interface $db, language $language, request_interface $request, manager $ext_manager,
+		auth $auth, user $user, functions_kb $kb, string $attachments_table, string $articles_table
 	)
 	{
 		$this->db = $db;
 		$this->language = $language;
 		$this->request = $request;
 		$this->ext_manager = $ext_manager;
+		$this->auth = $auth;
+		$this->user = $user;
+		$this->kb = $kb;
 		$this->attachments_table = $attachments_table;
+		$this->articles_table = $articles_table;
 	}
 
 	/**
@@ -71,7 +95,13 @@ class kb_file
 			trigger_error('NO_ATTACHMENT_SELECTED');
 		}
 
-		$sql = 'SELECT attach_id, is_orphan, physical_filename, real_filename, extension, mimetype, filesize, filetime
+		if (!$this->auth->acl_get('u_kb_view') && !$this->auth->acl_get('a_manage_kb'))
+		{
+			send_status_line(403, 'Forbidden');
+			trigger_error('NOT_AUTHORISED');
+		}
+
+		$sql = 'SELECT attach_id, article_id, poster_id, is_orphan, physical_filename, real_filename, extension, mimetype, filesize, filetime
 			FROM ' . $this->attachments_table . '
 			WHERE attach_id = ' . $attach_id;
 		$result = $this->db->sql_query($sql);
@@ -82,6 +112,29 @@ class kb_file
 		{
 			send_status_line(404, 'Not Found');
 			trigger_error('ERROR_NO_ATTACHMENT');
+		}
+
+		if ($attachment['article_id'])
+		{
+			// Attached to a saved article: same view/approval gate the article itself is behind.
+			$sql = 'SELECT article_category_id, approved
+				FROM ' . $this->articles_table . '
+				WHERE article_id = ' . (int) $attachment['article_id'];
+			$result = $this->db->sql_query($sql);
+			$article = $this->db->sql_fetchrow($result);
+			$this->db->sql_freeresult($result);
+
+			if (!$article || (!$article['approved'] && !($this->auth->acl_get('a_manage_kb') || $this->kb->acl_kb_get($article['article_category_id'], 'kb_m_approve'))))
+			{
+				send_status_line(403, 'Forbidden');
+				trigger_error('NOT_AUTHORISED');
+			}
+		}
+		else if ((int) $attachment['poster_id'] !== (int) $this->user->data['user_id'])
+		{
+			// Orphaned attachment (uploaded but not yet attached to a saved article): only its own uploader may preview it.
+			send_status_line(403, 'Forbidden');
+			trigger_error('NOT_AUTHORISED');
 		}
 
 		$attachment['physical_filename'] = utf8_basename($attachment['physical_filename']);
