@@ -159,7 +159,11 @@ services:
             - '@language'
             - '@request'
             - '@ext.manager'
+            - '@auth'
+            - '@user'
+            - '@sheer.knowledgebase.inc'
             - '%tables.kb_attachments_table%'
+            - '%tables.articles_table%'
 
     sheer.knowledgebase.controller.acp:
         class: sheer\knowledgebase\controller\acp_controller
